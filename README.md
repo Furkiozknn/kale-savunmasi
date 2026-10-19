@@ -70,6 +70,7 @@ better game. Later, the best of them will be rebuilt in Godot 4.
 |---|---|---|---|
 | 1 | **Hisar** | Tower defense, 3D | Claude Opus 5.5 |
 | 2 | [Çay Ocağı](https://github.com/Furkiozknn/cay-ocagi) | Time management, 3D | Claude Sonnet 5.5 |
+| 3 | [Çini Ustası](https://github.com/Furkiozknn/cini-ustasi) | Puzzle, 3D | Claude Fable 5.1 |
 
 ## Tech
 
