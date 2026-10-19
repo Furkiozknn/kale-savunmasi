@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Hisar · Kale Savunması</title>
+<meta name="description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves. Single HTML file, Three.js.">
+<meta property="og:title" content="Hisar · Fortress Defense">
+<meta property="og:description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves.">
+<meta property="og:image" content="https://furkiozknn.github.io/kale-savunmasi/docs/closeup.png">
+<meta property="og:url" content="https://furkiozknn.github.io/kale-savunmasi/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
@@ -180,6 +187,7 @@ const STR = {
     sub: 'Kale Savunması',
     intro: 'Düşman ordusu iki yoldan hisara yürüyor. Yol kenarındaki taş kaidelere kule kur, kuleleri geliştir ve 15 dalga boyunca hisarı ayakta tut.',
     controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>U</b> geliştir · <b>S</b> sat · <b>F</b> hız · <b>P</b> duraklat',
+    controlsTouch: '<b>Dokun</b> seç / kur · <b>Tek parmak</b> kaydır · <b>İki parmak</b> yakınlaş ve döndür',
     play: 'Başla', best: 'En iyi rekor: {n}. dalga',
     gold: 'Altın', lives: 'Hisar canı', wave: 'Dalga',
     next: 'Sıradaki dalga', startWave: 'Dalga {n} · Başlat ▶', callEarly: 'Dalga {n} · Erken çağır ▶', waveRunning: 'Dalga {n} sürüyor…',
@@ -201,6 +209,7 @@ const STR = {
     sub: 'Fortress Defense',
     intro: 'An enemy army is marching on the fortress along two roads. Build towers on the stone pads by the road, upgrade them and hold the fortress for 15 waves.',
     controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>U</b> upgrade · <b>S</b> sell · <b>F</b> speed · <b>P</b> pause',
+    controlsTouch: '<b>Tap</b> select / build · <b>One finger</b> pan · <b>Two fingers</b> zoom and rotate',
     play: 'Play', best: 'Best: wave {n}',
     gold: 'Gold', lives: 'Fortress lives', wave: 'Wave',
     next: 'Next wave', startWave: 'Wave {n} · Start ▶', callEarly: 'Wave {n} · Call early ▶', waveRunning: 'Wave {n} in progress…',
@@ -1208,7 +1217,7 @@ function showTitle() {
   const best = loadBest();
   ocard.innerHTML = `<h1>🏰 Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
     <div class="row"><button class="primary big" id="bPlay">${t('play')} ▶</button><button id="bLang2">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
-    <p class="ctl">${t('controls')}</p>${best ? `<div class="best">🏆 ${t('best', { n: best })}</div>` : ''}`;
+    <p class="ctl">${t(matchMedia('(pointer: coarse)').matches ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">🏆 ${t('best', { n: best })}</div>` : ''}`;
   overlay.classList.remove('hidden');
   $('bPlay').onclick = startGame;
   $('bLang2').onclick = () => $('bLang').click();
@@ -1306,6 +1315,8 @@ document.addEventListener('visibilitychange', () => { if (ac) { if (document.hid
 const clock = new THREE.Clock();
 let time = 0, perfT = 0, hoverT = 0;
 const minT = new THREE.Vector3(-46, 0, -32), maxT = new THREE.Vector3(40, 0, 32);
+const dbgEl = document.createElement('div');
+if (DEBUG) { dbgEl.style.cssText = 'position:fixed;left:10px;top:64px;z-index:20;font:600 13px Rubik,sans-serif;background:#000a;color:#fff;padding:4px 8px;border-radius:6px'; document.body.appendChild(dbgEl); }
 function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(0.05, clock.getDelta());
@@ -1343,6 +1354,7 @@ function frame() {
     renderer.render(scene, camera);
     camera.position.x -= sx; camera.position.y -= sy;
   } else renderer.render(scene, camera);
+  if (DEBUG) dbgEl.textContent = `draw calls ${renderer.info.render.calls} · triangles ${renderer.info.render.triangles}`;
   if (DEBUG && (perfT += dt) > 5) { perfT = 0; console.log('[hisar] draw calls', renderer.info.render.calls, 'tris', renderer.info.render.triangles); }
 }
 
@@ -1354,6 +1366,16 @@ if (DEBUG) window.hisarSim = (seconds, withBot = true) => {
 
 applyLang();
 if (AUTO) { setSpeed(3); startGame(); }
+// ?sim=<seconds> (with ?auto) fast-forwards before the first frame, ?cam=x,y,z,tx,tz sets the view: used for screenshots
+const simSec = +params.get('sim') || 0;
+if (AUTO && simSec) {
+  for (let s = 0; s < simSec && !G.over; s += 0.025) { autoplay(0.025); update(0.025); }
+  for (const f of ftxt) f.el.remove();
+  ftxt.length = 0;
+  $('toast').innerHTML = '';
+}
+const camParam = params.get('cam');
+if (camParam) { const [x, y, z, tx, tz] = camParam.split(',').map(Number); camera.position.set(x, y, z); controls.target.set(tx || 0, 0, tz || 0); }
 G.pads = pads.length;
 frame();
 </script>
