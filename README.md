@@ -2,13 +2,13 @@
 
 **[▶ Play in your browser](https://furkiozknn.github.io/kale-savunmasi/)** · English & Türkçe · desktop & mobile · free, no install
 
-🏟️ Part of **[Claude Game Arena](https://github.com/Furkiozknn/claude-game-arena)**: four games, each built by a different Claude model. This is game #1, built by **Claude Opus 5.5**. [See all games and the scorecard →](https://furkiozknn.github.io/claude-game-arena/)
+🏟️ Part of **[Claude Game Arena](https://github.com/Furkiozknn/claude-game-arena)**: four games, each built by a different Claude model. This is game #1, built by **Claude Opus 5.5**; assets remastered by **Claude Opus 5.5 (orchestrator)**. [See all games and the scorecard →](https://furkiozknn.github.io/claude-game-arena/)
 
 🎮 **Godot 4 remake (round 2):** [play](https://furkiozknn.github.io/hisar-godot/) · [code](https://github.com/Furkiozknn/hisar-godot), rebuilt by the same model in a real game engine.
 
 ![Gameplay clip](docs/gameplay.gif)
 
-A low-poly 3D tower defense game in a **single `index.html`** (Three.js, no build step, no asset files).
+A low-poly 3D tower defense game in a **single `index.html`** (Three.js, no build step) plus a small folder of generated models and icons.
 An army marches on a seaside fortress along two roads. Build towers on the stone pads, upgrade them,
 and hold the walls for 15 waves. Then see how long you last in endless mode.
 
@@ -23,14 +23,23 @@ and hold the walls for 15 waves. Then see how long you last in endless mode.
 - **Tactics:** three target modes per tower (First, Strongest, Nearest), sell for a 70% refund, call the next wave early
   for bonus gold, 1× / 2× / 3× speed.
 - **15 waves + endless mode**, best wave saved in your browser.
-- **Everything is generated in code:** terrain, fortress, enemies, towers, particles and every sound effect (Web Audio).
-- **Runs on a laptop iGPU:** instanced meshes, merged geometry, one 1024 shadow map, about 35 draw calls in a full battle. Use `?low` if it stutters.
+- **Generated models and icons, with a code fallback:** the fortress, enemies, towers, turrets and boats are low-poly
+  models, the interface uses one painted icon set. Terrain, trees, particles and every sound effect (Web Audio) are made in code,
+  and every model also has a procedural version that is used when the files cannot load.
+- **Runs on a laptop iGPU:** instanced meshes, merged geometry, one 1024 shadow map, about 40 draw calls in a full battle. Use `?low` if it stutters.
 - **Turkish by default, English with one click.** Touch controls on phones and tablets.
 
 | | |
 |---|---|
 | ![Overview](docs/gameplay.png) | ![Phone layout](docs/mobile.png) |
 | ![Title screen](docs/title-en.png) | |
+
+After the asset remaster:
+
+| | |
+|---|---|
+| ![Title screen with the new crest](docs/remaster-title.png) | ![Battle with the new models](docs/remaster-battle.png) |
+| ![Close-up of towers and enemies](docs/remaster-closeup.png) | ![Phone layout](docs/remaster-phone.png) |
 
 ## Controls
 
@@ -47,8 +56,9 @@ and hold the walls for 15 waves. Then see how long you last in endless mode.
 
 ## Run it locally
 
-Download the repo and double-click `index.html`. It needs internet the first time, to load Three.js and the font from a CDN.
-Or serve the folder: `python -m http.server 8766`, then open http://127.0.0.1:8766/.
+Serve the folder: `python -m http.server 8766`, then open http://127.0.0.1:8766/. It needs internet to load Three.js and the font from a CDN.
+You can also double-click `index.html`: the browser blocks loading the models from `file://`, so the game then runs with its
+original procedural models (icons still work).
 
 ### URL flags
 
@@ -59,6 +69,7 @@ Or serve the folder: `python -m http.server 8766`, then open http://127.0.0.1:87
 | `?auto` | The game plays itself at 3× speed (self-test bot) |
 | `?auto&sim=600` | Fast-forwards 600 seconds of play before the first frame |
 | `?cam=x,y,z,tx,tz` | Sets the camera position and target (for screenshots) |
+| `?noassets` | Skips the generated models and uses the procedural ones |
 | `?debug` | Shows draw calls on screen, logs them every 5 s and exposes `hisarSim(seconds)` to fast-forward the simulation |
 
 ## How it was made
@@ -79,10 +90,19 @@ better game. Later, the best of them will be rebuilt in Godot 4.
 | 3 | [Çini Ustası](https://github.com/Furkiozknn/cini-ustasi) | Puzzle, 3D | Claude Fable 5.1 |
 | 4 | [Martı](https://github.com/Furkiozknn/marti) | Arcade flyer, 3D | Claude Haiku 5.5 |
 
+## Assets
+
+The models and icons were generated with [Higgsfield](https://higgsfield.ai): Tripo text-to-3D for the fortress,
+the four enemies, the three tower bases, their turrets and the boats, and GPT Image for the icon sheet and the logo crest.
+The models were processed with [glTF-Transform](https://gltf-transform.dev) (pivot at the base, 256-1024 px WebP textures,
+about 900-1,500 triangles each, 5,500 for the fortress) and are normalised in code. About 1.1 MB in `assets/`.
+If a model cannot load, for example when the page is opened from `file://`, the procedural version is used.
+Prompts, sizes and checks per asset: [`docs/assets.md`](docs/assets.md).
+
 ## Tech
 
-Three.js r170 (ES module from jsDelivr), OrbitControls, BufferGeometryUtils, Web Audio API, one Google Font (Rubik).
-About 1,400 lines of plain JavaScript, HTML and CSS in one file.
+Three.js r170 (ES module from jsDelivr), OrbitControls, BufferGeometryUtils, GLTFLoader, Web Audio API, one Google Font (Rubik).
+About 1,500 lines of plain JavaScript, HTML and CSS in one file.
 
 ## License
 

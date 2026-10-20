@@ -10,7 +10,7 @@
 <meta property="og:image" content="https://furkiozknn.github.io/kale-savunmasi/docs/closeup.png">
 <meta property="og:url" content="https://furkiozknn.github.io/kale-savunmasi/">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+<link rel="icon" type="image/png" href="assets/ui/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
@@ -40,7 +40,12 @@
   .primary:hover:not(:disabled) { background: linear-gradient(180deg, #fcd34d, #f59e0b); }
 
   #top { position: fixed; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 8px; z-index: 5; }
-  #top .logo { font-weight: 800; font-size: 18px; letter-spacing: .5px; padding: 0 6px; white-space: nowrap; }
+  #top .logo { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 18px; letter-spacing: .5px; padding: 0 6px; white-space: nowrap; }
+  #top .logo img { width: 30px; height: 30px; margin: -4px 0; }
+  .ic { width: 1.35em; height: 1.35em; vertical-align: -0.33em; object-fit: contain; }
+  .ic.big { width: 34px; height: 34px; vertical-align: middle; }
+  button .ic { pointer-events: none; }
+  .gl { width: 14px; height: 14px; vertical-align: -2px; fill: currentColor; }
   #top .logo small { font-weight: 400; font-size: 12px; opacity: .65; margin-left: 4px; }
   .stat { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.55);
     font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -63,7 +68,7 @@
   .ph .x { padding: 2px 8px; }
   .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; padding: 8px; position: relative; }
-  .card .ico { font-size: 22px; }
+  .card .ico { display: block; height: 34px; }
   .card small { font-weight: 400; font-size: 12px; opacity: .75; line-height: 1.25; }
   .card .cost { margin-top: 2px; font-weight: 700; }
   .card kbd, .kbd { position: absolute; top: 6px; right: 6px; font-size: 11px; opacity: .55; font-family: inherit; }
@@ -87,6 +92,7 @@
   #overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(40, 25, 10, .15), rgba(40, 25, 10, .5)); }
   #overlay.hidden { display: none; }
   .ocard { width: min(520px, calc(100% - 32px)); padding: 24px; text-align: center; }
+  .ocard .crest { display: block; width: 132px; height: 132px; margin: -8px auto 2px; filter: drop-shadow(0 6px 10px rgba(60, 35, 10, .35)); }
   .ocard h1 { margin: 0; font-size: 46px; font-weight: 800; letter-spacing: 1px; }
   .ocard h1 small { display: block; font-size: 16px; font-weight: 400; opacity: .7; letter-spacing: 3px; text-transform: uppercase; }
   .ocard p { line-height: 1.5; margin: 14px 0; }
@@ -115,6 +121,7 @@
     .tw { grid-template-columns: 1fr; }
     .tbtns { flex-direction: row; flex-wrap: wrap; }
     .ocard h1 { font-size: 36px; }
+    .ocard .crest { width: 96px; height: 96px; }
   }
 </style>
 <script type="importmap">
@@ -130,14 +137,14 @@
 <div id="flash"></div>
 
 <div id="top" class="glass">
-  <div class="logo">🏰 Hisar<small id="tSub"></small></div>
-  <div class="stat" id="sGold" title="">💰 <span>0</span></div>
-  <div class="stat" id="sLives" title="">❤️ <span>0</span></div>
-  <div class="stat" id="sWave">⚔️ <span>0</span></div>
+  <div class="logo"><img src="assets/ui/logo.png" alt="">Hisar<small id="tSub"></small></div>
+  <div class="stat" id="sGold" title=""><img class="ic" src="assets/ui/icons/gold.png" alt=""> <span>0</span></div>
+  <div class="stat" id="sLives" title=""><img class="ic" src="assets/ui/icons/lives.png" alt=""> <span>0</span></div>
+  <div class="stat" id="sWave"><img class="ic" src="assets/ui/icons/wave.png" alt=""> <span>0</span></div>
   <div class="spacer"></div>
   <button id="bSpeed" title="F">1×</button>
-  <button id="bPause" title="P">⏸</button>
-  <button id="bSound">🔊</button>
+  <button id="bPause" title="P"></button>
+  <button id="bSound"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
   <button id="bLang">EN</button>
 </div>
 
@@ -156,6 +163,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ---------------------------------------------------------------- config
 const params = new URLSearchParams(location.search);
@@ -168,16 +176,16 @@ const START_LIVES = 20;
 const ACCENT = 0xf59e0b;
 
 const TOWERS = {
-  archer: { icon: '🏹', cost: [60, 90, 140], range: [9, 10, 11], rate: [0.75, 0.6, 0.45], dmg: [15, 24, 38] },
-  cannon: { icon: '💣', cost: [110, 150, 220], range: [8.5, 9, 10], rate: [2.4, 2.1, 1.8], dmg: [40, 65, 105], splash: [2.4, 2.8, 3.3] },
-  tar:    { icon: '🔥', cost: [80, 110, 170], range: [7, 7.5, 8.5], rate: [2.0, 1.8, 1.5], dps: [8, 13, 20], slow: [0.55, 0.45, 0.35], splash: [2.2, 2.5, 2.9] },
+  archer: { icon: 'archer', cost: [60, 90, 140], range: [9, 10, 11], rate: [0.75, 0.6, 0.45], dmg: [15, 24, 38] },
+  cannon: { icon: 'cannon', cost: [110, 150, 220], range: [8.5, 9, 10], rate: [2.4, 2.1, 1.8], dmg: [40, 65, 105], splash: [2.4, 2.8, 3.3] },
+  tar:    { icon: 'tar', cost: [80, 110, 170], range: [7, 7.5, 8.5], rate: [2.0, 1.8, 1.5], dps: [8, 13, 20], slow: [0.55, 0.45, 0.35], splash: [2.2, 2.5, 2.9] },
 };
 const TOWER_KEYS = ['archer', 'cannon', 'tar'];
 const ENEMIES = {
-  raider: { icon: '🗡️', hp: 55, speed: 2.5, gold: 5, armor: 0, lives: 1, h: 1.6 },
-  rider:  { icon: '🐎', hp: 40, speed: 4.4, gold: 6, armor: 0, lives: 1, h: 2.1 },
-  shield: { icon: '🛡️', hp: 160, speed: 1.7, gold: 11, armor: 0.55, lives: 2, h: 1.9 },
-  ram:    { icon: '🐏', hp: 1400, speed: 1.45, gold: 70, armor: 0.35, lives: 6, h: 2.6 },
+  raider: { icon: 'raider', hp: 55, speed: 2.5, gold: 5, armor: 0, lives: 1, h: 1.6 },
+  rider:  { icon: 'rider', hp: 40, speed: 4.4, gold: 6, armor: 0, lives: 1, h: 2.1 },
+  shield: { icon: 'shield', hp: 160, speed: 1.7, gold: 11, armor: 0.55, lives: 2, h: 1.9 },
+  ram:    { icon: 'ram', hp: 1400, speed: 1.45, gold: 70, armor: 0.35, lives: 6, h: 2.6 },
 };
 const ENEMY_KEYS = ['raider', 'rider', 'shield', 'ram'];
 
@@ -188,7 +196,7 @@ const STR = {
     intro: 'Düşman ordusu iki yoldan hisara yürüyor. Yol kenarındaki taş kaidelere kule kur, kuleleri geliştir ve 15 dalga boyunca hisarı ayakta tut.',
     controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>U</b> geliştir · <b>S</b> sat · <b>F</b> hız · <b>P</b> duraklat',
     controlsTouch: '<b>Dokun</b> seç / kur · <b>Tek parmak</b> kaydır · <b>İki parmak</b> yakınlaş ve döndür',
-    play: 'Başla', best: 'En iyi rekor: {n}. dalga',
+    play: 'Başla', loading: 'Yükleniyor… {n}/{m}', startIdle: 'Başlat', best: 'En iyi rekor: {n}. dalga',
     gold: 'Altın', lives: 'Hisar canı', wave: 'Dalga',
     next: 'Sıradaki dalga', startWave: 'Dalga {n} · Başlat ▶', callEarly: 'Dalga {n} · Erken çağır ▶', waveRunning: 'Dalga {n} sürüyor…',
     build: 'Kule kur',
@@ -210,7 +218,7 @@ const STR = {
     intro: 'An enemy army is marching on the fortress along two roads. Build towers on the stone pads by the road, upgrade them and hold the fortress for 15 waves.',
     controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>U</b> upgrade · <b>S</b> sell · <b>F</b> speed · <b>P</b> pause',
     controlsTouch: '<b>Tap</b> select / build · <b>One finger</b> pan · <b>Two fingers</b> zoom and rotate',
-    play: 'Play', best: 'Best: wave {n}',
+    play: 'Play', loading: 'Loading… {n}/{m}', startIdle: 'Start', best: 'Best: wave {n}',
     gold: 'Gold', lives: 'Fortress lives', wave: 'Wave',
     next: 'Next wave', startWave: 'Wave {n} · Start ▶', callEarly: 'Wave {n} · Call early ▶', waveRunning: 'Wave {n} in progress…',
     build: 'Build a tower',
@@ -240,6 +248,12 @@ function loadBest() { try { return +localStorage.getItem('hisar.best') || 0; } c
 function saveBest(n) { try { if (n > loadBest()) localStorage.setItem('hisar.best', String(n)); } catch (e) { /* ignore */ } }
 
 // ---------------------------------------------------------------- helpers
+// UI icons are PNGs sliced from one generated sheet (assets/ui/icons); <img> also works when opened from file://
+const ico = (name, cls = '') => `<img class="ic ${cls}" src="assets/ui/icons/${name}.png" alt="">`;
+const GLYPH = {
+  pause: '<svg class="gl" viewBox="0 0 16 16"><rect x="3" y="2" width="3.6" height="12" rx="1"/><rect x="9.4" y="2" width="3.6" height="12" rx="1"/></svg>',
+  play: '<svg class="gl" viewBox="0 0 16 16"><path d="M4 2.2v11.6c0 .8.9 1.3 1.6.8l8.6-5.8c.6-.4.6-1.2 0-1.6L5.6 1.4C4.9.9 4 1.4 4 2.2z"/></svg>',
+};
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, k) => a + (b - a) * k;
 const smoothstep = (a, b, x) => { const k = clamp((x - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
@@ -510,7 +524,7 @@ const campFires = [[-44.5, -24.5], [-44.5, 26]];
 })();
 
 // fortress: one merged mesh
-(function makeFortress() {
+const fortressMesh = (function makeFortress() {
   const P = [], stone = 0xd8ccb4, stone2 = 0xc4b79c, roof = 0xb3261e, wood = 0x6e4a2a;
   const X0 = 25, X1 = 37, Z0 = -8, Z1 = 8, H = 3.4, T = 1.2;
   const wall = (x0, z0, x1, z1) => {
@@ -537,6 +551,7 @@ const campFires = [[-44.5, -24.5], [-44.5, 26]];
   const m = new THREE.Mesh(merge(P), matV);
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
+  return m;
 })();
 
 // boats on the sea
@@ -583,11 +598,113 @@ for (let i = 0; i < MAX_ENEMIES; i++) barFg.setColorAt(i, _c.set(0x22c55e));
 for (const m of [barBg, barFg]) { m.count = 0; m.frustumCulled = false; scene.add(m); }
 barBg.renderOrder = 10; barFg.renderOrder = 11;
 
+// ---------------------------------------------------------------- generated models (GLB) with procedural fallback
+// Models from assets/models replace the procedural meshes once they have loaded. Every procedural builder stays as the
+// fallback: if a file is missing or cannot be fetched (from file:// the loader is skipped, since Chrome blocks fetch
+// there), the game keeps its original look. ?noassets forces the fallback.
+const MODEL_FILES = ['raider', 'rider', 'shield', 'ram', 'fortress', 'boat', 'tower-archer', 'tower-cannon', 'tower-tar', 'head-archer', 'head-cannon', 'head-tar'];
+const MODEL_YAW = { raider: -Math.PI / 2, rider: Math.PI, shield: -Math.PI / 2, fortress: Math.PI, 'head-archer': -Math.PI / 2, 'head-cannon': -Math.PI / 2 }; // turns each model to face +Z
+// towers: world height per level, footprint width, height of the top platform as a fraction of the model height
+const TOWER_FIT = {
+  archer: { h: [5, 5.8, 6.6], w: 3.0, floor: 0.49 },
+  cannon: { h: [1.7, 2.2, 2.7], w: 3.6, floor: 0.77 },
+  tar: { h: [2.4, 3.1, 3.8], w: 2.4, floor: 0.86 },
+};
+const HEAD_SIZE = { archer: 1.3, cannon: 1.5, tar: 1.2 }; // largest dimension of the turret model at level 1
+const models = {}, loadedModels = {};
+const assetState = { done: false, loaded: 0, total: MODEL_FILES.length };
+
+// geometry of a normalised model (pivot at the base centre, facing +Z) scaled so its largest side is `size`
+function sized(M, size) {
+  const s = size / Math.max(M.size.x, M.size.y, M.size.z);
+  return M.geo.clone().scale(s, s, s);
+}
+function modelTower(type, L, M) {
+  const F = TOWER_FIT[type], h = F.h[L], sxz = F.w * (1 + 0.06 * L) / Math.max(M.size.x, M.size.z);
+  const geo = M.geo.clone().scale(sxz, h / M.size.y, sxz);
+  const pos = geo.attributes.position, P = [], wood = 0x5a3d22;
+  // widest point of the model in a height band, to fit trims around it
+  const radiusAt = (y0, y1) => { let r = 0; for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y >= y0 && y <= y1) r = Math.max(r, Math.hypot(pos.getX(i), pos.getZ(i))); } return r; };
+  if (L >= 1) { // level 2: a pennant on top
+    const fx = type === 'archer' ? 0 : radiusAt(h * 0.8, h) * 0.62, top = type === 'archer' ? h - 0.15 : h;
+    P.push(part(Cyl(0.035, 0.035, 1.3, 4), wood, fx, top + 0.6, 0), part(Box(0.05, 0.42, 0.75), ACCENT, fx, top + 1.0, 0.4));
+  }
+  if (L >= 2) { // level 3: a gold band around the walls
+    const y = h * (type === 'cannon' ? 0.45 : 0.32), r = radiusAt(y - h * 0.06, y + h * 0.06);
+    if (type === 'tar') P.push(part(Box(r * 1.42 + 0.1, 0.16, r * 1.42 + 0.1), ACCENT, 0, y, 0));
+    else P.push(part(new THREE.TorusGeometry(r * 0.98, 0.1, 5, 20), ACCENT, 0, y, 0, Math.PI / 2, 0, 0));
+  }
+  return { geo, mat: M.mat, pivot: h * F.floor, trim: P.length ? merge(P) : null };
+}
+function loadAssets() {
+  if (params.has('noassets') || location.protocol === 'file:') return Promise.resolve(); // file:// blocks fetch anyway
+  const loader = new GLTFLoader();
+  const one = name => loader.loadAsync(`assets/models/${name}.glb`).then(gltf => {
+    const parts = [];
+    let map = null;
+    gltf.scene.updateMatrixWorld(true);
+    gltf.scene.traverse(o => {
+      if (!o.isMesh) return;
+      const g = new THREE.BufferGeometry(), src = o.geometry;
+      // copy into plain attributes (the files store interleaved buffers)
+      const plain = a => { const out = new Float32Array(a.count * a.itemSize); for (let i = 0; i < a.count; i++) for (let k = 0; k < a.itemSize; k++) out[i * a.itemSize + k] = a.getComponent(i, k); return new THREE.BufferAttribute(out, a.itemSize); };
+      g.setAttribute('position', plain(src.attributes.position));
+      if (src.attributes.uv) g.setAttribute('uv', plain(src.attributes.uv));
+      if (src.index) g.setIndex(src.index.clone());
+      g.applyMatrix4(o.matrixWorld);
+      parts.push(g.index ? g.toNonIndexed() : g);
+      map = map || o.material.map;
+    });
+    const geo = parts.length > 1 ? mergeGeometries(parts) : parts[0];
+    geo.rotateY(MODEL_YAW[name] || 0);
+    geo.computeBoundingBox();
+    const b = geo.boundingBox;
+    geo.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);
+    geo.computeVertexNormals();
+    geo.computeBoundingBox();
+    loadedModels[name] = { geo, size: geo.boundingBox.getSize(new THREE.Vector3()), mat: new THREE.MeshLambertMaterial({ map, flatShading: true }) };
+  }).catch(err => console.warn('[hisar] model not loaded, using the procedural one:', name, err?.message || err))
+    .finally(() => { assetState.loaded++; const b = $('bPlay'); if (b && !assetState.done) b.textContent = playLabel(); });
+  return Promise.all(MODEL_FILES.map(one));
+}
+function playLabel() { return assetState.done ? t('play') + ' ▶' : t('loading', { n: assetState.loaded, m: assetState.total }); }
+// swap the procedural meshes for the loaded models (only the ones that loaded)
+function applyAssets() {
+  Object.assign(models, loadedModels);
+  for (const k of ENEMY_KEYS) {
+    const M = models[k];
+    if (!M) continue;
+    const m = enemyMeshes[k];
+    m.geometry.computeBoundingBox();
+    const old = m.geometry.boundingBox.getSize(new THREE.Vector3());
+    const s = Math.min(old.y / M.size.y, old.z / M.size.z * 1.15); // keep the old height, never much longer than before
+    m.geometry.dispose();
+    m.geometry = M.geo.clone().scale(s, s, s);
+    m.material = M.mat;
+  }
+  if (models.fortress) {
+    const M = models.fortress, s = 14, f = new THREE.Mesh(M.geo.clone().scale(s, s, s), M.mat);
+    f.position.set(25 + M.size.x * s / 2 - 0.3, 0, 0); // gate wall on x = 25, where the roads end
+    f.castShadow = true; f.receiveShadow = true;
+    fortressMesh.visible = false;
+    scene.add(f);
+  }
+  if (models.boat) {
+    const M = models.boat, geo = sized(M, 3.6).translate(0, -0.3, 0);
+    for (const b of boats) { b.m.geometry = geo; b.m.material = M.mat; }
+  }
+  for (const k in towerGeoCache) delete towerGeoCache[k];
+  for (const k in headGeoCache) delete headGeoCache[k];
+  for (const tw of G.towers) makeTowerMesh(tw);
+  G.assets = Object.keys(models);
+}
+
 // ---------------------------------------------------------------- tower models
 const towerGeoCache = {};
 function towerGeo(type, L) {
   const key = type + L;
   if (towerGeoCache[key]) return towerGeoCache[key];
+  if (models['tower-' + type]) return (towerGeoCache[key] = modelTower(type, L, models['tower-' + type]));
   const P = [], stone = 0xcfc4ae, stone2 = 0xb3a78f, wood = 0x8b5e34, roof = 0xb3261e;
   let pivot = 0;
   if (type === 'archer') {
@@ -615,12 +732,14 @@ function towerGeo(type, L) {
     if (L >= 2) P.push(part(Box(2.16, 0.14, 2.16), ACCENT, 0, H * 0.75, 0));
     pivot = H + 0.2;
   }
-  return (towerGeoCache[key] = { geo: merge(P), pivot });
+  return (towerGeoCache[key] = { geo: merge(P), mat: matV, pivot, trim: null });
 }
 const headGeoCache = {};
 function headGeo(type, L) {
   const key = type + L;
   if (headGeoCache[key]) return headGeoCache[key];
+  const M = models['head-' + type];
+  if (M) return (headGeoCache[key] = { geo: sized(M, HEAD_SIZE[type] * (1 + 0.07 * L)), mat: M.mat });
   let g;
   if (type === 'archer') g = merge([part(Cyl(0.17, 0.22, 0.55, 6), L >= 2 ? 0x1e40af : 0x2f5f8a, 0, 0.3, 0), part(Sph(0.16), 0xe2b48c, 0, 0.72, 0), part(Cone(0.17, 0.22, 6), 0x6f747a, 0, 0.88, 0),
     part(new THREE.TorusGeometry(0.32, 0.03, 4, 10, Math.PI), 0x5a3d22, 0, 0.45, 0.25, 0, 0, Math.PI / 2)]);
@@ -628,7 +747,7 @@ function headGeo(type, L) {
     part(Cyl(0.17 + L * 0.03, 0.25 + L * 0.03, 1.4 + L * 0.2, 10), 0x30343a, 0, 0.55, 0.35, Math.PI / 2 - 0.25, 0, 0)]);
   else g = merge([part(Cyl(0.55, 0.4, 0.6, 10), 0x2a2a2a, 0, 0.75, 0), part(Cyl(0.5, 0.5, 0.04, 10), 0x140d08, 0, 1.04, 0), part(new THREE.TorusGeometry(0.55, 0.05, 4, 12), 0x55595e, 0, 1.05, 0, Math.PI / 2, 0, 0),
     part(Cone(0.32, 0.5, 6), 0xff8a2a, 0, 0.26, 0), part(Cone(0.18, 0.35, 5), 0xffd166, 0, 0.22, 0)]);
-  return (headGeoCache[key] = g);
+  return (headGeoCache[key] = { geo: g, mat: matV });
 }
 
 // ---------------------------------------------------------------- projectiles, puddles, particles
@@ -649,7 +768,15 @@ const pGeo = new THREE.BufferGeometry();
 const pPos = new Float32Array(PMAX * 3).fill(-999), pCol = new Float32Array(PMAX * 3);
 pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
 pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.42, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
+function softDot() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.8)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.62, map: softDot(), vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false }));
 particles.frustumCulled = false;
 scene.add(particles);
 const pv = new Float32Array(PMAX * 3), pl = new Float32Array(PMAX), pg = new Float32Array(PMAX);
@@ -781,12 +908,14 @@ function buildTower(pad, type) {
 }
 function makeTowerMesh(tw) {
   if (tw.base) { scene.remove(tw.base); scene.remove(tw.head); }
-  const { geo, pivot } = towerGeo(tw.type, tw.level);
-  tw.base = new THREE.Mesh(geo, matV);
+  const { geo, mat, pivot, trim } = towerGeo(tw.type, tw.level);
+  tw.base = new THREE.Mesh(geo, mat);
+  if (trim) { const tm = new THREE.Mesh(trim, matV); tm.castShadow = true; tw.base.add(tm); } // flag / gold band on top of a generated model
   tw.base.position.set(tw.pad.x, 0.3, tw.pad.z);
   tw.base.castShadow = true; tw.base.receiveShadow = true;
   tw.base.userData.pad = tw.pad;
-  tw.head = new THREE.Mesh(headGeo(tw.type, tw.level), matV);
+  const head = headGeo(tw.type, tw.level);
+  tw.head = new THREE.Mesh(head.geo, head.mat);
   tw.head.position.set(tw.pad.x, 0.3 + pivot, tw.pad.z);
   tw.head.rotation.y = tw.yaw;
   tw.head.castShadow = true;
@@ -1069,7 +1198,7 @@ function showBuild(pad) {
   panel.innerHTML = `<div class="ph"><span>${t('build')}</span><button class="x" data-act="close">✕</button></div><div class="cards">` +
     TOWER_KEYS.map((k, i) => {
       const T = TOWERS[k], c = T.cost[0];
-      return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${T.icon}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">💰 ${c}</span></button>`;
+      return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${ico(T.icon, 'big')}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">${ico('gold')} ${c}</span></button>`;
     }).join('') + '</div>';
   panel.classList.remove('hidden');
   hideRing();
@@ -1091,10 +1220,10 @@ function showTower(tw) {
   rows += `<div><span>${t('kills')}</span><b>${tw.kills}</b></div>`;
   const up = nx !== null ? T.cost[nx] : 0, refund = Math.floor(tw.spent * 0.7);
   const modeName = { first: t('mFirst'), strong: t('mStrong'), near: t('mNear') }[tw.mode];
-  panel.innerHTML = `<div class="ph"><span>${T.icon} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span><button class="x" data-act="close">✕</button></div>
+  panel.innerHTML = `<div class="ph"><span>${ico(T.icon)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span><button class="x" data-act="close">✕</button></div>
     <div class="tw"><div class="tstats">${rows}</div><div class="tbtns">
-      <button class="primary" data-act="upgrade" ${nx === null || G.gold < up ? 'disabled' : ''}>${nx === null ? t('maxed') : `⬆ ${t('upgrade')} · 💰 ${up}`}</button>
-      <button data-act="mode">🎯 ${t('target')}: ${modeName}</button>
+      <button class="primary" data-act="upgrade" ${nx === null || G.gold < up ? 'disabled' : ''}>${nx === null ? t('maxed') : `${ico('upgrade')} ${t('upgrade')} · ${ico('gold')} ${up}`}</button>
+      <button data-act="mode">${ico('target')} ${t('target')}: ${modeName}</button>
       <button data-act="sell">${t('sell')} · +${refund}</button></div></div>`;
   panel.classList.remove('hidden');
   showRing(tw.pad.x, tw.pad.z, stat(tw, 'range'));
@@ -1149,11 +1278,11 @@ function updateHUD() {
   const nextW = G.wave + 1, bw = $('bWave');
   const canCall = G.running && !G.over && !G.queue.length && (G.endless || nextW <= MAX_WAVES);
   bw.disabled = !canCall;
-  bw.textContent = G.queue.length ? t('waveRunning', { n: G.wave }) : canCall ? t(G.phase === 'wave' ? 'callEarly' : 'startWave', { n: nextW }) : '—';
+  bw.textContent = G.queue.length ? t('waveRunning', { n: G.wave }) : canCall ? t(G.phase === 'wave' ? 'callEarly' : 'startWave', { n: nextW }) : !G.running && !G.over ? t('startIdle') : '—';
   bw.classList.toggle('pulse', canCall && G.phase === 'build');
   $('tNext').textContent = t('next');
   const wc = (G.endless || nextW <= MAX_WAVES) ? waveCounts(nextW) : {};
-  $('wavePreview').innerHTML = ENEMY_KEYS.filter(k => wc[k]).map(k => `<span title="${t(k)}">${ENEMIES[k].icon} ${wc[k]}</span>`).join('');
+  $('wavePreview').innerHTML = ENEMY_KEYS.filter(k => wc[k]).map(k => `<span title="${t(k)}">${ico(ENEMIES[k].icon)} ${wc[k]}</span>`).join('');
   if (G.gold !== lastGold) { lastGold = G.gold; refreshPanel(); }
 }
 function toast(msg) {
@@ -1195,9 +1324,10 @@ $('bLang').onclick = () => { lang = lang === 'tr' ? 'en' : 'tr'; try { localStor
 $('bWave').onclick = () => { initAudio(); startWave(); };
 const setSpeed = s => { G.speed = s; $('bSpeed').textContent = s + '×'; };
 $('bSpeed').onclick = () => setSpeed(G.speed === 3 ? 1 : G.speed + 1);
-const togglePause = () => { if (!G.running || G.over) return; G.paused = !G.paused; $('bPause').textContent = G.paused ? '▶' : '⏸'; $('pauseTag').style.display = G.paused ? 'block' : 'none'; };
+const togglePause = () => { if (!G.running || G.over) return; G.paused = !G.paused; $('bPause').innerHTML = G.paused ? GLYPH.play : GLYPH.pause; $('pauseTag').style.display = G.paused ? 'block' : 'none'; };
 $('bPause').onclick = togglePause;
-$('bSound').onclick = () => { initAudio(); muted = !muted; $('bSound').textContent = muted ? '🔇' : '🔊'; };
+$('bSound').onclick = () => { initAudio(); muted = !muted; $('bSound').innerHTML = ico(muted ? 'sound-off' : 'sound-on'); };
+$('bPause').innerHTML = GLYPH.pause;
 
 window.addEventListener('keydown', ev => {
   if (ev.repeat) return;
@@ -1215,9 +1345,9 @@ window.addEventListener('keydown', ev => {
 const overlay = $('overlay'), ocard = $('ocard');
 function showTitle() {
   const best = loadBest();
-  ocard.innerHTML = `<h1>🏰 Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
-    <div class="row"><button class="primary big" id="bPlay">${t('play')} ▶</button><button id="bLang2">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
-    <p class="ctl">${t(matchMedia('(pointer: coarse)').matches ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">🏆 ${t('best', { n: best })}</div>` : ''}`;
+  ocard.innerHTML = `<img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
+    <div class="row"><button class="primary big" id="bPlay" ${assetState.done ? '' : 'disabled'}>${playLabel()}</button><button id="bLang2">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
+    <p class="ctl">${t(matchMedia('(pointer: coarse)').matches ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}`;
   overlay.classList.remove('hidden');
   $('bPlay').onclick = startGame;
   $('bLang2').onclick = () => $('bLang').click();
@@ -1235,7 +1365,7 @@ function endGame(win) {
   saveBest(win ? G.wave : G.wave - 1);
   closePanel();
   sfx(win ? 'win' : 'lose');
-  ocard.innerHTML = `<h1>${win ? '🏆 ' + t('winTitle') : '🔥 ' + t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+  ocard.innerHTML = `<img class="crest" src="assets/ui/${win ? 'icons/trophy' : 'logo'}.png" alt=""><h1>${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
     <div class="estats"><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
     <div class="row"><button class="primary big" id="bAgain">${t('again')}</button>${win ? `<button class="big" id="bEndless">${t('endless')}</button>` : ''}</div>`;
   overlay.classList.remove('hidden');
@@ -1365,6 +1495,7 @@ if (DEBUG) window.hisarSim = (seconds, withBot = true) => {
 };
 
 applyLang();
+// ?auto starts right away (as before the remaster, so the bot's runs stay comparable); the models swap in when they arrive
 if (AUTO) { setSpeed(3); startGame(); }
 // ?sim=<seconds> (with ?auto) fast-forwards before the first frame, ?cam=x,y,z,tx,tz sets the view: used for screenshots
 const simSec = +params.get('sim') || 0;
@@ -1377,7 +1508,15 @@ if (AUTO && simSec) {
 const camParam = params.get('cam');
 if (camParam) { const [x, y, z, tx, tz] = camParam.split(',').map(Number); camera.position.set(x, y, z); controls.target.set(tx || 0, 0, tz || 0); }
 G.pads = pads.length;
+G.assets = [];
 frame();
+// the title screen shows while the models load (Play stays disabled); after 15 s the game goes on with whatever has loaded
+Promise.race([loadAssets(), new Promise(r => setTimeout(r, 15000))]).then(() => {
+  applyAssets();
+  assetState.done = true;
+  G.assetsReady = true;
+  if (!G.running && !G.over) showTitle();
+});
 </script>
 </body>
 </html>
