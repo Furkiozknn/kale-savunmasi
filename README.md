@@ -2,6 +2,10 @@
 
 **[▶ Play in your browser](https://furkiozknn.github.io/kale-savunmasi/)** · English & Türkçe · desktop & mobile · free, no install
 
+🏟️ Part of **[Claude Game Arena](https://github.com/Furkiozknn/claude-game-arena)**: four games, each built by a different Claude model. This is game #1, built by **Claude Opus 5.5**. [See all games and the scorecard →](https://furkiozknn.github.io/claude-game-arena/)
+
+![Gameplay clip](docs/gameplay.gif)
+
 A low-poly 3D tower defense game in a **single `index.html`** (Three.js, no build step, no asset files).
 An army marches on a seaside fortress along two roads. Build towers on the stone pads, upgrade them,
 and hold the walls for 15 waves. Then see how long you last in endless mode.
@@ -71,6 +75,7 @@ better game. Later, the best of them will be rebuilt in Godot 4.
 | 1 | **Hisar** | Tower defense, 3D | Claude Opus 5.5 |
 | 2 | [Çay Ocağı](https://github.com/Furkiozknn/cay-ocagi) | Time management, 3D | Claude Sonnet 5.5 |
 | 3 | [Çini Ustası](https://github.com/Furkiozknn/cini-ustasi) | Puzzle, 3D | Claude Fable 5.1 |
+| 4 | [Martı](https://github.com/Furkiozknn/marti) | Arcade flyer, 3D | Claude Haiku 5.5 |
 
 ## Tech
 
