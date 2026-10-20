@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hisar · Kale Savunması</title>
 <meta name="description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves. Single HTML file, Three.js.">
 <meta property="og:title" content="Hisar · Fortress Defense">
@@ -22,8 +22,9 @@
     --glass: rgba(255, 248, 235, 0.72);
     --glass-dark: rgba(43, 33, 24, 0.82);
     --line: rgba(80, 55, 30, 0.18);
-    --danger: #dc2626;
     --ok: #16a34a;
+    --bad: #dc2626;
+    --top-h: 56px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; font-family: Rubik, system-ui, sans-serif; color: var(--ink);
@@ -36,6 +37,7 @@
   button:hover:not(:disabled) { background: #fff; }
   button:active:not(:disabled) { transform: scale(0.96); }
   button:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .primary { background: linear-gradient(180deg, var(--accent-2), var(--accent)); border-color: #d97706; color: #3b2306; }
   .primary:hover:not(:disabled) { background: linear-gradient(180deg, #fcd34d, #f59e0b); }
 
@@ -49,8 +51,6 @@
   #top .logo small { font-weight: 400; font-size: 12px; opacity: .65; margin-left: 4px; }
   .stat { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.55);
     font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .stat.bump { animation: bump .35s; }
-  @keyframes bump { 40% { transform: scale(1.15); } }
   .spacer { flex: 1; }
   #top button { min-width: 38px; }
 
@@ -71,7 +71,7 @@
   .card .ico { display: block; height: 34px; }
   .card small { font-weight: 400; font-size: 12px; opacity: .75; line-height: 1.25; }
   .card .cost { margin-top: 2px; font-weight: 700; }
-  .card kbd, .kbd { position: absolute; top: 6px; right: 6px; font-size: 11px; opacity: .55; font-family: inherit; }
+  .card kbd { position: absolute; top: 6px; right: 6px; font-size: 11px; opacity: .55; font-family: inherit; }
   .tw { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
   .tstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 14px; font-size: 13px; }
   .tstats div { display: flex; justify-content: space-between; gap: 8px; }
@@ -82,8 +82,22 @@
   .lvl i { width: 9px; height: 9px; border-radius: 50%; background: rgba(0, 0, 0, .15); display: inline-block; }
   .lvl i.on { background: var(--accent); }
 
-  #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  #toast div { background: var(--glass-dark); color: #fff7e6; padding: 8px 14px; border-radius: 10px; font-weight: 600; animation: tin .25s; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+  #toast { position: fixed; top: calc(var(--top-h) + 16px); left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 6px; width: max-content; max-width: calc(100% - 32px); }
+  #toast div { background: var(--glass-dark); color: #fff7e6; padding: 8px 14px; border-radius: 10px; font-weight: 600; animation: tin .25s; box-shadow: 0 6px 18px rgba(0,0,0,.2); border-left: 4px solid rgba(255, 247, 230, .35); text-align: center; }
+  #toast div.good { border-left-color: #4ade80; }
+  #toast div.bad { border-left-color: #f87171; }
+  #banner { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; text-align: center; display: none; }
+  #banner.on { display: block; animation: bannerIn 1.8s ease both; }
+  #banner b { display: block; font-size: 52px; font-weight: 800; letter-spacing: 1px; color: #fff7e6; text-shadow: 0 3px 0 #6b3d06, 0 0 18px rgba(0, 0, 0, .35); }
+  #banner.boss b { color: #fecaca; text-shadow: 0 3px 0 #7f1d1d, 0 0 18px rgba(0, 0, 0, .4); }
+  #banner span { display: inline-flex; gap: 10px; margin-top: 4px; padding: 5px 12px; border-radius: 12px; background: rgba(43, 33, 24, .55); color: #fff7e6; font-weight: 700; }
+  #banner .ic { width: 26px; height: 26px; }
+  @keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.85); } 15%, 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
+  #boss { position: fixed; left: 50%; top: calc(var(--top-h) + 14px); transform: translateX(-50%); z-index: 5; width: min(360px, calc(100% - 32px)); padding: 6px 10px; display: none; font-weight: 700; font-size: 13px; }
+  #boss.on { display: block; }
+  body.boss #toast { top: calc(var(--top-h) + 62px); }
+  #boss .bar { height: 8px; border-radius: 5px; background: rgba(43, 33, 24, .25); overflow: hidden; margin-top: 4px; }
+  #boss .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #dc2626, #f97316); transform-origin: left; }
   @keyframes tin { from { opacity: 0; transform: translateY(-6px); } }
   #flash { position: fixed; inset: 0; pointer-events: none; z-index: 4; box-shadow: inset 0 0 160px rgba(220, 38, 38, .75); opacity: 0; transition: opacity .5s; }
   #ftxt { position: fixed; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
@@ -91,21 +105,39 @@
 
   #overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(40, 25, 10, .15), rgba(40, 25, 10, .5)); }
   #overlay.hidden { display: none; }
-  .ocard { width: min(520px, calc(100% - 32px)); padding: 24px; text-align: center; }
+  #overlay.dim { background: rgba(40, 25, 10, .38); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .ocard { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 24px; text-align: center; animation: cardIn .22s ease-out; }
+  @keyframes cardIn { from { opacity: 0; transform: scale(.96); } }
+  .ocard .col { display: flex; flex-direction: column; gap: 8px; width: min(280px, 100%); margin: 16px auto 0; }
+  .ocard .col button { padding: 11px; font-size: 16px; }
+  .ocard .foot { display: block; margin-top: 14px; font-size: 11px; opacity: .55; color: inherit; text-decoration: none; }
+  .ocard .foot:hover { opacity: .85; text-decoration: underline; }
+  .ocard .newbest { display: inline-block; margin-top: 4px; font-weight: 800; font-size: 18px; color: #c2410c; animation: nb 1s ease-in-out infinite; }
+  @keyframes nb { 50% { transform: scale(1.08); } }
+  .set { display: grid; grid-template-columns: auto 1fr auto; gap: 10px 12px; align-items: center; text-align: left; margin-top: 14px; }
+  .set label { font-weight: 600; font-size: 14px; }
+  .set input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
+  .set output { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; min-width: 40px; text-align: right; }
+  .set .opts { grid-column: 2 / 4; display: flex; gap: 6px; }
+  .set .opts button { flex: 1; }
+  .set .opts button.on { background: linear-gradient(180deg, var(--accent-2), var(--accent)); border-color: #d97706; color: #3b2306; }
   .ocard .crest { display: block; width: 132px; height: 132px; margin: -8px auto 2px; filter: drop-shadow(0 6px 10px rgba(60, 35, 10, .35)); }
   .ocard h1 { margin: 0; font-size: 46px; font-weight: 800; letter-spacing: 1px; }
+  .ocard h2 { margin: 0; font-size: 32px; font-weight: 800; }
   .ocard h1 small { display: block; font-size: 16px; font-weight: 400; opacity: .7; letter-spacing: 3px; text-transform: uppercase; }
   .ocard p { line-height: 1.5; margin: 14px 0; }
   .ocard .ctl { font-size: 12.5px; opacity: .75; line-height: 1.7; }
   .ocard .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
   .ocard .big { font-size: 18px; padding: 12px 26px; }
   .ocard .best { font-size: 13px; opacity: .7; margin-top: 10px; }
-  .estats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
-  .estats div { background: rgba(255, 255, 255, .55); border-radius: 10px; padding: 8px; }
+  .estats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+  .estats div { background: rgba(255, 255, 255, .55); border-radius: 10px; padding: 8px 4px; }
   .estats b { display: block; font-size: 22px; }
   .estats small { opacity: .7; font-size: 12px; }
-  #pauseTag { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 6; font-size: 28px; font-weight: 800; padding: 14px 28px; display: none; }
 
+  @media (max-width: 1080px) and (min-width: 761px) {
+    #panel { left: 10px; transform: none; width: calc(100% - 290px); }
+  }
   @media (max-width: 760px) {
     #top { flex-wrap: wrap; gap: 6px; }
     #top .logo small { display: none; }
@@ -122,6 +154,27 @@
     .tbtns { flex-direction: row; flex-wrap: wrap; }
     .ocard h1 { font-size: 36px; }
     .ocard .crest { width: 96px; height: 96px; }
+    .estats { grid-template-columns: repeat(2, 1fr); }
+    #banner b { font-size: 38px; }
+  }
+  @media (max-height: 500px) {
+    .ocard { padding: 14px 18px; }
+    .ocard .crest { width: 60px; height: 60px; margin: -4px auto 0; }
+    .ocard h1 { font-size: 30px; }
+    .ocard h1 small { font-size: 13px; }
+    .ocard p { margin: 8px 0; line-height: 1.35; }
+    .ocard .row { margin-top: 8px; }
+    .ocard .big { padding: 9px 22px; }
+    .ocard .col { margin-top: 8px; gap: 6px; }
+    .ocard .col button { padding: 8px; }
+    .estats { margin: 8px 0; }
+    .set { margin-top: 8px; gap: 6px 10px; }
+    #banner { top: 56%; }
+  }
+  @media (pointer: coarse) {
+    button { min-height: 44px; min-width: 44px; }
+    .ph .x { padding: 10px 14px; }
+    .set input[type=range] { height: 44px; }
   }
 </style>
 <script type="importmap">
@@ -142,11 +195,13 @@
   <div class="stat" id="sLives" title=""><img class="ic" src="assets/ui/icons/lives.png" alt=""> <span>0</span></div>
   <div class="stat" id="sWave"><img class="ic" src="assets/ui/icons/wave.png" alt=""> <span>0</span></div>
   <div class="spacer"></div>
-  <button id="bSpeed" title="F">1×</button>
-  <button id="bPause" title="P"></button>
+  <button id="bSpeed">1×</button>
+  <button id="bPause"></button>
   <button id="bSound"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
   <button id="bLang">EN</button>
 </div>
+<div id="boss" class="glass"><div id="bossName"></div><div class="bar"><i id="bossBar"></i></div></div>
+<div id="banner"></div>
 
 <div id="wavebox" class="glass">
   <div class="lbl" id="tNext"></div>
@@ -155,8 +210,7 @@
 </div>
 
 <div id="panel" class="glass hidden"></div>
-<div id="toast"></div>
-<div id="pauseTag" class="glass"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <div id="overlay"><div class="ocard glass" id="ocard"></div></div>
 
 <script type="module">
@@ -167,7 +221,6 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ---------------------------------------------------------------- config
 const params = new URLSearchParams(location.search);
-const LOW = params.has('low');
 const AUTO = params.has('auto');
 const DEBUG = params.has('debug');
 const MAX_WAVES = 15;
@@ -176,16 +229,16 @@ const START_LIVES = 20;
 const ACCENT = 0xf59e0b;
 
 const TOWERS = {
-  archer: { icon: 'archer', cost: [60, 90, 140], range: [9, 10, 11], rate: [0.75, 0.6, 0.45], dmg: [15, 24, 38] },
-  cannon: { icon: 'cannon', cost: [110, 150, 220], range: [8.5, 9, 10], rate: [2.4, 2.1, 1.8], dmg: [40, 65, 105], splash: [2.4, 2.8, 3.3] },
-  tar:    { icon: 'tar', cost: [80, 110, 170], range: [7, 7.5, 8.5], rate: [2.0, 1.8, 1.5], dps: [8, 13, 20], slow: [0.55, 0.45, 0.35], splash: [2.2, 2.5, 2.9] },
+  archer: { cost: [60, 90, 140], range: [9, 10, 11], rate: [0.75, 0.6, 0.45], dmg: [15, 24, 38] },
+  cannon: { cost: [110, 150, 220], range: [8.5, 9, 10], rate: [2.4, 2.1, 1.8], dmg: [40, 65, 105], splash: [2.4, 2.8, 3.3] },
+  tar:    { cost: [80, 110, 170], range: [7, 7.5, 8.5], rate: [2.0, 1.8, 1.5], dps: [8, 13, 20], slow: [0.55, 0.45, 0.35], splash: [2.2, 2.5, 2.9] },
 };
 const TOWER_KEYS = ['archer', 'cannon', 'tar'];
 const ENEMIES = {
-  raider: { icon: 'raider', hp: 55, speed: 2.5, gold: 5, armor: 0, lives: 1, h: 1.6 },
-  rider:  { icon: 'rider', hp: 40, speed: 4.4, gold: 6, armor: 0, lives: 1, h: 2.1 },
-  shield: { icon: 'shield', hp: 160, speed: 1.7, gold: 11, armor: 0.55, lives: 2, h: 1.9 },
-  ram:    { icon: 'ram', hp: 1400, speed: 1.45, gold: 70, armor: 0.35, lives: 6, h: 2.6 },
+  raider: { hp: 55, speed: 2.5, gold: 5, armor: 0, lives: 1, h: 1.6 },
+  rider:  { hp: 40, speed: 4.4, gold: 6, armor: 0, lives: 1, h: 2.1 },
+  shield: { hp: 160, speed: 1.7, gold: 11, armor: 0.55, lives: 2, h: 1.9 },
+  ram:    { hp: 1400, speed: 1.45, gold: 70, armor: 0.35, lives: 6, h: 2.6 },
 };
 const ENEMY_KEYS = ['raider', 'rider', 'shield', 'ram'];
 
@@ -194,58 +247,98 @@ const STR = {
   tr: {
     sub: 'Kale Savunması',
     intro: 'Düşman ordusu iki yoldan hisara yürüyor. Yol kenarındaki taş kaidelere kule kur, kuleleri geliştir ve 15 dalga boyunca hisarı ayakta tut.',
-    controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>U</b> geliştir · <b>S</b> sat · <b>F</b> hız · <b>P</b> duraklat',
+    controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>U</b> geliştir · <b>S</b> sat · <b>T</b> hedef · <b>F</b> hız<br><b>P</b> / <b>Esc</b> duraklat · <b>M</b> müzik · <b>X</b> ses · <b>L</b> dil',
     controlsTouch: '<b>Dokun</b> seç / kur · <b>Tek parmak</b> kaydır · <b>İki parmak</b> yakınlaş ve döndür',
     play: 'Başla', loading: 'Yükleniyor… {n}/{m}', startIdle: 'Başlat', best: 'En iyi rekor: {n}. dalga',
+    continue: 'Devam et · Dalga {n}', continued: 'Dalga {n} seni bekliyor · oyun geri yüklendi',
     gold: 'Altın', lives: 'Hisar canı', wave: 'Dalga',
     next: 'Sıradaki dalga', startWave: 'Dalga {n} · Başlat ▶', callEarly: 'Dalga {n} · Erken çağır ▶', waveRunning: 'Dalga {n} sürüyor…',
     build: 'Kule kur',
     archerName: 'Okçu Kulesi', archerDesc: 'Hızlı atış, tek hedef. Zırha karşı zayıf.',
     cannonName: 'Top Tabyası', cannonDesc: 'Yavaş ama alan hasarı verir. Kalabalıkları dağıtır.',
     tarName: 'Katran Kazanı', tarDesc: 'Yavaşlatır, zamanla yakar, yere yapışkan katran bırakır.',
-    level: 'Seviye', dmg: 'Hasar', range: 'Menzil', rate: 'Atış / sn', kills: 'Avlanan', dps: 'Yanma / sn', slow: 'Yavaşlatma', splash: 'Alan',
-    upgrade: 'Geliştir', sell: 'Sat', maxed: 'En üst seviye', target: 'Hedef',
+    dmg: 'Hasar', range: 'Menzil', rate: 'Atış / sn', kills: 'Avlanan', dps: 'Yanma / sn', slow: 'Yavaşlatma', splash: 'Alan',
+    upgrade: 'Geliştir', sell: 'Sat', maxed: 'En üst seviye', target: 'Hedef', upgraded: '{name} geliştirildi',
     mFirst: 'Öndeki', mStrong: 'En güçlü', mNear: 'En yakın',
     raider: 'Yağmacı', rider: 'Atlı', shield: 'Kalkanlı', ram: 'Koçbaşı',
     early: 'Erken çağrı bonusu +{n} altın', cleared: 'Dalga temizlendi! +{n} altın', ramComing: 'Koçbaşı geliyor! Topları hazırla.',
     noGold: 'Yeterli altın yok', hint: 'Bir taş kaideye tıkla ve ilk kuleni kur.', built: '{name} kuruldu', sold: 'Kule satıldı +{n} altın',
     lostTitle: 'Hisar düştü', lostText: '{n}. dalgada surlar aşıldı.', winTitle: 'Zafer!', winText: '15 dalga boyunca hisarı korudun. Hisar ayakta!',
-    statKills: 'Avlanan düşman', statGold: 'Kazanılan altın', statTowers: 'Kurulan kule',
+    statKills: 'Avlanan düşman', statGold: 'Kazanılan altın', statTowers: 'Kurulan kule', statWave: 'Ulaşılan dalga', newBest: 'Yeni rekor!',
     again: 'Tekrar oyna', endless: 'Sonsuz moda devam', paused: 'Duraklatıldı', endlessOn: 'Sonsuz mod: dalgalar güçlenmeye devam ediyor.',
+    resume: 'Devam', restart: 'Yeniden başla', mainMenu: 'Ana menü', settings: 'Ayarlar', back: 'Geri', close: 'Kapat',
+    master: 'Ana ses', music: 'Müzik', sfx: 'Efektler', language: 'Dil', quality: 'Grafik kalitesi', qLow: 'Düşük', qHigh: 'Yüksek',
+    fullscreen: 'Tam ekran', on: 'Açık', off: 'Kapalı', speed: 'Hız', pause: 'Duraklat', sound: 'Ses',
+    musicOn: 'Müzik açık (M)', musicOff: 'Müzik kapalı (M)', sfxOn: 'Ses efektleri açık (X)', sfxOff: 'Ses efektleri kapalı (X)',
+    footer: 'Claude Game Arena · Claude Opus 5.5 yaptı · varlıklar yenilendi',
   },
   en: {
     sub: 'Fortress Defense',
     intro: 'An enemy army is marching on the fortress along two roads. Build towers on the stone pads by the road, upgrade them and hold the fortress for 15 waves.',
-    controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>U</b> upgrade · <b>S</b> sell · <b>F</b> speed · <b>P</b> pause',
+    controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>U</b> upgrade · <b>S</b> sell · <b>T</b> target · <b>F</b> speed<br><b>P</b> / <b>Esc</b> pause · <b>M</b> music · <b>X</b> sound · <b>L</b> language',
     controlsTouch: '<b>Tap</b> select / build · <b>One finger</b> pan · <b>Two fingers</b> zoom and rotate',
     play: 'Play', loading: 'Loading… {n}/{m}', startIdle: 'Start', best: 'Best: wave {n}',
+    continue: 'Continue · Wave {n}', continued: 'Wave {n} ahead · run restored',
     gold: 'Gold', lives: 'Fortress lives', wave: 'Wave',
     next: 'Next wave', startWave: 'Wave {n} · Start ▶', callEarly: 'Wave {n} · Call early ▶', waveRunning: 'Wave {n} in progress…',
     build: 'Build a tower',
     archerName: 'Archer Tower', archerDesc: 'Fast single-target shots. Weak against armour.',
     cannonName: 'Cannon Bastion', cannonDesc: 'Slow, but deals splash damage. Breaks up crowds.',
     tarName: 'Tar Cauldron', tarDesc: 'Slows, burns over time and leaves sticky tar on the road.',
-    level: 'Level', dmg: 'Damage', range: 'Range', rate: 'Shots / s', kills: 'Kills', dps: 'Burn / s', slow: 'Slow', splash: 'Splash',
-    upgrade: 'Upgrade', sell: 'Sell', maxed: 'Max level', target: 'Target',
+    dmg: 'Damage', range: 'Range', rate: 'Shots / s', kills: 'Kills', dps: 'Burn / s', slow: 'Slow', splash: 'Splash',
+    upgrade: 'Upgrade', sell: 'Sell', maxed: 'Max level', target: 'Target', upgraded: '{name} upgraded',
     mFirst: 'First', mStrong: 'Strongest', mNear: 'Nearest',
     raider: 'Raider', rider: 'Rider', shield: 'Shieldbearer', ram: 'Battering ram',
     early: 'Early call bonus +{n} gold', cleared: 'Wave cleared! +{n} gold', ramComing: 'Battering ram incoming! Ready the cannons.',
     noGold: 'Not enough gold', hint: 'Click a stone pad to build your first tower.', built: '{name} built', sold: 'Tower sold +{n} gold',
     lostTitle: 'The fortress fell', lostText: 'The walls were breached on wave {n}.', winTitle: 'Victory!', winText: 'You held the fortress for 15 waves. It still stands!',
-    statKills: 'Enemies defeated', statGold: 'Gold earned', statTowers: 'Towers built',
+    statKills: 'Enemies defeated', statGold: 'Gold earned', statTowers: 'Towers built', statWave: 'Wave reached', newBest: 'New best!',
     again: 'Play again', endless: 'Continue in endless mode', paused: 'Paused', endlessOn: 'Endless mode: the waves keep getting stronger.',
+    resume: 'Resume', restart: 'Restart', mainMenu: 'Main menu', settings: 'Settings', back: 'Back', close: 'Close',
+    master: 'Master volume', music: 'Music', sfx: 'Effects', language: 'Language', quality: 'Graphics quality', qLow: 'Low', qHigh: 'High',
+    fullscreen: 'Fullscreen', on: 'On', off: 'Off', speed: 'Speed', pause: 'Pause', sound: 'Sound',
+    musicOn: 'Music on (M)', musicOff: 'Music off (M)', sfxOn: 'Sound effects on (X)', sfxOff: 'Sound effects off (X)',
+    footer: 'Claude Game Arena · built by Claude Opus 5.5 · assets remastered',
   },
 };
-let lang = 'tr';
-try { lang = localStorage.getItem('hisar.lang') || (params.get('lang') === 'en' ? 'en' : 'tr'); } catch (e) { /* storage blocked */ }
+const ARENA_URL = 'https://furkiozknn.github.io/claude-game-arena/';
+
+// ---------------------------------------------------------------- settings and save (localStorage, every access guarded)
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { if (AUTO) return; try { localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } }, // the bot never touches the player's data
+  del(k) { if (AUTO) return; try { localStorage.removeItem(k); } catch (e) { /* storage blocked */ } },
+};
+const COARSE = matchMedia('(pointer: coarse)').matches;
+const settings = { master: 0.8, music: 0.6, sfx: 0.8, lang: (navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en',
+  quality: COARSE ? 'low' : 'high', musicOn: true, sfxOn: true };
+(function loadSettings() {
+  let s = null;
+  try { s = JSON.parse(store.get('arena.hisar.settings')); } catch (e) { s = null; }
+  if (s && typeof s === 'object') {
+    for (const k of ['master', 'music', 'sfx']) if (typeof s[k] === 'number') settings[k] = Math.max(0, Math.min(1, s[k]));
+    if (s.lang === 'tr' || s.lang === 'en') settings.lang = s.lang;
+    if (s.quality === 'low' || s.quality === 'high') settings.quality = s.quality;
+    for (const k of ['musicOn', 'sfxOn']) if (typeof s[k] === 'boolean') settings[k] = s[k];
+  } else {
+    // one-time migration of the keys from before the overnight pass
+    const old = store.get('hisar.lang');
+    if (old === 'tr' || old === 'en') settings.lang = old;
+    const best = +store.get('hisar.best') || 0;
+    if (best && !store.get('arena.hisar.best')) store.set('arena.hisar.best', String(best));
+  }
+})();
+function saveSettings() { store.set('arena.hisar.settings', JSON.stringify(settings)); }
+let lang = settings.lang;
 if (params.get('lang')) lang = params.get('lang') === 'en' ? 'en' : 'tr';
+let low = params.has('low') || settings.quality === 'low';
 const t = (k, vars) => {
   let s = (STR[lang] && STR[lang][k]) ?? STR.tr[k] ?? k;
   if (vars) for (const v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 };
-function loadBest() { try { return +localStorage.getItem('hisar.best') || 0; } catch (e) { return 0; } }
-function saveBest(n) { try { if (n > loadBest()) localStorage.setItem('hisar.best', String(n)); } catch (e) { /* ignore */ } }
+function loadBest() { return +store.get('arena.hisar.best') || 0; }
+function saveBest(n) { if (n > loadBest()) store.set('arena.hisar.best', String(n)); }
 
 // ---------------------------------------------------------------- helpers
 // UI icons are PNGs sliced from one generated sheet (assets/ui/icons); <img> also works when opened from file://
@@ -253,6 +346,7 @@ const ico = (name, cls = '') => `<img class="ic ${cls}" src="assets/ui/icons/${n
 const GLYPH = {
   pause: '<svg class="gl" viewBox="0 0 16 16"><rect x="3" y="2" width="3.6" height="12" rx="1"/><rect x="9.4" y="2" width="3.6" height="12" rx="1"/></svg>',
   play: '<svg class="gl" viewBox="0 0 16 16"><path d="M4 2.2v11.6c0 .8.9 1.3 1.6.8l8.6-5.8c.6-.4.6-1.2 0-1.6L5.6 1.4C4.9.9 4 1.4 4 2.2z"/></svg>',
+  gear: '<svg class="gl" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6.9 1h2.2l.4 1.9 1.2.5 1.6-1.1 1.5 1.5-1.1 1.6.5 1.2 1.9.4v2.2l-1.9.4-.5 1.2 1.1 1.6-1.5 1.5-1.6-1.1-1.2.5-.4 1.9H6.9l-.4-1.9-1.2-.5-1.6 1.1-1.5-1.5 1.1-1.6-.5-1.2L1 9.1V6.9l1.9-.4.5-1.2-1.1-1.6 1.5-1.5 1.6 1.1 1.2-.5zM8 5.6a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 1 0 0-4.8z"/></svg>',
 };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -288,10 +382,10 @@ const Sph = (r, w = 8, h = 6) => new THREE.SphereGeometry(r, w, h);
 // ---------------------------------------------------------------- renderer, scene, camera
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1 : 1.5));
 renderer.setSize(innerWidth, innerHeight);
 renderer.setClearColor(0x000000, 0);
-renderer.shadowMap.enabled = !LOW;
+renderer.shadowMap.enabled = !low;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
@@ -315,7 +409,7 @@ const hemi = new THREE.HemisphereLight(0xfff0d8, 0x6b7a4f, 1.6);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffdfb0, 2.6);
 sun.position.set(-38, 55, 28);
-sun.castShadow = !LOW;
+sun.castShadow = !low;
 sun.shadow.mapSize.set(1024, 1024);
 Object.assign(sun.shadow.camera, { left: -58, right: 58, top: 46, bottom: -46, near: 10, far: 160 });
 sun.shadow.bias = -0.0006;
@@ -475,8 +569,11 @@ function scatter(count, test) {
   return out;
 }
 const clearOfPlay = (x, z) => distToPath(x, z) > 4.6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 3.2) && !inFortress(x, z, 3) && baseHeight(x, z) > -0.2;
+// Trees and rocks are always built at the High count (so the seeded random stream, and with it every battle, is the same in
+// both qualities); Low quality only draws the first part of each instanced mesh.
+const lodMeshes = [];
 (function makeTrees() {
-  const spots = scatter(LOW ? 170 : 280, (x, z) => clearOfPlay(x, z) && !(x < -40 && Math.abs(Math.abs(z) - 21) < 7) && baseHeight(x, z) < 7.5);
+  const spots = scatter(280, (x, z) => clearOfPlay(x, z) && !(x < -40 && Math.abs(Math.abs(z) - 21) < 7) && baseHeight(x, z) < 7.5);
   const trunk = part(Cyl(0.12, 0.18, 0.9, 5), 0x6b4a2b, 0, 0.45, 0);
   const crown = merge([part(Cone(0.95, 1.6, 7), 0xffffff, 0, 1.5, 0), part(Cone(0.7, 1.3, 7), 0xffffff, 0, 2.3, 0), part(Cone(0.42, 0.9, 7), 0xffffff, 0, 2.95, 0)]);
   const mt = new THREE.InstancedMesh(trunk, matV, spots.length), mc = new THREE.InstancedMesh(crown, matV, spots.length);
@@ -487,10 +584,10 @@ const clearOfPlay = (x, z) => distToPath(x, z) > 4.6 && !pads.some(p => Math.hyp
     mt.setMatrixAt(i, _m4); mc.setMatrixAt(i, _m4);
     mc.setColorAt(i, _c.set(greens[(rand() * greens.length) | 0]));
   });
-  for (const m of [mt, mc]) { m.castShadow = true; m.receiveShadow = true; scene.add(m); }
+  for (const m of [mt, mc]) { m.castShadow = true; m.receiveShadow = true; scene.add(m); lodMeshes.push([m, spots.length, 170]); }
 })();
 (function makeRocks() {
-  const spots = scatter(LOW ? 40 : 70, (x, z) => clearOfPlay(x, z) && (Math.abs(z) > 20 || rand() < 0.25));
+  const spots = scatter(70, (x, z) => clearOfPlay(x, z) && (Math.abs(z) > 20 || rand() < 0.25));
   const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.8, 0), new THREE.MeshLambertMaterial({ color: 0xa79b86, flatShading: true }), spots.length);
   spots.forEach(([x, z], i) => {
     const s = 0.5 + rand() * 1.4;
@@ -499,6 +596,7 @@ const clearOfPlay = (x, z) => distToPath(x, z) > 4.6 && !pads.some(p => Math.hyp
   });
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
+  lodMeshes.push([m, spots.length, 40]);
 })();
 
 // enemy camps: tents, palisade posts, fire pits (smoke comes from the particle system)
@@ -668,12 +766,15 @@ function loadAssets() {
   return Promise.all(MODEL_FILES.map(one));
 }
 function playLabel() { return assetState.done ? t('play') + ' ▶' : t('loading', { n: assetState.loaded, m: assetState.total }); }
-// swap the procedural meshes for the loaded models (only the ones that loaded)
+// swap the procedural meshes for the loaded models (only the ones that loaded); safe to call again when a slow model
+// arrives after the loading timeout, each model is applied once
 function applyAssets() {
-  Object.assign(models, loadedModels);
+  const fresh = Object.keys(loadedModels).filter(k => !models[k]);
+  if (!fresh.length) return;
+  for (const k of fresh) models[k] = loadedModels[k];
   for (const k of ENEMY_KEYS) {
     const M = models[k];
-    if (!M) continue;
+    if (!M || !fresh.includes(k)) continue;
     const m = enemyMeshes[k];
     m.geometry.computeBoundingBox();
     const old = m.geometry.boundingBox.getSize(new THREE.Vector3());
@@ -682,20 +783,26 @@ function applyAssets() {
     m.geometry = M.geo.clone().scale(s, s, s);
     m.material = M.mat;
   }
-  if (models.fortress) {
-    const M = models.fortress, s = 14, f = new THREE.Mesh(M.geo.clone().scale(s, s, s), M.mat);
+  if (fresh.includes('fortress')) {
+    const M = models.fortress, s = 14;
+    const f = new THREE.Mesh(M.geo.clone().scale(s, s, s), M.mat);
     f.position.set(25 + M.size.x * s / 2 - 0.3, 0, 0); // gate wall on x = 25, where the roads end
     f.castShadow = true; f.receiveShadow = true;
-    fortressMesh.visible = false;
+    scene.remove(fortressMesh); fortressMesh.geometry.dispose(); // the procedural fortress is not needed any more
     scene.add(f);
   }
-  if (models.boat) {
+  if (fresh.includes('boat')) {
     const M = models.boat, geo = sized(M, 3.6).translate(0, -0.3, 0);
+    boats[0].m.geometry.dispose();
     for (const b of boats) { b.m.geometry = geo; b.m.material = M.mat; }
   }
-  for (const k in towerGeoCache) delete towerGeoCache[k];
-  for (const k in headGeoCache) delete headGeoCache[k];
-  for (const tw of G.towers) makeTowerMesh(tw);
+  if (fresh.some(k => k.startsWith('tower-') || k.startsWith('head-'))) {
+    const old = [...Object.values(towerGeoCache), ...Object.values(headGeoCache)];
+    for (const k in towerGeoCache) delete towerGeoCache[k];
+    for (const k in headGeoCache) delete headGeoCache[k];
+    for (const tw of G.towers) makeTowerMesh(tw);
+    for (const o of old) { o.geo.dispose(); o.trim?.dispose(); } // no tower uses the old geometry now
+  }
   G.assets = Object.keys(models);
 }
 
@@ -753,7 +860,7 @@ function headGeo(type, L) {
 // ---------------------------------------------------------------- projectiles, puddles, particles
 function pool(geo, mat, n) {
   const m = new THREE.InstancedMesh(geo, mat, n);
-  m.count = 0; m.frustumCulled = false; m.castShadow = !LOW;
+  m.count = 0; m.frustumCulled = false; m.castShadow = true;
   scene.add(m);
   return { m, items: [] };
 }
@@ -763,7 +870,7 @@ const tars = pool(Sph(0.27, 8, 6), new THREE.MeshLambertMaterial({ color: 0x1b12
 const puddles = pool(new THREE.CircleGeometry(1, 18).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0x24170d, transparent: true, opacity: 0.85, depthWrite: false }), 40);
 puddles.m.castShadow = false; puddles.m.receiveShadow = true; puddles.m.renderOrder = 2;
 
-const PMAX = LOW ? 450 : 900;
+const PMAX = 900;
 const pGeo = new THREE.BufferGeometry();
 const pPos = new Float32Array(PMAX * 3).fill(-999), pCol = new Float32Array(PMAX * 3);
 pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
@@ -782,7 +889,7 @@ scene.add(particles);
 const pv = new Float32Array(PMAX * 3), pl = new Float32Array(PMAX), pg = new Float32Array(PMAX);
 let pHead = 0;
 function emit(x, y, z, n, color, speed = 3, life = 0.8, grav = -9, spread = 1) {
-  if (LOW) n = Math.ceil(n / 2);
+  if (low) n = Math.ceil(n / 2);
   _c.set(color);
   for (let k = 0; k < n; k++) {
     const i = pHead; pHead = (pHead + 1) % PMAX;
@@ -793,7 +900,9 @@ function emit(x, y, z, n, color, speed = 3, life = 0.8, grav = -9, spread = 1) {
     pCol[i * 3] = _c.r * v; pCol[i * 3 + 1] = _c.g * v; pCol[i * 3 + 2] = _c.b * v;
     pl[i] = life * (0.6 + rand() * 0.6); pg[i] = grav;
   }
+  pGeo.attributes.color.needsUpdate = true;
 }
+let pAlive = 0;
 
 // selection ring + range disc
 const ring = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 72).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.9, depthWrite: false }));
@@ -806,10 +915,11 @@ scene.add(ring, disc);
 const G = {
   running: false, over: false, paused: false, speed: 1, gold: START_GOLD, lives: START_LIVES, wave: 0,
   phase: 'build', queue: [], waveTime: 0, pendingBonus: 0, endless: false,
-  enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, errors: [],
+  enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, errors: [], best0: 0,
 };
 window.hisar = G;
 window.addEventListener('error', e => G.errors.push(String(e.message)));
+window.addEventListener('unhandledrejection', e => G.errors.push('unhandled rejection: ' + String(e.reason)));
 
 function hpMul(w) { const k = w - 1; return 1 + 0.18 * k + 0.022 * k * k; }
 function makeWave(w) {
@@ -842,18 +952,22 @@ function placeEnemy(e) {
   e.x = _pt.x - _pt.tz * e.lane; e.z = _pt.z + _pt.tx * e.lane; e.yaw = Math.atan2(_pt.tx, _pt.tz);
 }
 
+function canCallWave() { return G.running && !G.over && !G.paused && !G.queue.length && (G.endless || G.wave < MAX_WAVES); }
 function startWave() {
-  if (!G.running || G.over || G.queue.length) return;
+  if (!canCallWave()) return;
   if (G.phase === 'wave' && G.enemies.length) {
-    const b = 8 + G.wave * 2; addGold(b); toast(t('early', { n: b }));
+    const b = 8 + G.wave * 2; addGold(b); toast(t('early', { n: b }), 'good');
   }
   G.wave++;
   G.phase = 'wave';
   G.waveTime = 0;
   G.queue = makeWave(G.wave);
   G.pendingBonus += 15 + G.wave * 3;
-  if (G.queue.some(s => s.type === 'ram')) toast(t('ramComing'));
+  const boss = G.queue.some(s => s.type === 'ram');
+  if (boss) { toast(t('ramComing'), 'bad'); sfx('boss'); }
+  waveBanner(G.wave, boss);
   sfx('horn');
+  setBattleMusic(true);
   updateHUD();
 }
 function addGold(n) { G.gold += n; G.goldEarned += n; bump('sGold'); updateHUD(); }
@@ -872,7 +986,7 @@ function kill(e, tower) {
   if (tower) tower.kills++;
   addGold(e.gold);
   emit(e.x, 0.9, e.z, e.type === 'ram' ? 40 : 12, e.type === 'ram' ? 0x8a6a4a : 0xd9c7a0, 3.5, 0.7);
-  floatText('+' + e.gold, e.x, ENEMIES[e.type].h + 0.4, e.z);
+  floatText('+' + e.gold, e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
   sfx('coin');
 }
 function reachEnd(e) {
@@ -891,20 +1005,25 @@ function reachEnd(e) {
 // ---------------------------------------------------------------- towers
 function stat(tw, k) { const v = TOWERS[tw.type][k]; return v ? v[tw.level] : 0; }
 function buildTower(pad, type) {
-  if (pad.tower || G.over) return false;
+  if (pad.tower || G.over || G.paused) return false;
   const cost = TOWERS[type].cost[0];
-  if (G.gold < cost) { toast(t('noGold')); sfx('deny'); return false; }
+  if (G.gold < cost) { toast(t('noGold'), 'bad'); sfx('deny'); return false; }
   G.gold -= cost;
-  const tw = { type, level: 0, pad, cd: 0.3, kills: 0, spent: cost, mode: 'first', yaw: 0, recoil: 0, base: null, head: null };
-  pad.tower = tw;
-  G.towers.push(tw);
+  const tw = placeTower(pad, type, 0);
+  tw.spent = cost;
   G.built++;
-  makeTowerMesh(tw);
   emit(pad.x, 0.6, pad.z, 22, 0xcbbd9f, 4, 0.6);
   sfx('build');
-  toast(t('built', { name: t(type + 'Name') }));
+  if (!AUTO) toast(t('built', { name: t(type + 'Name') }), 'good');
   updateHUD();
   return true;
+}
+function placeTower(pad, type, level) {
+  const tw = { type, level, pad, cd: 0.3, kills: 0, spent: 0, mode: 'first', yaw: 0, recoil: 0, base: null, head: null };
+  pad.tower = tw;
+  G.towers.push(tw);
+  makeTowerMesh(tw);
+  return tw;
 }
 function makeTowerMesh(tw) {
   if (tw.base) { scene.remove(tw.base); scene.remove(tw.head); }
@@ -924,18 +1043,19 @@ function makeTowerMesh(tw) {
   tw.popT = 0.35;
 }
 function upgradeTower(tw) {
-  if (!tw || tw.level >= 2) return;
+  if (!tw || tw.level >= 2 || G.over || G.paused) return;
   const cost = TOWERS[tw.type].cost[tw.level + 1];
-  if (G.gold < cost) { toast(t('noGold')); sfx('deny'); return; }
+  if (G.gold < cost) { toast(t('noGold'), 'bad'); sfx('deny'); return; }
   G.gold -= cost; tw.spent += cost; tw.level++;
   makeTowerMesh(tw);
   emit(tw.pad.x, 2.5, tw.pad.z, 26, ACCENT, 4, 0.7);
-  sfx('build');
+  sfx('upgrade');
+  if (!AUTO) toast(t('upgraded', { name: t(tw.type + 'Name') }), 'good');
   updateHUD();
   if (sel && sel.tower === tw) showTower(tw);
 }
 function sellTower(tw) {
-  if (!tw) return;
+  if (!tw || G.over || G.paused) return;
   const refund = Math.floor(tw.spent * 0.7);
   scene.remove(tw.base, tw.head);
   tw.pad.tower = null;
@@ -944,7 +1064,7 @@ function sellTower(tw) {
   G.goldEarned -= refund; // a refund is not income
   emit(tw.pad.x, 1, tw.pad.z, 20, 0xcbbd9f, 3, 0.6);
   sfx('coin');
-  toast(t('sold', { n: refund }));
+  toast(t('sold', { n: refund }), 'good');
   closePanel();
 }
 function findTarget(tw) {
@@ -954,6 +1074,8 @@ function findTarget(tw) {
     if (!e.alive) continue;
     const dx = e.x - px, dz = e.z - pz, d2 = dx * dx + dz * dz;
     if (d2 > r2) continue;
+    // "first" compares the fraction of each road walked (as in the Godot version); the remaining-distance version was
+    // tried in the overnight pass and dropped: it changes the balance (the self-test bot then falls on wave 10, not 15)
     const v = tw.mode === 'first' ? e.d / e.path.len : tw.mode === 'strong' ? e.hp : -d2;
     if (v > bv) { bv = v; best = e; }
   }
@@ -1058,10 +1180,14 @@ function update(dt) {
     G.phase = 'build';
     const b = G.pendingBonus; G.pendingBonus = 0;
     addGold(b);
-    toast(t('cleared', { n: b }));
+    toast(t('cleared', { n: b }), 'good');
+    // the record counts as soon as the wave is cleared, even if the run is never finished
+    if (G.best0 > 0 && G.wave === G.best0 + 1) toast(t('newBest'), 'good');
     saveBest(G.wave);
     sfx('clear');
+    setBattleMusic(false);
     if (G.wave >= MAX_WAVES && !G.endless) endGame(true);
+    else saveRun();
     updateHUD();
   }
 }
@@ -1073,8 +1199,9 @@ function updateVisuals(dt, time) {
   camera.getWorldDirection(camFwd);
   camRight.setFromMatrixColumn(camera.matrixWorld, 0);
   const counts = { raider: 0, rider: 0, shield: 0, ram: 0 };
-  let bars = 0;
+  let bars = 0, bossHp = 0, bossMax = 0;
   for (const e of G.enemies) {
+    if (e.type === 'ram') { bossHp += Math.max(0, e.hp); bossMax += e.maxHp; }
     const m = enemyMeshes[e.type], i = counts[e.type]++;
     if (i >= MAX_ENEMIES) continue;
     const s = ENEMY_SCALE[e.type], bob = e.type === 'ram' ? 0 : Math.abs(Math.sin(e.bob)) * 0.08;
@@ -1098,6 +1225,7 @@ function updateVisuals(dt, time) {
   barBg.count = barFg.count = bars;
   barBg.instanceMatrix.needsUpdate = barFg.instanceMatrix.needsUpdate = true;
   barFg.instanceColor.needsUpdate = true;
+  updateBossBar(bossHp, bossMax);
 
   // towers: aim, recoil, pop-in
   for (const tw of G.towers) {
@@ -1110,6 +1238,7 @@ function updateVisuals(dt, time) {
   let n = 0;
   for (const a of arrows.items) {
     if (a.dx === undefined) continue;
+    if (n >= arrows.m.instanceMatrix.count) break; // fixed pool size: extra shots are simulated but not drawn
     _q.setFromUnitVectors(_s.set(0, 0, 1), _v.set(a.dx, a.dy, a.dz));
     _m4.compose(_v.set(a.x, a.y, a.z), _q, _s.set(1, 1, 1));
     arrows.m.setMatrixAt(n++, _m4);
@@ -1118,6 +1247,7 @@ function updateVisuals(dt, time) {
   for (const list of [balls, tars]) {
     n = 0;
     for (const b of list.items) {
+      if (n >= list.m.instanceMatrix.count) break;
       const k = clamp(b.t / b.T, 0, 1);
       _m4.makeTranslation(lerp(b.x0, b.x1, k), lerp(b.y0, 0.3, k) + 4 * b.h * k * (1 - k), lerp(b.z0, b.z1, k));
       list.m.setMatrixAt(n++, _m4);
@@ -1126,22 +1256,26 @@ function updateVisuals(dt, time) {
   }
   n = 0;
   for (const p of puddles.items) {
+    if (n >= puddles.m.instanceMatrix.count) break;
     const s = p.r * 0.75 * Math.min(1, p.life / 0.6) * Math.min(1, (p.max - p.life) * 6 + 0.3);
     _m4.compose(_v.set(p.x, 0.07 + n * 0.0005, p.z), _q.identity(), _s.set(s, 1, s));
     puddles.m.setMatrixAt(n++, _m4);
   }
   puddles.m.count = n; puddles.m.instanceMatrix.needsUpdate = true;
 
-  // particles
+  // particles (no buffer upload while none are alive; colours only change in emit())
+  let alive = 0;
   for (let i = 0; i < PMAX; i++) {
     if (pl[i] <= 0) continue;
+    alive++;
     pl[i] -= dt;
     if (pl[i] <= 0) { pPos[i * 3 + 1] = -999; continue; }
     pv[i * 3 + 1] += pg[i] * dt;
     pPos[i * 3] += pv[i * 3] * dt; pPos[i * 3 + 1] += pv[i * 3 + 1] * dt; pPos[i * 3 + 2] += pv[i * 3 + 2] * dt;
     if (pPos[i * 3 + 1] < 0.05 && pg[i] < 0) { pPos[i * 3 + 1] = 0.05; pv[i * 3] *= 0.6; pv[i * 3 + 2] *= 0.6; pv[i * 3 + 1] = 0; }
   }
-  pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
+  if (alive || pAlive) pGeo.attributes.position.needsUpdate = true;
+  pAlive = alive;
 
   // ambient life: water, boats, camp smoke
   const wp = water.geometry.attributes.position;
@@ -1158,7 +1292,7 @@ function updateVisuals(dt, time) {
   }
   smokeT -= dt;
   if (smokeT <= 0) {
-    smokeT = LOW ? 0.5 : 0.25;
+    smokeT = low ? 0.5 : 0.25;
     for (const [x, z] of campFires) { emit(x, heightAt(x, z) + 0.4, z, 1, 0x8f8a84, 0.6, 3.2, 0.6, 0.4); emit(x, heightAt(x, z) + 0.3, z, 1, 0xff9a3c, 0.8, 0.5, 1, 0.3); }
   }
   // selection ring pulse
@@ -1187,54 +1321,78 @@ function showRing(x, z, r) { ring.position.set(x, 0.36, z); disc.position.set(x,
 function hideRing() { ring.visible = disc.visible = false; }
 
 const panel = document.getElementById('panel');
-function closePanel() { sel = null; panel.classList.add('hidden'); hideRing(); refreshPadColors(); }
+let panelKey = '';
+function closePanel() { sel = null; panelKey = ''; panel.classList.add('hidden'); hideRing(); refreshPadColors(); }
 function selectPad(pad) {
   if (!pad) { closePanel(); return; }
   if (pad.tower) showTower(pad.tower); else showBuild(pad);
   sfx('click');
 }
+const closeBtn = () => `<button class="x" data-act="close" aria-label="${t('close')}">✕</button>`;
 function showBuild(pad) {
   sel = { pad };
-  panel.innerHTML = `<div class="ph"><span>${t('build')}</span><button class="x" data-act="close">✕</button></div><div class="cards">` +
+  panelKey = '';
+  panel.innerHTML = `<div class="ph"><span>${t('build')}</span>${closeBtn()}</div><div class="cards">` +
     TOWER_KEYS.map((k, i) => {
-      const T = TOWERS[k], c = T.cost[0];
-      return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${ico(T.icon, 'big')}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">${ico('gold')} ${c}</span></button>`;
+      const c = TOWERS[k].cost[0];
+      return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${ico(k, 'big')}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">${ico('gold')} ${c}</span></button>`;
     }).join('') + '</div>';
   panel.classList.remove('hidden');
   hideRing();
   refreshPadColors();
 }
 function fmt(v) { return typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(1) : v; }
+// The tower panel is rebuilt only when the tower, its level, its target mode or the language changes. Gold and kill
+// changes update the few live values in place, so a click that lands mid-wave is never lost to a rebuild.
 function showTower(tw) {
   sel = { pad: tw.pad, tower: tw };
-  const T = TOWERS[tw.type], L = tw.level, nx = L < 2 ? L + 1 : null;
-  const row = (label, key, f = v => v) => {
-    const cur = f(T[key][L]), nxt = nx !== null ? f(T[key][nx]) : null;
-    return `<div><span>${label}</span><b>${fmt(cur)}${nxt !== null && nxt !== cur ? ` <span class="up">→ ${fmt(nxt)}</span>` : ''}</b></div>`;
-  };
-  let rows = row(t('range'), 'range');
-  if (tw.type === 'tar') rows += row(t('dps'), 'dps') + row(t('slow'), 'slow', v => Math.round((1 - v) * 100) + '%');
-  else rows += row(t('dmg'), 'dmg');
-  rows += row(t('rate'), 'rate', v => +(1 / v).toFixed(1));
-  if (T.splash) rows += row(t('splash'), 'splash');
-  rows += `<div><span>${t('kills')}</span><b>${tw.kills}</b></div>`;
-  const up = nx !== null ? T.cost[nx] : 0, refund = Math.floor(tw.spent * 0.7);
-  const modeName = { first: t('mFirst'), strong: t('mStrong'), near: t('mNear') }[tw.mode];
-  panel.innerHTML = `<div class="ph"><span>${ico(T.icon)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span><button class="x" data-act="close">✕</button></div>
-    <div class="tw"><div class="tstats">${rows}</div><div class="tbtns">
-      <button class="primary" data-act="upgrade" ${nx === null || G.gold < up ? 'disabled' : ''}>${nx === null ? t('maxed') : `${ico('upgrade')} ${t('upgrade')} · ${ico('gold')} ${up}`}</button>
-      <button data-act="mode">${ico('target')} ${t('target')}: ${modeName}</button>
-      <button data-act="sell">${t('sell')} · +${refund}</button></div></div>`;
+  const key = [tw.pad.i, tw.type, tw.level, tw.mode, lang].join('|');
+  if (key !== panelKey || panel.classList.contains('hidden')) {
+    panelKey = key;
+    const T = TOWERS[tw.type], L = tw.level, nx = L < 2 ? L + 1 : null;
+    const row = (label, k, f = v => v) => {
+      const cur = f(T[k][L]), nxt = nx !== null ? f(T[k][nx]) : null;
+      return `<div><span>${label}</span><b>${fmt(cur)}${nxt !== null && nxt !== cur ? ` <span class="up">→ ${fmt(nxt)}</span>` : ''}</b></div>`;
+    };
+    let rows = row(t('range'), 'range');
+    if (tw.type === 'tar') rows += row(t('dps'), 'dps') + row(t('slow'), 'slow', v => Math.round((1 - v) * 100) + '%');
+    else rows += row(t('dmg'), 'dmg');
+    rows += row(t('rate'), 'rate', v => +(1 / v).toFixed(1));
+    if (T.splash) rows += row(t('splash'), 'splash');
+    rows += `<div><span>${t('kills')}</span><b data-live="kills"></b></div>`;
+    const up = nx !== null ? T.cost[nx] : 0;
+    const modeName = { first: t('mFirst'), strong: t('mStrong'), near: t('mNear') }[tw.mode];
+    panel.innerHTML = `<div class="ph"><span>${ico(tw.type)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span>${closeBtn()}</div>
+      <div class="tw"><div class="tstats">${rows}</div><div class="tbtns">
+        <button class="primary" data-act="upgrade" data-cost="${nx === null ? '' : up}">${nx === null ? t('maxed') : `${ico('upgrade')} ${t('upgrade')} · ${ico('gold')} ${up}`}</button>
+        <button data-act="mode">${ico('target')} ${t('target')}: ${modeName}</button>
+        <button data-act="sell">${t('sell')} · +<span data-live="refund"></span></button></div></div>`;
+  }
+  updatePanelLive();
   panel.classList.remove('hidden');
   showRing(tw.pad.x, tw.pad.z, stat(tw, 'range'));
   refreshPadColors();
 }
+function updatePanelLive() {
+  if (!sel) return;
+  if (!sel.tower) { panel.querySelectorAll('[data-act="build"]').forEach(b => { b.disabled = G.gold < TOWERS[b.dataset.type].cost[0]; }); return; }
+  const tw = sel.tower, kills = panel.querySelector('[data-live="kills"]'), refund = panel.querySelector('[data-live="refund"]'), up = panel.querySelector('[data-act="upgrade"]');
+  if (kills) kills.textContent = tw.kills;
+  if (refund) refund.textContent = Math.floor(tw.spent * 0.7);
+  if (up) up.disabled = up.dataset.cost === '' || G.gold < +up.dataset.cost;
+}
 function refreshPanel() {
   if (!sel) return;
-  if (sel.tower) { if (G.towers.includes(sel.tower)) showTower(sel.tower); else closePanel(); }
-  else if (!sel.pad.tower) {
-    panel.querySelectorAll('[data-act="build"]').forEach(b => { b.disabled = G.gold < TOWERS[b.dataset.type].cost[0]; });
-  } else showTower(sel.pad.tower);
+  if (sel.tower) { if (G.towers.includes(sel.tower)) updatePanelLive(); else closePanel(); }
+  else if (!sel.pad.tower) updatePanelLive();
+  else showTower(sel.pad.tower);
+}
+function cycleMode(tw) {
+  if (!tw) return;
+  const order = ['first', 'strong', 'near'];
+  tw.mode = order[(order.indexOf(tw.mode) + 1) % 3];
+  showTower(tw);
+  sfx('click');
 }
 panel.addEventListener('click', ev => {
   const b = ev.target.closest('button');
@@ -1245,7 +1403,7 @@ panel.addEventListener('click', ev => {
   else if (act === 'build' && sel) { if (buildTower(sel.pad, b.dataset.type)) showTower(sel.pad.tower); }
   else if (act === 'upgrade' && sel?.tower) upgradeTower(sel.tower);
   else if (act === 'sell' && sel?.tower) sellTower(sel.tower);
-  else if (act === 'mode' && sel?.tower) { const order = ['first', 'strong', 'near']; sel.tower.mode = order[(order.indexOf(sel.tower.mode) + 1) % 3]; showTower(sel.tower); sfx('click'); }
+  else if (act === 'mode' && sel?.tower) cycleMode(sel.tower);
 });
 panel.addEventListener('mouseover', ev => {
   const b = ev.target.closest('[data-act="build"]');
@@ -1253,10 +1411,19 @@ panel.addEventListener('mouseover', ev => {
 });
 panel.addEventListener('mouseleave', () => { if (sel && !sel.tower) hideRing(); });
 
-let down = null;
-canvas.addEventListener('pointerdown', ev => { down = { x: ev.clientX, y: ev.clientY }; });
+// a tap selects a pad; a drag, or any gesture that had two fingers down at some point, does not
+const pointers = new Map();
+let down = null, multi = false;
+canvas.addEventListener('pointerdown', ev => {
+  pointers.set(ev.pointerId, true);
+  if (pointers.size === 1) { down = { x: ev.clientX, y: ev.clientY }; multi = false; } else multi = true;
+});
+const pointerGone = ev => { pointers.delete(ev.pointerId); };
+canvas.addEventListener('pointercancel', pointerGone);
 canvas.addEventListener('pointerup', ev => {
-  if (!down || !G.running) return;
+  pointerGone(ev);
+  if (!down || !G.running || G.paused) return;
+  if (multi) { if (!pointers.size) down = null; return; }
   const moved = Math.hypot(ev.clientX - down.x, ev.clientY - down.y);
   down = null;
   if (moved > 6 || ev.button !== 0) return;
@@ -1268,29 +1435,52 @@ canvas.addEventListener('pointermove', ev => { lastMove = { x: ev.clientX, y: ev
 
 // ---------------------------------------------------------------- HUD
 const $ = id => document.getElementById(id);
-function bump(id) { const el = $(id); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
-let lastGold = -1;
+function bump(id) { $(id).animate([{ transform: 'scale(1)' }, { transform: 'scale(1.15)', offset: 0.4 }, { transform: 'scale(1)' }], { duration: 350 }); }
+let lastGold = -1, previewKey = '';
 function updateHUD() {
   $('sGold').querySelector('span').textContent = G.gold;
   $('sLives').querySelector('span').textContent = G.lives;
   $('sWave').querySelector('span').textContent = `${t('wave')} ${G.wave}/${G.endless ? '∞' : MAX_WAVES}`;
-  $('sGold').title = t('gold'); $('sLives').title = t('lives');
-  const nextW = G.wave + 1, bw = $('bWave');
-  const canCall = G.running && !G.over && !G.queue.length && (G.endless || nextW <= MAX_WAVES);
+  const nextW = G.wave + 1, bw = $('bWave'), canCall = canCallWave();
   bw.disabled = !canCall;
   bw.textContent = G.queue.length ? t('waveRunning', { n: G.wave }) : canCall ? t(G.phase === 'wave' ? 'callEarly' : 'startWave', { n: nextW }) : !G.running && !G.over ? t('startIdle') : '—';
   bw.classList.toggle('pulse', canCall && G.phase === 'build');
-  $('tNext').textContent = t('next');
-  const wc = (G.endless || nextW <= MAX_WAVES) ? waveCounts(nextW) : {};
-  $('wavePreview').innerHTML = ENEMY_KEYS.filter(k => wc[k]).map(k => `<span title="${t(k)}">${ico(ENEMIES[k].icon)} ${wc[k]}</span>`).join('');
+  // the preview only changes with the wave number, endless mode or the language
+  const pk = [nextW, G.endless, lang].join('|');
+  if (pk !== previewKey) {
+    previewKey = pk;
+    const wc = (G.endless || nextW <= MAX_WAVES) ? waveCounts(nextW) : {};
+    $('wavePreview').innerHTML = ENEMY_KEYS.filter(k => wc[k]).map(k => `<span title="${t(k)}">${ico(k)} ${wc[k]}</span>`).join('');
+  }
   if (G.gold !== lastGold) { lastGold = G.gold; refreshPanel(); }
 }
-function toast(msg) {
+function toast(msg, kind = 'info') {
   const box = $('toast'), d = document.createElement('div');
   d.textContent = msg;
+  if (kind !== 'info') d.className = kind;
   box.appendChild(d);
   while (box.children.length > 3) box.firstChild.remove();
   setTimeout(() => d.remove(), 2600);
+}
+// big "Wave 7" banner with the wave's enemies, red for a battering-ram wave
+let bannerTimer = 0;
+function waveBanner(w, boss) {
+  const el = $('banner'), wc = waveCounts(w);
+  el.innerHTML = `<b>${t('wave')} ${w}</b><span>${ENEMY_KEYS.filter(k => wc[k]).map(k => `${ico(k)} ${wc[k]}`).join('')}</span>`;
+  el.className = boss ? 'boss' : '';
+  void el.offsetWidth; // restart the animation (once per wave)
+  el.classList.add('on');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => el.classList.remove('on'), 1800);
+}
+// boss health bar under the top bar while a battering ram is on the road
+let bossShown = false, bossFrac = -1;
+function updateBossBar(hp, max) {
+  const on = max > 0 && G.running && !G.over;
+  if (on !== bossShown) { bossShown = on; $('boss').classList.toggle('on', on); document.body.classList.toggle('boss', on); }
+  if (!on) return;
+  const f = Math.round(clamp(hp / max, 0, 1) * 200) / 200;
+  if (f !== bossFrac) { bossFrac = f; $('bossBar').style.transform = `scaleX(${f})`; }
 }
 const ftxt = [], ftxtLayer = $('ftxt');
 function floatText(s, x, y, z) {
@@ -1310,97 +1500,303 @@ function updateFloatText(dt) {
   }
   for (let i = ftxt.length - 1; i >= 0; i--) if (ftxt[i].life <= 0) ftxt.splice(i, 1);
 }
+function clearFloatText() { for (const f of ftxt) f.el.remove(); ftxt.length = 0; }
 function applyLang() {
   document.documentElement.lang = lang;
   $('tSub').textContent = t('sub');
   $('bLang').textContent = lang === 'tr' ? 'EN' : 'TR';
-  $('pauseTag').textContent = t('paused');
   document.title = 'Hisar · ' + t('sub');
+  const tip = (id, k, key) => { const s = key ? `${t(k)} (${key})` : t(k); $(id).title = s; $(id).setAttribute('aria-label', s); };
+  tip('sGold', 'gold'); tip('sLives', 'lives'); tip('sWave', 'wave');
+  tip('bSpeed', 'speed', 'F'); tip('bPause', 'pause', 'P'); tip('bSound', 'sound'); tip('bLang', 'language', 'L');
+  $('bossName').textContent = t('ram');
+  $('tNext').textContent = t('next');
+  previewKey = '';
   updateHUD();
   if (sel) { if (sel.tower) showTower(sel.tower); else showBuild(sel.pad); }
-  if (!G.running && !G.over) showTitle();
+  if (screen) showScreen(screen);
 }
-$('bLang').onclick = () => { lang = lang === 'tr' ? 'en' : 'tr'; try { localStorage.setItem('hisar.lang', lang); } catch (e) { /* ignore */ } applyLang(); };
+function setLang(l) {
+  if (l === lang) return;
+  lang = settings.lang = l;
+  saveSettings();
+  applyLang();
+}
+const toggleLang = () => setLang(lang === 'tr' ? 'en' : 'tr');
+$('bLang').onclick = toggleLang;
 $('bWave').onclick = () => { initAudio(); startWave(); };
 const setSpeed = s => { G.speed = s; $('bSpeed').textContent = s + '×'; };
 $('bSpeed').onclick = () => setSpeed(G.speed === 3 ? 1 : G.speed + 1);
-const togglePause = () => { if (!G.running || G.over) return; G.paused = !G.paused; $('bPause').innerHTML = G.paused ? GLYPH.play : GLYPH.pause; $('pauseTag').style.display = G.paused ? 'block' : 'none'; };
-$('bPause').onclick = togglePause;
-$('bSound').onclick = () => { initAudio(); muted = !muted; $('bSound').innerHTML = ico(muted ? 'sound-off' : 'sound-on'); };
+function setPaused(on) {
+  if (!G.running || G.over || G.paused === on) return;
+  G.paused = on;
+  $('bPause').innerHTML = on ? GLYPH.play : GLYPH.pause;
+  if (on) showScreen('pause'); else hideScreen();
+  updateHUD();
+}
+$('bPause').onclick = () => setPaused(!G.paused);
 $('bPause').innerHTML = GLYPH.pause;
+// the sound button mutes everything and brings back the volume from before the mute
+let unmuteVolume = 0.8;
+$('bSound').onclick = () => {
+  initAudio();
+  if (settings.master > 0.001) { unmuteVolume = settings.master; settings.master = 0; } else settings.master = unmuteVolume > 0.001 ? unmuteVolume : 0.8;
+  applyVolumes(); saveSettings(); refreshSoundBtn();
+  if (screen === 'settings') showScreen('settings');
+};
+function refreshSoundBtn() { $('bSound').innerHTML = ico(settings.master > 0.001 ? 'sound-on' : 'sound-off'); }
+function toggleMusic() { initAudio(); settings.musicOn = !settings.musicOn; applyVolumes(); saveSettings(); toast(t(settings.musicOn ? 'musicOn' : 'musicOff')); }
+function toggleSfx() { initAudio(); settings.sfxOn = !settings.sfxOn; applyVolumes(); saveSettings(); toast(t(settings.sfxOn ? 'sfxOn' : 'sfxOff')); }
 
+// a mouse click on a HUD or panel button drops its focus again, so Space keeps calling waves instead of pressing it
+document.addEventListener('click', ev => { if (ev.detail > 0 && ev.target.closest?.('#top, #wavebox, #panel')) document.activeElement?.blur?.(); });
 window.addEventListener('keydown', ev => {
-  if (ev.repeat) return;
-  const k = ev.key.toLowerCase();
-  if (k === ' ') { ev.preventDefault(); initAudio(); startWave(); }
-  else if (k === 'p') togglePause();
+  if (ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  const k = ev.key.toLowerCase(), focused = document.activeElement?.tagName;
+  if (focused === 'INPUT' && k !== 'escape') return; // sliders keep the arrow keys
+  // Esc goes back one step: settings, then the pad panel, then pause; P always pauses or resumes
+  if (k === 'escape') {
+    if (screen === 'settings') settingsBack();
+    else if (sel && !G.paused) closePanel();
+    else if (G.running && !G.over) setPaused(!G.paused);
+    return;
+  }
+  if (k === 'p') {
+    if (screen === 'settings' && settingsFrom === 'pause') settingsBack();
+    else if (G.running && !G.over) setPaused(!G.paused);
+    return;
+  }
+  if (k === 'm') { toggleMusic(); return; }
+  if (k === 'x') { toggleSfx(); return; }
+  if (k === 'l') { toggleLang(); return; }
+  if (screen) return; // an overlay card is open: no gameplay keys
+  if (k === ' ') {
+    if (focused === 'BUTTON') return; // Space presses the focused button
+    ev.preventDefault(); initAudio(); startWave();
+  }
   else if (k === 'f') $('bSpeed').click();
-  else if (k === 'escape') closePanel();
   else if (sel && !sel.tower && ['1', '2', '3'].includes(k)) { if (buildTower(sel.pad, TOWER_KEYS[+k - 1])) showTower(sel.pad.tower); }
   else if (sel?.tower && k === 'u') upgradeTower(sel.tower);
   else if (sel?.tower && k === 's') sellTower(sel.tower);
+  else if (sel?.tower && k === 't') cycleMode(sel.tower);
 });
+
+// ---------------------------------------------------------------- run save (Continue), written after every cleared wave
+function saveRun() {
+  if (G.over || !G.running) return;
+  store.set('arena.hisar.save', JSON.stringify({
+    version: 1, wave: G.wave, gold: G.gold, lives: G.lives, endless: G.endless, kills: G.kills, gold_earned: G.goldEarned, built: G.built,
+    towers: G.towers.map(tw => ({ pad: tw.pad.i, type: tw.type, level: tw.level, mode: tw.mode, spent: tw.spent, kills: tw.kills, yaw: tw.yaw })),
+  }));
+}
+function loadRun() {
+  if (AUTO) return null;
+  try { const s = JSON.parse(store.get('arena.hisar.save')); return s && s.version === 1 && s.wave > 0 && s.lives > 0 ? s : null; } catch (e) { return null; }
+}
+function clearRun() { store.del('arena.hisar.save'); }
+function restoreRun(s) {
+  Object.assign(G, { wave: s.wave | 0, gold: s.gold | 0, lives: s.lives | 0, endless: !!s.endless, kills: s.kills | 0, goldEarned: s.gold_earned | 0, built: s.built | 0 });
+  for (const d of s.towers || []) {
+    const pad = pads[d.pad];
+    if (!pad || pad.tower || !TOWERS[d.type]) continue;
+    const tw = placeTower(pad, d.type, clamp(d.level | 0, 0, 2));
+    tw.mode = ['first', 'strong', 'near'].includes(d.mode) ? d.mode : 'first';
+    tw.spent = d.spent | 0; tw.kills = d.kills | 0; tw.yaw = +d.yaw || 0;
+  }
+}
 
 // ---------------------------------------------------------------- screens
 const overlay = $('overlay'), ocard = $('ocard');
-function showTitle() {
-  const best = loadBest();
-  ocard.innerHTML = `<img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
-    <div class="row"><button class="primary big" id="bPlay" ${assetState.done ? '' : 'disabled'}>${playLabel()}</button><button id="bLang2">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
-    <p class="ctl">${t(matchMedia('(pointer: coarse)').matches ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}`;
+let screen = null, settingsFrom = 'title', endWin = false, endRecord = false;
+function showScreen(name) {
+  const prevFocus = document.activeElement?.dataset?.key;
+  screen = name;
+  overlay.classList.toggle('dim', name === 'pause' || (name === 'settings' && settingsFrom === 'pause'));
   overlay.classList.remove('hidden');
-  $('bPlay').onclick = startGame;
-  $('bLang2').onclick = () => $('bLang').click();
+  ({ title: fillTitle, pause: fillPause, settings: fillSettings, over: fillOver })[name]();
+  // keep the keyboard focus on the same control after a re-render (language switch), else focus the main button
+  const f = (prevFocus && ocard.querySelector(`[data-key="${prevFocus}"]`)) || ocard.querySelector('[data-focus]:not(:disabled)');
+  if (f) f.focus({ preventScroll: true });
 }
-function startGame() {
+function hideScreen() { screen = null; overlay.classList.add('hidden'); document.activeElement?.blur?.(); }
+function fillTitle() {
+  const best = loadBest(), run = loadRun();
+  ocard.innerHTML = `<img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
+    <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
+    <div class="row"><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
+    <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}
+    <a class="foot" href="${ARENA_URL}" target="_blank" rel="noopener">${t('footer')}</a>`;
+  $('bPlay').onclick = () => startGame(null);
+  if (run) $('bCont').onclick = () => startGame(loadRun());
+  $('bSet').onclick = () => openSettings('title');
+  $('bLang2').onclick = toggleLang;
+}
+function fillPause() {
+  ocard.innerHTML = `<h2>${t('paused')}</h2><div class="col">
+    <button class="primary" id="bResume" data-key="resume" data-focus>${GLYPH.play} ${t('resume')}</button>
+    <button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button>
+    <button id="bRestart" data-key="restart">${t('restart')}</button>
+    <button id="bMenu" data-key="menu">${t('mainMenu')}</button></div>`;
+  $('bResume').onclick = () => setPaused(false);
+  $('bSet').onclick = () => openSettings('pause');
+  $('bRestart').onclick = () => startGame(null);
+  $('bMenu').onclick = toMainMenu;
+}
+const FULLSCREEN = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+function fillSettings() {
+  const slider = k => `<label for="s_${k}">${t(k)}</label><input type="range" id="s_${k}" data-key="s_${k}" data-vol="${k}" min="0" max="1" step="0.05" value="${settings[k]}"><output id="o_${k}">${Math.round(settings[k] * 100)}%</output>`;
+  const opts = (k, list, cur) => `<label>${t(k)}</label><div class="opts" role="group" aria-label="${t(k)}">${list.map(([v, label]) =>
+    `<button data-set="${k}" data-v="${v}" data-key="${k}_${v}" class="${v === cur ? 'on' : ''}" aria-pressed="${v === cur}">${label}</button>`).join('')}</div>`;
+  ocard.innerHTML = `<h2>${t('settings')}</h2><div class="set">${slider('master')}${slider('music')}${slider('sfx')}
+    ${opts('language', [['tr', 'Türkçe'], ['en', 'English']], lang)}
+    ${opts('quality', [['low', t('qLow')], ['high', t('qHigh')]], low ? 'low' : 'high')}
+    ${FULLSCREEN ? opts('fullscreen', [['off', t('off')], ['on', t('on')]], document.fullscreenElement ? 'on' : 'off') : ''}</div>
+    <div class="col"><button class="primary" id="bBack" data-key="back" data-focus>${t('back')}</button></div>`;
+  ocard.querySelectorAll('[data-vol]').forEach(s => {
+    const k = s.dataset.vol;
+    s.oninput = () => { settings[k] = +s.value; $('o_' + k).textContent = Math.round(settings[k] * 100) + '%'; initAudio(); applyVolumes(); refreshSoundBtn(); };
+    s.onchange = () => { saveSettings(); if (k === 'sfx' || k === 'master') sfx('coin'); }; // the file is written once the drag ends
+  });
+  ocard.querySelectorAll('[data-set]').forEach(b => b.onclick = () => {
+    const k = b.dataset.set, v = b.dataset.v;
+    if (k === 'language') { setLang(v); return; } // re-renders this card in the new language
+    if (k === 'quality') setQuality(v);
+    else if (k === 'fullscreen') setFullscreen(v === 'on');
+    markOpt(k, v);
+    sfx('click');
+  });
+  $('bBack').onclick = settingsBack;
+}
+// update the choice buttons in place, so focus and the card stay put
+function markOpt(k, v) { ocard.querySelectorAll(`[data-set="${k}"]`).forEach(o => { const on = o.dataset.v === v; o.classList.toggle('on', on); o.setAttribute('aria-pressed', on); }); }
+function setQuality(v) {
+  settings.quality = v;
+  low = v === 'low';
+  saveSettings();
+  applyQuality();
+}
+function setFullscreen(on) {
+  try {
+    if (on && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { /* refused */ });
+    else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => { /* not in fullscreen */ });
+  } catch (e) { /* unsupported */ }
+}
+document.addEventListener('fullscreenchange', () => { if (screen === 'settings') markOpt('fullscreen', document.fullscreenElement ? 'on' : 'off'); });
+function openSettings(from) { settingsFrom = from; showScreen('settings'); }
+function settingsBack() { saveSettings(); showScreen(settingsFrom === 'pause' && G.running && !G.over ? 'pause' : 'title'); }
+function fillOver() {
+  const win = endWin;
+  ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1>${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+    ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
+    <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
+    <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>`;
+  $('bAgain').onclick = () => startGame(null);
+  $('bMenu').onclick = toMainMenu;
+  if (win) $('bEndless').onclick = () => { G.over = false; G.endless = true; hideScreen(); toast(t('endlessOn')); previewKey = ''; updateHUD(); saveRun(); };
+}
+
+// ---------------------------------------------------------------- game flow (restart in place, no page reload)
+function resetGame() {
+  closePanel();
+  for (const tw of G.towers) { scene.remove(tw.base, tw.head); tw.pad.tower = null; }
+  for (const p of pads) p.tower = null;
+  for (const list of [arrows, balls, tars, puddles]) list.items = [];
+  pl.fill(0);
+  for (let i = 0; i < PMAX; i++) pPos[i * 3 + 1] = -999;
+  pGeo.attributes.position.needsUpdate = true;
+  clearFloatText();
+  $('toast').innerHTML = '';
+  Object.assign(G, { running: false, over: false, paused: false, gold: START_GOLD, lives: START_LIVES, wave: 0, phase: 'build', queue: [], waveTime: 0,
+    pendingBonus: 0, endless: false, enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0 });
+  $('bPause').innerHTML = GLYPH.pause;
+  shake = 0;
+  lastGold = -1; previewKey = '';
+  setBattleMusic(false);
+}
+function startGame(run) {
   initAudio();
-  overlay.classList.add('hidden');
+  resetGame();
+  if (run) restoreRun(run); else clearRun(); // a fresh game drops the abandoned run, so Continue cannot bring it back
+  G.best0 = loadBest();
+  hideScreen();
   G.running = true;
+  setSpeed(AUTO ? 3 : 1);
+  cameraHome();
   sfx('horn');
-  toast(t('hint'));
+  toast(run ? t('continued', { n: G.wave + 1 }) : t('hint'));
   updateHUD();
+}
+function toMainMenu() {
+  resetGame();
+  updateHUD();
+  showScreen('title');
 }
 function endGame(win) {
   G.over = true;
-  saveBest(win ? G.wave : G.wave - 1);
+  const reached = win ? G.wave : G.wave - 1;
+  endRecord = reached > G.best0;
+  saveBest(reached);
+  clearRun();
+  endWin = win;
   closePanel();
+  setBattleMusic(false);
   sfx(win ? 'win' : 'lose');
-  ocard.innerHTML = `<img class="crest" src="assets/ui/${win ? 'icons/trophy' : 'logo'}.png" alt=""><h1>${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
-    <div class="estats"><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
-    <div class="row"><button class="primary big" id="bAgain">${t('again')}</button>${win ? `<button class="big" id="bEndless">${t('endless')}</button>` : ''}</div>`;
-  overlay.classList.remove('hidden');
-  $('bAgain').onclick = () => location.reload();
-  if (win) $('bEndless').onclick = () => { G.over = false; G.endless = true; overlay.classList.add('hidden'); toast(t('endlessOn')); updateHUD(); };
+  showScreen('over');
+}
+
+// ---------------------------------------------------------------- quality
+function applyQuality() {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1 : 1.5));
+  renderer.setSize(innerWidth, innerHeight);
+  if (renderer.shadowMap.enabled === low) {
+    renderer.shadowMap.enabled = sun.castShadow = !low;
+    scene.traverse(o => { if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true; }); // recompile with / without shadows
+  }
+  for (const [m, full, part] of lodMeshes) m.count = low ? Math.min(part, full) : full;
 }
 
 // ---------------------------------------------------------------- audio (all synthesised)
-let ac = null, master = null, noiseBuf = null, muted = AUTO;
+// master -> destination; sfx and music each have their own gain, so the settings sliders and the M / X keys work separately
+let ac = null, master = null, sfxBus = null, musicBus = null, drumsGain = null, noiseBuf = null, musicStarted = false, drumsOn = false;
+if (AUTO) settings.master = 0; // shows the muted icon for the silent bot (never saved: the store is read-only under ?auto)
 function initAudio() {
-  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+  if (AUTO) return; // the bot plays silently
+  if (ac) { if (ac.state === 'suspended') ac.resume().catch(() => { /* needs a gesture */ }); return; }
   try {
     ac = new (window.AudioContext || window.webkitAudioContext)();
-    master = ac.createGain(); master.gain.value = 0.32; master.connect(ac.destination);
+    master = ac.createGain(); master.connect(ac.destination);
+    sfxBus = ac.createGain(); sfxBus.connect(master);
+    musicBus = ac.createGain(); musicBus.connect(master);
+    drumsGain = ac.createGain(); drumsGain.gain.value = drumsOn ? 0.71 : 0.0001; drumsGain.connect(musicBus);
+    applyVolumes();
     noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    setTimeout(startMusic, 30); // render the loop just after the click, so the click itself stays instant
   } catch (e) { ac = null; }
+}
+function applyVolumes() {
+  if (!ac) return;
+  master.gain.value = 0.4 * settings.master; // 0.32 at the default 0.8, the level from before the overnight pass
+  sfxBus.gain.value = settings.sfxOn ? settings.sfx / 0.8 : 0;
+  musicBus.gain.value = settings.musicOn ? settings.music / 2.4 : 0; // the same music / effects balance as the Godot version
 }
 function tone(f, dur, type = 'sine', vol = 0.3, f2 = null, delay = 0) {
   const t0 = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
   o.type = type; o.frequency.setValueAtTime(f, t0);
   if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
   g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  o.connect(g).connect(master); o.start(t0); o.stop(t0 + dur + 0.05);
+  o.connect(g).connect(sfxBus); o.start(t0); o.stop(t0 + dur + 0.05);
 }
 function noise(dur, vol, freq, type = 'lowpass', delay = 0, q = 1) {
   const t0 = ac.currentTime + delay, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
   s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
   g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  s.connect(f).connect(g).connect(master); s.start(t0, Math.random() * 0.5); s.stop(t0 + dur + 0.05);
+  s.connect(f).connect(g).connect(sfxBus); s.start(t0, Math.random() * 0.5); s.stop(t0 + dur + 0.05);
 }
 const lastSfx = {};
 function sfx(name) {
-  if (!ac || muted || ac.state !== 'running') return;
+  if (!ac || ac.state !== 'running' || master.gain.value < 0.001 || sfxBus.gain.value < 0.001) return;
   const now = ac.currentTime, gap = { bow: 0.06, hit: 0.05, coin: 0.07, boom: 0.08, impact: 0.08, lob: 0.1, splash: 0.1 }[name] ?? 0.03;
   if (lastSfx[name] && now - lastSfx[name] < gap) return;
   lastSfx[name] = now;
@@ -1413,14 +1809,120 @@ function sfx(name) {
     case 'splash': noise(0.22, 0.18, 500, 'lowpass', 0, 4); break;
     case 'coin': tone(1320, 0.06, 'square', 0.04); tone(1760, 0.09, 'square', 0.04, null, 0.05); break;
     case 'build': noise(0.15, 0.2, 300); tone(196, 0.12, 'triangle', 0.15, null, 0.02); tone(294, 0.15, 'triangle', 0.12, null, 0.1); break;
+    case 'upgrade': noise(0.12, 0.15, 400); [392, 523, 659].forEach((f, i) => tone(f, 0.2, 'triangle', 0.12, null, 0.05 + i * 0.08)); break;
     case 'click': tone(660, 0.04, 'triangle', 0.06); break;
     case 'deny': tone(180, 0.15, 'square', 0.06, 140); break;
     case 'hurt': noise(0.35, 0.35, 260); tone(150, 0.3, 'sawtooth', 0.12, 70); break;
     case 'horn': [146.8, 220, 293.7].forEach((f, i) => tone(f, 0.9, 'sawtooth', 0.06, f * 0.98, i * 0.03)); break;
+    case 'boss': tone(98, 1.5, 'sawtooth', 0.08, 92); tone(147, 1.5, 'sawtooth', 0.06, 140); tone(196, 1.2, 'sawtooth', 0.05, 190, 0.25); break;
     case 'clear': [523, 659, 784].forEach((f, i) => tone(f, 0.25, 'triangle', 0.1, null, i * 0.1)); break;
     case 'win': [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.5, 'triangle', 0.12, null, i * 0.16)); break;
     case 'lose': [392, 330, 262, 196].forEach((f, i) => tone(f, 0.5, 'sawtooth', 0.07, null, i * 0.22)); break;
   }
+}
+
+// Music, ported from the Godot version: a two-stem loop in 9/8 (2+2+2+3) in the Hicaz mode. The calm stem (drone, saz-like
+// plucked melody, bass) always plays; the drum stem (düm / tek / zil) fades in while a wave is running.
+const MUSIC_RATE = 22050, EIGHTH = 0.2, D4 = 293.66;
+const MELODY = [ // [start eighth, length in eighths, semitones from D4], 8 bars
+  [0, 2, 7], [2, 2, 8], [4, 2, 7], [6, 3, 5], [9, 2, 4], [11, 2, 5], [13, 1, 4], [14, 1, 1], [15, 3, 0],
+  [18, 2, 0], [20, 2, 1], [22, 2, 4], [24, 3, 5], [27, 2, 7], [29, 2, 5], [31, 2, 4], [33, 3, 7],
+  [36, 2, 12], [38, 2, 10], [40, 2, 8], [42, 3, 7], [45, 2, 8], [47, 2, 7], [49, 2, 5], [51, 3, 4],
+  [54, 2, 5], [56, 2, 4], [58, 2, 1], [60, 3, 4], [63, 2, 1], [65, 2, 0], [67, 5, 0],
+];
+const BASS = [0, 0, -5, 0, 5, 1, -2, 0];
+async function renderMusic() {
+  const breathe = () => new Promise(r => setTimeout(r, 0)); // render in slices so the game keeps running smoothly
+  let s = 1453; // own random stream, so the music never shifts the game's seeded one
+  const rnd = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+  const R = MUSIC_RATE, len = 8 * 9 * EIGHTH, N = Math.floor(len * R);
+  const calm = new Float32Array(N), drums = new Float32Array(N);
+  const wave = (k, p) => { p -= Math.floor(p); return k === 'triangle' ? 4 * Math.abs(p - 0.5) - 1 : Math.sin(p * Math.PI * 2); };
+  const toneInto = (b, start, dur, f0, f1, kind, vol) => {
+    const i0 = Math.floor(start * R), n = Math.floor(dur * R), ratio = f1 > 0 ? f1 / f0 : 1, fall = Math.log(0.0001 / Math.max(vol, 0.0002));
+    let ph = 0;
+    for (let i = 0; i < n && i0 + i < N; i++) {
+      const tt = i / R; ph += f0 * Math.pow(ratio, tt / dur) / R;
+      b[i0 + i] += wave(kind, ph) * (tt < 0.01 ? vol * tt / 0.01 : vol * Math.exp(fall * (tt - 0.01) / Math.max(0.001, dur - 0.01)));
+    }
+  };
+  const noiseInto = (b, start, dur, vol, freq, mode, q) => { // RBJ biquad over white noise
+    const w0 = 2 * Math.PI * freq / R, al = Math.sin(w0) / (2 * q), cw = Math.cos(w0), a0 = 1 + al;
+    const [b0, b1, b2] = mode === 'bandpass' ? [al, 0, -al] : [(1 - cw) / 2, 1 - cw, (1 - cw) / 2];
+    const a1 = -2 * cw / a0, a2 = (1 - al) / a0, fall = Math.log(0.0001 / Math.max(vol, 0.0002));
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    const i0 = Math.floor(start * R), n = Math.floor(dur * R);
+    for (let i = 0; i < n && i0 + i < N; i++) {
+      const x = rnd() * 2 - 1, y = (b0 * x + b1 * x1 + b2 * x2) / a0 - a1 * y1 - a2 * y2;
+      x2 = x1; x1 = x; y2 = y1; y1 = y;
+      b[i0 + i] += y * vol * Math.exp(fall * (i / R) / dur);
+    }
+  };
+  const pluck = (b, start, dur, f, vol, damp) => { // Karplus-Strong string
+    const period = Math.max(2, Math.floor(R / f)), ring = new Float32Array(period);
+    for (let i = 0; i < period; i++) ring[i] = rnd() * 2 - 1;
+    const i0 = Math.floor(start * R), n = Math.floor(dur * R), tail = Math.floor(0.04 * R);
+    let pos = 0;
+    for (let i = 0; i < n && i0 + i < N; i++) {
+      const nx = (pos + 1) % period, out = ring[pos];
+      ring[pos] = damp * 0.5 * (ring[pos] + ring[nx]); pos = nx;
+      b[i0 + i] += out * vol * (i < n - tail ? 1 : (n - i) / tail);
+    }
+  };
+  const normalize = (b, peak) => { let m = 0.0001; for (const v of b) m = Math.max(m, Math.abs(v)); const k = peak / m; for (let i = 0; i < b.length; i++) b[i] *= k; };
+  // drone: D3 + A3 from a small harmonic wavetable with a slow swell
+  const table = new Float32Array(1024);
+  for (let i = 0; i < 1024; i++) { const p = i / 1024 * Math.PI * 2; table[i] = Math.sin(p) + 0.45 * Math.sin(2 * p) + 0.22 * Math.sin(3 * p) + 0.1 * Math.sin(4 * p); }
+  let p1 = 0, p2 = 0;
+  for (let i = 0; i < N; i++) {
+    if (i % 65536 === 0) await breathe();
+    const tt = i / R, swell = 0.75 + 0.25 * Math.sin(tt * Math.PI * 2 / (len / 2));
+    p1 += 146.83 * (1 + 0.002 * Math.sin(tt * 5)) / R; p2 += 220 / R;
+    calm[i] = (table[((p1 - Math.floor(p1)) * 1023) | 0] * 0.05 + table[((p2 - Math.floor(p2)) * 1023) | 0] * 0.025) * swell;
+  }
+  await breathe();
+  for (const [st, ln, semi] of MELODY) {
+    const f = D4 * Math.pow(2, semi / 12);
+    pluck(calm, st * EIGHTH, ln * EIGHTH + 0.35, f, 0.32, 0.9965);
+    pluck(calm, st * EIGHTH + 0.012, ln * EIGHTH + 0.2, f * 2, 0.07, 0.993);
+  }
+  BASS.forEach((semi, bar) => {
+    const f = D4 * 0.25 * Math.pow(2, semi / 12);
+    pluck(calm, bar * 9 * EIGHTH, 9 * EIGHTH, f, 0.4, 0.998);
+    pluck(calm, (bar * 9 + 6) * EIGHTH, 3 * EIGHTH, f * 1.5, 0.18, 0.997);
+  });
+  normalize(calm, 0.7);
+  for (let bar = 0; bar < 8; bar++) {
+    await breathe();
+    const o = bar * 9 * EIGHTH;
+    for (const e of [0, 4]) { toneInto(drums, o + e * EIGHTH, 0.32, 95, 48, 'sine', 0.7); noiseInto(drums, o + e * EIGHTH, 0.08, 0.25, 180, 'lowpass', 1); } // düm
+    for (const e of [2, 6, 7, 8]) { noiseInto(drums, o + e * EIGHTH, 0.06, e !== 8 ? 0.32 : 0.18, 3200, 'bandpass', 2.5); toneInto(drums, o + e * EIGHTH, 0.05, 640, 520, 'triangle', 0.08); } // tek
+    if (bar % 2 === 1) noiseInto(drums, o + 8 * EIGHTH, 0.5, 0.12, 7000, 'bandpass', 1.2); // zil
+  }
+  normalize(drums, 0.65);
+  return [calm, drums];
+}
+async function startMusic() {
+  if (!ac || musicStarted) return;
+  musicStarted = true;
+  const t0 = performance.now(), stems = await renderMusic(), at = ac.currentTime + 0.1;
+  stems.forEach((data, i) => {
+    const buf = ac.createBuffer(1, data.length, MUSIC_RATE);
+    buf.copyToChannel(data, 0);
+    const src = ac.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    src.connect(i ? drumsGain : musicBus);
+    src.start(at);
+  });
+  if (DEBUG) console.log('[hisar] music rendered in', Math.round(performance.now() - t0), 'ms');
+}
+function setBattleMusic(on) {
+  if (on === drumsOn) return;
+  drumsOn = on;
+  if (!drumsGain) return;
+  const g = drumsGain.gain, now = ac.currentTime;
+  g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now);
+  g.exponentialRampToValueAtTime(on ? 0.71 : 0.0001, now + (on ? 1.5 : 3)); // -3 dB in a wave, silent between waves
 }
 
 // ---------------------------------------------------------------- autoplay bot (?auto) for self-testing
@@ -1439,18 +1941,43 @@ function autoplay(dt) {
   if (G.phase === 'build' && !G.over) startWave();
 }
 
+// ---------------------------------------------------------------- camera framing
+// Portrait screens (phones) look along the roads from behind the fortress, so the roads run down the screen to the gate
+// (the Godot version's portrait preset: yaw π/2, pitch 1.05, distance 60, target (-4, 0, 0)) and keep a 62° horizontal
+// field of view so the whole width of the map fits.
+const isPortrait = () => innerHeight > innerWidth;
+function fitFov() {
+  camera.aspect = innerWidth / innerHeight;
+  camera.fov = isPortrait() ? 2 * Math.atan(Math.tan(31 * Math.PI / 180) / camera.aspect) * 180 / Math.PI : 42;
+  camera.updateProjectionMatrix();
+}
+function cameraHome() {
+  if (camParam) return;
+  if (isPortrait()) { controls.target.set(-4, 0, 0); camera.position.set(-4 + Math.cos(1.05) * 60, Math.sin(1.05) * 60, 0); }
+  // landscape keeps the view the title orbit ended on, as before
+}
+let wasPortrait = isPortrait();
+function onResize() {
+  fitFov();
+  renderer.setSize(innerWidth, innerHeight);
+  document.documentElement.style.setProperty('--top-h', $('top').offsetHeight + 'px');
+  if (isPortrait() !== wasPortrait) { wasPortrait = isPortrait(); if (G.running) cameraHome(); }
+}
+addEventListener('resize', onResize);
+
 // ---------------------------------------------------------------- loop
-addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
-document.addEventListener('visibilitychange', () => { if (ac) { if (document.hidden) ac.suspend(); else ac.resume(); } });
+document.addEventListener('visibilitychange', () => { if (ac) { if (document.hidden) ac.suspend(); else ac.resume().catch(() => { /* needs a gesture */ }); } });
 const clock = new THREE.Clock();
-let time = 0, perfT = 0, hoverT = 0;
+let time = 0, perfT = 0, hoverT = 0, fpsEma = 60;
 const minT = new THREE.Vector3(-46, 0, -32), maxT = new THREE.Vector3(40, 0, 32);
 const dbgEl = document.createElement('div');
-if (DEBUG) { dbgEl.style.cssText = 'position:fixed;left:10px;top:64px;z-index:20;font:600 13px Rubik,sans-serif;background:#000a;color:#fff;padding:4px 8px;border-radius:6px'; document.body.appendChild(dbgEl); }
+if (DEBUG) { dbgEl.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:20;font:600 13px Rubik,sans-serif;background:#000a;color:#fff;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(dbgEl); }
+const camParam = params.get('cam');
 function frame() {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, clock.getDelta());
+  const raw = clock.getDelta(), dt = Math.min(0.05, raw);
   time += dt;
+  if (raw > 0) fpsEma += (1 / raw - fpsEma) * 0.05;
   const active = G.running && !G.over && !G.paused && !document.hidden;
   if (active) {
     if (AUTO) autoplay(dt * G.speed);
@@ -1461,14 +1988,14 @@ function frame() {
   updateFloatText(dt);
   // hover highlight (throttled)
   hoverT -= dt;
-  if (lastMove && hoverT <= 0 && G.running) {
+  if (lastMove && hoverT <= 0 && G.running && !screen) {
     hoverT = 0.06;
     const p = pick(lastMove.x, lastMove.y), h = p ? p.i : -1;
     canvas.style.cursor = p ? 'pointer' : '';
     if (h !== hoverPad) { hoverPad = h; refreshPadColors(); }
   }
-  // title screen: slow cinematic orbit
-  if (!G.running) {
+  // title screen: slow cinematic orbit (not when ?cam fixes the view)
+  if (!G.running && !camParam) {
     const a = time * 0.05;
     camera.position.set(Math.sin(a) * 62 - 2, 40, Math.cos(a) * 62);
     controls.target.set(-2, 0, 0);
@@ -1484,8 +2011,8 @@ function frame() {
     renderer.render(scene, camera);
     camera.position.x -= sx; camera.position.y -= sy;
   } else renderer.render(scene, camera);
-  if (DEBUG) dbgEl.textContent = `draw calls ${renderer.info.render.calls} · triangles ${renderer.info.render.triangles}`;
-  if (DEBUG && (perfT += dt) > 5) { perfT = 0; console.log('[hisar] draw calls', renderer.info.render.calls, 'tris', renderer.info.render.triangles); }
+  if (DEBUG) dbgEl.textContent = `draw calls ${renderer.info.render.calls} · triangles ${renderer.info.render.triangles} · ${fpsEma.toFixed(0)} fps · errors ${G.errors.length}`;
+  if (DEBUG && (perfT += dt) > 5) { perfT = 0; console.log('[hisar] draw calls', renderer.info.render.calls, 'tris', renderer.info.render.triangles, 'fps', fpsEma.toFixed(1)); }
 }
 
 // ?debug: fast-forward the simulation without rendering, for balance tests
@@ -1493,29 +2020,37 @@ if (DEBUG) window.hisarSim = (seconds, withBot = true) => {
   for (let s = 0; s < seconds && !G.over; s += 0.025) { if (withBot) autoplay(0.025); update(0.025); }
   return { wave: G.wave, lives: G.lives, gold: G.gold, towers: G.towers.map(tw => tw.type[0] + tw.level).join(' '), over: G.over, errors: G.errors.length };
 };
+// ?debug: select a pad by index (screenshots and UI tests); the renderer for checks from the console
+if (DEBUG) window.hisarRenderer = renderer;
+if (DEBUG) window.hisarSelect = i => { selectPad(pads[i]); return sel ? (sel.tower ? 'tower' : 'build') : 'none'; };
 
+applyQuality();
+fitFov();
+refreshSoundBtn();
 applyLang();
+document.documentElement.style.setProperty('--top-h', $('top').offsetHeight + 'px');
 // ?auto starts right away (as before the remaster, so the bot's runs stay comparable); the models swap in when they arrive
-if (AUTO) { setSpeed(3); startGame(); }
+if (AUTO) startGame(null); else showScreen('title');
 // ?sim=<seconds> (with ?auto) fast-forwards before the first frame, ?cam=x,y,z,tx,tz sets the view: used for screenshots
 const simSec = +params.get('sim') || 0;
 if (AUTO && simSec) {
   for (let s = 0; s < simSec && !G.over; s += 0.025) { autoplay(0.025); update(0.025); }
-  for (const f of ftxt) f.el.remove();
-  ftxt.length = 0;
+  clearFloatText();
   $('toast').innerHTML = '';
+  $('banner').classList.remove('on');
 }
-const camParam = params.get('cam');
 if (camParam) { const [x, y, z, tx, tz] = camParam.split(',').map(Number); camera.position.set(x, y, z); controls.target.set(tx || 0, 0, tz || 0); }
 G.pads = pads.length;
 G.assets = [];
 frame();
-// the title screen shows while the models load (Play stays disabled); after 15 s the game goes on with whatever has loaded
-Promise.race([loadAssets(), new Promise(r => setTimeout(r, 15000))]).then(() => {
+// the title screen shows while the models load (Play stays disabled); after 15 s the game goes on with whatever has
+// loaded, and a model that arrives later is still swapped in
+const assetsLoaded = loadAssets().then(() => { if (assetState.done) applyAssets(); });
+Promise.race([assetsLoaded, new Promise(r => setTimeout(r, 15000))]).then(() => {
   applyAssets();
   assetState.done = true;
   G.assetsReady = true;
-  if (!G.running && !G.over) showTitle();
+  if (screen === 'title') showScreen('title');
 });
 </script>
 </body>

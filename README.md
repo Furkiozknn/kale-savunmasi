@@ -22,12 +22,20 @@ and hold the walls for 15 waves. Then see how long you last in endless mode.
   5th wave that costs 6 lives if it reaches the gate.
 - **Tactics:** three target modes per tower (First, Strongest, Nearest), sell for a 70% refund, call the next wave early
   for bonus gold, 1× / 2× / 3× speed.
-- **15 waves + endless mode**, best wave saved in your browser.
+- **15 waves + endless mode**, best wave saved in your browser, and **Continue**: the run is saved after every cleared wave.
+- **Menus like the other arena games:** pause menu (Resume / Settings / Restart / Main menu), settings (master, music and
+  effects volume, language, Low / High quality, fullscreen, all saved), end screen with four stats and a "New best!" moment,
+  restart in place without a page reload.
+- **Music:** a 9/8 (aksak) loop in the Hicaz mode, synthesised in Web Audio (drone, plucked saz-like melody, bass); the
+  drums (düm / tek / zil) fade in while a wave is running. Ported from the Godot version.
+- **Wave banner and boss bar:** a big "Wave 7" banner with that wave's enemies (red for a battering-ram wave) and a health
+  bar under the top bar while a ram is on the road. Toasts are green (good), red (bad) or neutral.
 - **Generated models and icons, with a code fallback:** the fortress, enemies, towers, turrets and boats are low-poly
-  models, the interface uses one painted icon set. Terrain, trees, particles and every sound effect (Web Audio) are made in code,
+  models, the interface uses one painted icon set. Terrain, trees, particles, the music and every sound effect (Web Audio) are made in code,
   and every model also has a procedural version that is used when the files cannot load.
 - **Runs on a laptop iGPU:** instanced meshes, merged geometry, one 1024 shadow map, about 40 draw calls in a full battle. Use `?low` if it stutters.
-- **Turkish by default, English with one click.** Touch controls on phones and tablets.
+- **Turkish or English** (first run follows the browser language), switch with one click or `L`. Touch controls on
+  phones and tablets, 44 px touch targets, and a portrait camera that looks along the roads down to the fortress.
 
 | | |
 |---|---|
@@ -41,6 +49,13 @@ After the asset remaster:
 | ![Title screen with the new crest](docs/remaster-title.png) | ![Battle with the new models](docs/remaster-battle.png) |
 | ![Close-up of towers and enemies](docs/remaster-closeup.png) | ![Phone layout](docs/remaster-phone.png) |
 
+After the overnight pass (pause menu, settings, end screen, boss bar, portrait camera on phones):
+
+| | |
+|---|---|
+| ![Pause menu](docs/overnight-pause.png) | ![Settings](docs/overnight-settings.png) |
+| ![End screen with the new-best highlight](docs/overnight-end.png) | ![Battering ram with the boss bar](docs/overnight-boss.png) |
+
 ## Controls
 
 | Action | Mouse / keyboard | Touch |
@@ -51,8 +66,19 @@ After the asset remaster:
 | Zoom | Mouse wheel | Pinch |
 | Next wave | `Space` | Wave button |
 | Build tower 1 / 2 / 3 | `1` `2` `3` (with a pad selected) | Panel |
-| Upgrade / sell | `U` / `S` | Panel |
-| Speed / pause / close | `F` / `P` / `Esc` | Top bar |
+| Upgrade / sell / target mode | `U` / `S` / `T` | Panel |
+| Speed | `F` | Top bar |
+| Pause menu | `P` (always) or `Esc` (closes the panel first, then pauses) | Top bar |
+| Music / sound effects / language | `M` / `X` / `L` | Settings |
+| Confirm a focused button | `Enter` / `Space` | Tap |
+
+### Settings
+
+Master, music and effects volume, language (TR / EN), graphics quality (Low: no shadows, fewer trees and rocks, half the
+particles, pixel ratio 1; High is the default on desktop, Low on touch devices) and fullscreen. They are saved in
+`localStorage` under `arena.hisar.settings`; the best wave is `arena.hisar.best` and the saved run `arena.hisar.save`
+(the old `hisar.lang` / `hisar.best` keys are read once and migrated). The sound button in the top bar mutes everything
+and brings back the old volume. Under `?auto` nothing is written.
 
 ## Run it locally
 
@@ -64,13 +90,13 @@ original procedural models (icons still work).
 
 | Flag | Effect |
 |---|---|
-| `?low` | No shadows, half the particles and trees, for weak GPUs |
+| `?low` | Low quality for this visit (no shadows, fewer trees and particles), for weak GPUs |
 | `?lang=en` / `?lang=tr` | Interface language |
 | `?auto` | The game plays itself at 3× speed (self-test bot) |
 | `?auto&sim=600` | Fast-forwards 600 seconds of play before the first frame |
-| `?cam=x,y,z,tx,tz` | Sets the camera position and target (for screenshots) |
+| `?cam=x,y,z,tx,tz` | Sets the camera position and target (for screenshots; also stops the title orbit) |
 | `?noassets` | Skips the generated models and uses the procedural ones |
-| `?debug` | Shows draw calls on screen, logs them every 5 s and exposes `hisarSim(seconds)` to fast-forward the simulation |
+| `?debug` | Shows draw calls, triangles, fps and the error count on screen, logs them every 5 s, and exposes `hisarSim(seconds)` (fast-forward) and `hisarSelect(padIndex)` |
 
 ## How it was made
 
@@ -102,7 +128,45 @@ Prompts, sizes and checks per asset: [`docs/assets.md`](docs/assets.md).
 ## Tech
 
 Three.js r170 (ES module from jsDelivr), OrbitControls, BufferGeometryUtils, GLTFLoader, Web Audio API, one Google Font (Rubik).
-About 1,500 lines of plain JavaScript, HTML and CSS in one file.
+About 2,050 lines of plain JavaScript, HTML and CSS in one file.
+
+## Changelog
+
+### 2026-10-21 overnight pass
+
+Fixes (from the code review):
+- Space could start wave 16, 17, ... in normal mode: `startWave()` now checks the 15-wave cap itself (`canCallWave()`).
+- Tower panel clicks were lost mid-wave because every kill rebuilt the panel: it is now built once per tower / level /
+  target mode / language, and gold or kills only update the live values in place.
+- The build / tower panel covered the wave box between 761 and 1080 px wide; title and end cards did not fit landscape
+  phones (they now scroll and shrink below 500 px height).
+- Phones in portrait had the fortress off-screen: a portrait camera now looks along the roads down to the gate (62°
+  horizontal field of view), and it is re-applied when the phone is turned.
+- Touch targets are at least 44 px on touch screens; Space no longer hijacks focused buttons; Esc / P open a real pause
+  menu; "Play again" restarts in place instead of reloading the page, and there is a Main menu button.
+- While paused you could still build, upgrade, sell and call waves; the pause menu now blocks all of it.
+- Smaller fixes: projectile pools never write past their buffer, "+gold" text starts above the (scaled) model, a
+  two-finger gesture no longer selects a pad when the fingers lift, `?cam` stops the title orbit, models that arrive after
+  the 15 s loading timeout are still swapped in, toasts sit under the top bar even when it wraps on phones, the wave
+  preview is cached, the HUD buttons have labels for screen readers, browser zoom is allowed again, promise rejections are
+  counted as errors, the first-run language follows the browser, `T` cycles the target mode, the sound icon shows the
+  muted state under `?auto`.
+- Not changed on purpose: "First" targeting still compares the fraction of each road walked. Ranking by remaining distance
+  (the review's suggestion) made the self-test bot fall on wave 10 instead of 15, so it is a balance change, not a fix.
+
+New systems: settings card (master / music / effects volume, TR / EN, Low / High quality switched live, fullscreen),
+saved under `arena.hisar.settings` with a one-time migration of the old keys; pause menu; Continue (the run is saved after
+every cleared wave); end screen with four stats, a "New best!" highlight and Main menu; `M` / `X` / `L` keys; visible
+focus ring; footer credit linking to the arena page; `?debug` shows fps and the error count.
+
+Redesign: the Godot version's 9/8 Hicaz music loop ported to Web Audio (drums only during waves); "Wave 7" banner with the
+wave's enemies; battering-ram health bar; green / red / neutral toasts and toasts for upgrades; new `upgrade` and `boss`
+sounds; the defeat card uses the painted fortress icon.
+
+Removed: the unused `level` string, the `.kbd` selector, the `--danger` variable, the redundant language line, the `icon`
+field on every tower and enemy (it always equalled the key), the "Paused" tag (replaced by the menu), the reflow-based HUD
+bump. The procedural fortress mesh and the replaced procedural geometries are now disposed once the models are in.
+Particles skip their GPU upload when none are alive.
 
 ## License
 

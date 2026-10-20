@@ -31,7 +31,7 @@ pieces with generated assets, keeps every procedural builder as a fallback, and 
 | head-cannon | tower turret | box carriage + cylinder | tripo_3d: "Low-poly stylized medieval cannon game asset, dark iron cannon barrel on a small brown wooden carriage with two wheels, barrel pointing forward and slightly up, …" | `assets/models/head-cannon.glb` | GLB, 256 px, 50 KB, 938 tris | good; muzzle +X, turned -90° | yes | barrel is steep, closer to a mortar |
 | head-tar | tower turret | cylinder pot + cones | tripo_3d: "Low-poly stylized medieval tar cauldron game asset, round black iron cauldron full of bubbling dark tar, standing on short legs over small orange flames and logs, …" | `assets/models/head-tar.glb` | GLB, 256 px, 46 KB, 901 tris | ok; tar surface is dark, flames visible below | yes | – |
 | boat | scenery | box hull + plane sail | tripo_3d: "Low-poly stylized medieval fishing sailboat game asset, small wooden boat with one mast and a cream square sail, …" (neg. + water, people) | `assets/models/boat.glb` | GLB, 256 px, 53 KB, 916 tris | good | yes | – |
-| icon sheet | UI | OS emoji (💰 ❤️ ⚔️ 🏹 💣 🔥 🗡️ 🐎 🛡️ 🐏 ⬆ 🎯 🏆 🔊 🔇 🏰): inconsistent per platform, 💣 anachronistic, 🐏 a pun | gpt_image_2_5 2k transparent: "Game UI icon sheet: exactly 16 icons arranged in a strict 4 by 4 grid … chunky stylized medieval game icons, soft painted clay look, thick dark brown outline, warm palette …" (coins, heart, crossed swords, longbow, cannon, cauldron over fire, curved sword, horse head, round shield, battering ram, gold arrow, archery target, trophy, speaker, muted speaker, castle tower) | `assets/ui/icons/*.png` (gold, lives, wave, archer, cannon, tar, raider, rider, shield, ram, upgrade, target, trophy, sound-on, sound-off, fortress) | 16 × PNG 96 px, 4-9 KB each | good; glow removed (alpha < 70 → 0) and specks from neighbour cells dropped | yes (top bar, build cards, tower panel, wave preview, title, sound button) | `fortress` icon not used yet |
+| icon sheet | UI | OS emoji (💰 ❤️ ⚔️ 🏹 💣 🔥 🗡️ 🐎 🛡️ 🐏 ⬆ 🎯 🏆 🔊 🔇 🏰): inconsistent per platform, 💣 anachronistic, 🐏 a pun | gpt_image_2_5 2k transparent: "Game UI icon sheet: exactly 16 icons arranged in a strict 4 by 4 grid … chunky stylized medieval game icons, soft painted clay look, thick dark brown outline, warm palette …" (coins, heart, crossed swords, longbow, cannon, cauldron over fire, curved sword, horse head, round shield, battering ram, gold arrow, archery target, trophy, speaker, muted speaker, castle tower) | `assets/ui/icons/*.png` (gold, lives, wave, archer, cannon, tar, raider, rider, shield, ram, upgrade, target, trophy, sound-on, sound-off, fortress) | 16 × PNG 96 px, 4-9 KB each | good; glow removed (alpha < 70 → 0) and specks from neighbour cells dropped | yes (top bar, build cards, tower panel, wave preview, title, sound button) | `fortress` icon is used on the defeat card since the overnight pass |
 | logo crest | UI | 🏰 emoji | gpt_image_2_5 1k transparent: "Game logo emblem … heraldic shield-shaped crest showing a chunky cream stone castle with two round towers with terracotta red cone roofs and a small orange flag, golden rim around the shield, crossed spear behind …, no text" | `assets/ui/logo.png`, `assets/ui/favicon.png` | PNG 256 px (28 KB), 64 px favicon | good | yes (title card, game-over card, top bar, favicon) | – |
 
 Also changed in code, no credits: particles use a soft round sprite (canvas texture) instead of hard squares; the
@@ -49,6 +49,18 @@ level 2 towers get a pennant and level 3 a gold band on the new models (plus sli
 - Trees (280 instances) and rocks (70): kept procedural on purpose, too many instances for textured models.
 - Projectiles (arrows, cannonballs, tar), pads, terrain, water: procedural is fine at this size.
 - Audio: no generation model available for standalone sound; the synthesised Web Audio sounds stay.
+
+## Overnight pass (2026-10-21)
+
+No new assets were generated (0 credits spent of the 12-credit allowance). The tent was not retried: the camps are small
+on screen and the procedural cone tent reads cleanly. Code-side asset changes:
+
+- `assets/ui/icons/fortress.png` is now used as the crest of the defeat card (it was unused).
+- Models that finish loading after the 15 s timeout are still applied (each model once); the procedural fortress mesh,
+  the old boat geometry and the replaced tower geometries are disposed after the swap.
+- Low quality (Settings or `?low`) draws 170 of the 280 trees and 40 of the 70 rocks; both are still built at full count
+  so the seeded random stream (and every battle) is the same in both qualities.
+- Music: synthesised in code (Web Audio), no audio files.
 
 ## Credits
 
