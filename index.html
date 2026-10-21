@@ -170,6 +170,8 @@
     .estats { margin: 8px 0; }
     .set { margin-top: 8px; gap: 6px 10px; }
     #banner { top: 56%; }
+    #banner b { font-size: 34px; }
+    #banner .ic { width: 22px; height: 22px; }
   }
   @media (pointer: coarse) {
     button { min-height: 44px; min-width: 44px; }
@@ -1469,7 +1471,12 @@ function waveBanner(w, boss) {
   el.innerHTML = `<b>${t('wave')} ${w}</b><span>${ENEMY_KEYS.filter(k => wc[k]).map(k => `${ico(k)} ${wc[k]}`).join('')}</span>`;
   el.className = boss ? 'boss' : '';
   void el.offsetWidth; // restart the animation (once per wave)
+  el.style.top = '';
   el.classList.add('on');
+  // keep it under the toast stack (which sits under the boss bar) without covering the wave box: matters on short screens
+  const h = el.offsetHeight, tb = $('toast').getBoundingClientRect(), wb = $('wavebox').getBoundingClientRect();
+  const floor = (wb.left < (innerWidth + el.offsetWidth) / 2 ? wb.top : innerHeight) - 8 - h / 2;
+  el.style.top = Math.min(Math.max(parseFloat(getComputedStyle(el).top), tb.bottom + 10 + h / 2), floor) + 'px';
   clearTimeout(bannerTimer);
   bannerTimer = setTimeout(() => el.classList.remove('on'), 1800);
 }
@@ -1960,7 +1967,6 @@ let wasPortrait = isPortrait();
 function onResize() {
   fitFov();
   renderer.setSize(innerWidth, innerHeight);
-  document.documentElement.style.setProperty('--top-h', $('top').offsetHeight + 'px');
   if (isPortrait() !== wasPortrait) { wasPortrait = isPortrait(); if (G.running) cameraHome(); }
 }
 addEventListener('resize', onResize);
@@ -2028,7 +2034,8 @@ applyQuality();
 fitFov();
 refreshSoundBtn();
 applyLang();
-document.documentElement.style.setProperty('--top-h', $('top').offsetHeight + 'px');
+// the top bar wraps on phones, and its height also changes with the gold digits and the language, not only on resize
+new ResizeObserver(() => document.documentElement.style.setProperty('--top-h', $('top').offsetHeight + 'px')).observe($('top'));
 // ?auto starts right away (as before the remaster, so the bot's runs stay comparable); the models swap in when they arrive
 if (AUTO) startGame(null); else showScreen('title');
 // ?sim=<seconds> (with ?auto) fast-forwards before the first frame, ?cam=x,y,z,tx,tz sets the view: used for screenshots
