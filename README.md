@@ -1,173 +1,186 @@
-# 🏰 Hisar · Fortress Defense
+<p align="center">
+  <a href="https://furkiozknn.github.io/kale-savunmasi/"><img src="docs/banner.svg" width="100%" alt="Hisar: hold a seaside fortress against an army marching along two roads. Click to play in your browser."></a>
+</p>
 
-**[▶ Play in your browser](https://furkiozknn.github.io/kale-savunmasi/)** · English & Türkçe · desktop & mobile · free, no install
+<p align="center">
+  <a href="https://furkiozknn.github.io/kale-savunmasi/"><img src="https://img.shields.io/badge/%E2%96%B6_Play_now-in_your_browser-F59E0B?style=for-the-badge&labelColor=2B2118" alt="Play now in your browser"></a>
+  <img src="https://img.shields.io/badge/Three.js-r170-FBBF24?style=for-the-badge&logo=threedotjs&logoColor=white&labelColor=2B2118" alt="Three.js r170">
+  <img src="https://img.shields.io/badge/built_by-Claude_Opus_5.5-DC2626?style=for-the-badge&logo=claude&logoColor=white&labelColor=2B2118" alt="Built by Claude Opus 5.5">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-16A34A?style=for-the-badge&labelColor=2B2118" alt="MIT licence"></a>
+  <img src="https://img.shields.io/badge/no_install-desktop_%C2%B7_phone-FFF8EB?style=for-the-badge&labelColor=2B2118" alt="No install, desktop and phone">
+</p>
 
-🏟️ Part of **[Claude Game Arena](https://furkiozknn.github.io/)**: four games, each built by a different Claude model. This is game #1, built by **Claude Opus 5.5**; assets remastered by **Claude Opus 5.5 (orchestrator)**. [See all games and the scorecard →](https://furkiozknn.github.io/)
+<p align="center"><b>A low-poly 3D tower defense game in a seaside valley: an army marches on the fortress along two roads; build archers, cannons and tar cauldrons on the stone pads, upgrade them and hold the walls for 15 waves.</b></p>
 
-🎮 **Godot 4 remake (round 2):** [play](https://furkiozknn.github.io/hisar-godot/) · [code](https://github.com/Furkiozknn/hisar-godot), rebuilt by the same model in a real game engine.
+<p align="center">
+  <img src="docs/gameplay.gif" width="640" alt="Hisar gameplay: mid-battle at wave 6, enemies march along the roads while the towers fire">
+</p>
 
-![Gameplay clip](docs/gameplay.gif)
+<p align="center"><b>Play online: <a href="https://furkiozknn.github.io/kale-savunmasi/">https://furkiozknn.github.io/kale-savunmasi/</a></b> (desktop and phone, no install)</p>
 
-A low-poly 3D tower defense game in a **single `index.html`** (Three.js, no build step) plus a small folder of generated models and icons.
-An army marches on a seaside fortress along two roads. Build towers on the stone pads, upgrade them,
-and hold the walls for 15 waves. Then see how long you last in endless mode.
+## Highlights
 
-![Battle at the road junction](docs/closeup.png)
+- **Three towers, three levels each.** The Archer Tower fires fast single-target arrows, the Cannon Bastion lobs
+  ballistic shots at a predicted landing point with splash damage, and the Tar Cauldron slows, burns over time and
+  leaves sticky tar on the road.
+- **Four enemy types.** Raiders, fast Riders, armoured Shieldbearers that shrug off arrows, and a Battering Ram boss
+  every 5th wave that costs 6 lives if it reaches the gate.
+- **Tactics in every wave.** Three target modes per tower (First, Strongest, Nearest), sell for a 70 % refund, call
+  the next wave early for bonus gold, and play at 1x, 2x or 3x speed.
+- **15 waves, then endless.** The run is saved after every cleared wave, so **Continue** picks it up after a reload;
+  after the victory the waves keep getting stronger in endless mode.
+- **Tested by a bot.** The `?auto` bot builds, upgrades and calls waves on its own; in the measured run it held out
+  until wave 15 and fell there, so a full win asks for better play than the bot's.
+- **Light on a laptop GPU.** 60 fps on an Intel UHD GPU at 1280x720 with 37-42 draw calls in battle, and a `?low` tier
+  for weak GPUs ([measurements](docs/assets.md)).
+- **One file plus generated models.** One `index.html` with Three.js r170 from a CDN, twelve generated low-poly models
+  and a painted icon set; every model keeps a procedural version as the fallback.
 
-## Features
+## How to play
 
-- **3 towers × 3 levels:** 🏹 Archer Tower (fast single-target arrows), 💣 Cannon Bastion (ballistic shots with a predicted
-  landing point and splash damage), 🔥 Tar Cauldron (slows, burns over time, leaves sticky tar on the road).
-- **4 enemy types:** Raiders, fast Riders, armoured Shieldbearers (arrows do less damage) and a Battering Ram boss every
-  5th wave that costs 6 lives if it reaches the gate.
-- **Tactics:** three target modes per tower (First, Strongest, Nearest), sell for a 70% refund, call the next wave early
-  for bonus gold, 1× / 2× / 3× speed.
-- **15 waves + endless mode**, best wave saved in your browser, and **Continue**: the run is saved after every cleared wave.
-- **Menus like the other arena games:** pause menu (Resume / Settings / Restart / Main menu), settings (master, music and
-  effects volume, language, Low / High quality, fullscreen, all saved), end screen with four stats and a "New best!" moment,
-  restart in place without a page reload.
-- **Music:** a 9/8 (aksak) loop in the Hicaz mode, synthesised in Web Audio (drone, plucked saz-like melody, bass); the
-  drums (düm / tek / zil) fade in while a wave is running. Ported from the Godot version.
-- **Wave banner and boss bar:** a big "Wave 7" banner with that wave's enemies (red for a battering-ram wave) and a health
-  bar under the top bar while a ram is on the road. Toasts are green (good), red (bad) or neutral.
-- **Generated models and icons, with a code fallback:** the fortress, enemies, towers, turrets and boats are low-poly
-  models, the interface uses one painted icon set. Terrain, trees, particles, the music and every sound effect (Web Audio) are made in code,
-  and every model also has a procedural version that is used when the files cannot load.
-- **Runs on a laptop iGPU:** instanced meshes, merged geometry, one 1024 shadow map, about 40 draw calls in a full battle. Use `?low` if it stutters.
-- **Turkish or English** (first run follows the browser language), switch with one click or `L`. Touch controls on
-  phones and tablets, 44 px touch targets, and a portrait camera that looks along the roads down to the fortress.
+> [!TIP]
+> **Goal:** hold the fortress for 15 waves. It has 20 lives; every enemy that reaches the gate costs some of them, and
+> at zero the fortress falls. After a victory you can continue in endless mode.
 
-| | |
-|---|---|
-| ![Overview](docs/gameplay.png) | ![Phone layout](docs/mobile.png) |
-| ![Title screen](docs/title-en.png) | |
+You start with 180 gold. Click a stone pad by the road to open the build panel and pick a tower, then press the wave
+button (or `Space`) to send the first wave. The box in the corner shows which enemies the next wave brings. Click a
+tower to upgrade it, sell it or change its target mode.
 
-After the asset remaster:
+<details>
+<summary><b>More rules</b></summary>
 
-| | |
-|---|---|
-| ![Title screen with the new crest](docs/remaster-title.png) | ![Battle with the new models](docs/remaster-battle.png) |
-| ![Close-up of towers and enemies](docs/remaster-closeup.png) | ![Phone layout](docs/remaster-phone.png) |
+- Building costs 60 gold for an Archer Tower, 110 for a Cannon Bastion and 80 for a Tar Cauldron; each tower can be
+  upgraded twice. Selling refunds 70 % of everything spent on that tower.
+- Kills pay gold, and every cleared wave pays a bonus. Calling the next wave while enemies are still on the road adds
+  an early-call bonus.
+- Raiders and Riders cost 1 life at the gate, Shieldbearers 2 and the Battering Ram 6. Enemy health grows with every
+  wave.
+- Armour cuts arrow damage in full and cannonball damage by half; burning tar ignores it. Tar slows its targets, and
+  the puddles it leaves slow whoever walks through them.
+- Riders appear from wave 3, Shieldbearers from wave 5, and a Battering Ram comes on waves 5, 10 and 15.
+- Your best wave is kept, and a new best is highlighted on the end screen.
 
-After the overnight pass (pause menu, settings, end screen, boss bar, portrait camera on phones):
+</details>
 
-| | |
-|---|---|
-| ![Pause menu](docs/overnight-pause.png) | ![Settings](docs/overnight-settings.png) |
-| ![End screen with the new-best highlight](docs/overnight-end.png) | ![Battering ram with the boss bar](docs/overnight-boss.png) |
+### Controls
 
-## Controls
-
-| Action | Mouse / keyboard | Touch |
+| Action | Mouse / touch | Keyboard |
 |---|---|---|
-| Build / select | Click a pad or a tower | Tap |
-| Pan | Drag | One finger |
-| Rotate | Right-drag | Two fingers |
-| Zoom | Mouse wheel | Pinch |
-| Next wave | `Space` | Wave button |
-| Build tower 1 / 2 / 3 | `1` `2` `3` (with a pad selected) | Panel |
-| Upgrade / sell / target mode | `U` / `S` / `T` | Panel |
-| Speed | `F` | Top bar |
-| Pause menu | `P` (always) or `Esc` (closes the panel first, then pauses) | Top bar |
-| Music / sound effects / language | `M` / `X` / `L` | Settings |
-| Confirm a focused button | `Enter` / `Space` | Tap |
+| Select a pad or a tower | click / tap | |
+| Build on the selected pad | build panel | `1` `2` `3` |
+| Upgrade / sell / target mode | tower panel | `U` / `S` / `T` |
+| Start or call the next wave | wave button | `Space` |
+| Pan | drag / one finger | |
+| Rotate | right-drag / two fingers | |
+| Zoom | wheel / pinch | |
+| Speed 1x / 2x / 3x | speed button | `F` |
+| Pause menu | pause button | `P` / `Esc` (Esc first closes the panel) |
+| Music / effects / language | settings | `M` / `X` / `L` |
+| Fullscreen | settings | |
 
-### Settings
+Settings (master, music and effects volume, TR / EN, Low / High quality, fullscreen) are saved in `localStorage` under
+`arena.hisar.settings`; the run under `arena.hisar.save`, the best wave under `arena.hisar.best`. The first visit follows
+the browser language; touch devices start on Low quality.
 
-Master, music and effects volume, language (TR / EN), graphics quality (Low: no shadows, fewer trees and rocks, half the
-particles, pixel ratio 1; High is the default on desktop, Low on touch devices) and fullscreen. They are saved in
-`localStorage` under `arena.hisar.settings`; the best wave is `arena.hisar.best` and the saved run `arena.hisar.save`
-(the old `hisar.lang` / `hisar.best` keys are read once and migrated). The sound button in the top bar mutes everything
-and brings back the old volume. Under `?auto` nothing is written.
-
-## Run it locally
-
-Serve the folder: `python -m http.server 8766`, then open http://127.0.0.1:8766/. It needs internet to load Three.js and the font from a CDN.
-You can also double-click `index.html`: the browser blocks loading the models from `file://`, so the game then runs with its
-original procedural models (icons still work).
-
-### URL flags
+<details>
+<summary><b>URL flags for testing</b></summary>
 
 | Flag | Effect |
 |---|---|
-| `?low` | Low quality for this visit (no shadows, fewer trees and particles), for weak GPUs |
-| `?lang=en` / `?lang=tr` | Interface language |
-| `?auto` | The game plays itself at 3× speed (self-test bot) |
-| `?auto&sim=600` | Fast-forwards 600 seconds of play before the first frame |
-| `?cam=x,y,z,tx,tz` | Sets the camera position and target (for screenshots; also stops the title orbit) |
-| `?noassets` | Skips the generated models and uses the procedural ones |
-| `?debug` | Shows draw calls, triangles, fps and the error count on screen, logs them every 5 s, and exposes `hisarSim(seconds)` (fast-forward) and `hisarSelect(padIndex)` |
+| `?auto` | the game plays itself at 3x speed (builds, upgrades, calls waves) and writes nothing to `localStorage` |
+| `?debug` | draw calls, triangles, fps and the error count on screen; `window.hisarSim(seconds)` fast-forwards, `window.hisarSelect(padIndex)` selects a pad |
+| `?sim=N` | with `?auto`: fast-forward N seconds before the first frame |
+| `?low` | no shadows, pixel ratio 1, fewer trees and rocks, half the particles |
+| `?lang=en` / `?lang=tr` | language |
+| `?cam=x,y,z,tx,tz` | camera position and target (stops the title orbit; used for screenshots) |
+| `?noassets` | skip the generated models and use the procedural ones |
+
+The live state is on `window.hisar` (gold, lives, wave, towers, enemies, errors).
+
+</details>
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/remaster-title.png" alt="Title screen with the crest"><br><sub>Title screen</sub></td>
+    <td width="33%"><img src="docs/remaster-battle.png" alt="Wave 14 on both roads"><br><sub>Wave 14 on both roads</sub></td>
+    <td width="33%"><img src="docs/remaster-closeup.png" alt="Towers and enemies up close"><br><sub>Towers and enemies up close</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/overnight-boss.png" alt="A battering ram with its health bar"><br><sub>Battering ram and its boss bar</sub></td>
+    <td><img src="docs/overnight-pause.png" alt="Pause menu"><br><sub>Pause menu</sub></td>
+    <td><img src="docs/overnight-end.png" alt="End screen with a new best"><br><sub>End screen with a new best</sub></td>
+  </tr>
+</table>
+
+<details>
+<summary><b>Phone layout, settings and the procedural look before the remaster</b></summary>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/overnight-settings.png" alt="Settings"><br><sub>Settings</sub></td>
+    <td width="50%"><img src="docs/title-en.png" alt="Title screen before the remaster"><br><sub>Title screen, procedural</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gameplay.png" alt="Battle overview before the remaster"><br><sub>Battle overview, procedural</sub></td>
+    <td><img src="docs/closeup.png" alt="Road junction before the remaster"><br><sub>Road junction, procedural</sub></td>
+  </tr>
+</table>
+
+<p align="center"><img src="docs/remaster-phone.png" width="300" alt="Hisar on a phone in portrait"><br><sub>On a phone: the portrait camera looks along the roads</sub></p>
+
+</details>
+
+## Balance
+
+Towers and enemies are two data tables at the top of the script (`TOWERS`, `ENEMIES`), and each wave is built by
+`makeWave()` with enemy health scaled by `hpMul()`. The self-test bot was used to tune them: the first version was too
+easy (the bot lost only 2 lives), so enemy health growth and the ram were made tougher. In the measured
+`?auto&debug&sim=2000` run the bot falls on wave 15 with 13 towers, the same result before and after the asset remaster,
+with 0 JS errors.
+
+## Running locally
+
+Serve the folder over HTTP (opened from `file://`, the browser blocks the model files and the game uses its procedural
+models):
+
+```
+python -m http.server 8000
+```
+
+then open <http://localhost:8000/>.
 
 ## How it was made
 
-Built with [Claude Code](https://claude.com/claude-code) by **Claude Opus 5.5** from one prompt: [`prompts/hisar.md`](prompts/hisar.md).
-The prompt follows a six-block template (World, Life, Interaction, Dashboard, Extras, Performance) and adds two
-blocks of its own: **Game rules** and **Self-test**. The self-test bot played the full 15 waves in a real browser to
-check for errors and to tune the difficulty: the first version was too easy (the bot lost only 2 lives),
-so enemy HP growth and the ram were made tougher.
+Built by **Claude Opus 5.5** with Claude Code from one prompt: [prompts/hisar.md](prompts/hisar.md). The first version
+was fully procedural: the valley, the fortress, the camps, the towers and the enemies are merged or instanced low-poly
+primitives with vertex colours, and every sound effect is synthesised with the Web Audio API. The music, a 9/8 loop in
+the Hicaz mode whose drums come in during waves, was added later in Web Audio as well.
 
-This is game #1 of a series in which **every game is built by a different AI model**, to compare which one makes the
-better game. Later, the best of them will be rebuilt in Godot 4.
+The assets were remastered by the orchestrator, **Claude Opus 5.5**, with generated models: Tripo text-to-3D (through
+Higgsfield) for the fortress, the four enemies, the three tower bases, their turrets and the boats, and GPT Image for a
+16-icon sheet and the logo crest. The models were processed with glTF-Transform (about 900-1,500 triangles each, 5,540
+for the fortress, about 1.1 MB in `assets/`), and every procedural model stays as the fallback. Prompts, sizes, the
+rejected asset and fps before and after: [docs/assets.md](docs/assets.md). A Godot 4 remake was made in round 2.
 
-| # | Game | Genre | Model |
-|---|---|---|---|
-| 1 | **Hisar** | Tower defense, 3D | Claude Opus 5.5 |
-| 2 | [Çay Ocağı](https://github.com/Furkiozknn/cay-ocagi) | Time management, 3D | Claude Sonnet 5.5 |
-| 3 | [Çini Ustası](https://github.com/Furkiozknn/cini-ustasi) | Puzzle, 3D | Claude Fable 5.1 |
-| 4 | [Martı](https://github.com/Furkiozknn/marti) | Arcade flyer, 3D | Claude Haiku 5.5 |
+Hisar is part of the **Claude Game Arena** series, where each game is built by a Claude model from one prompt. The other
+games: [Çay Ocağı](https://furkiozknn.github.io/cay-ocagi/) · [Çini Ustası](https://furkiozknn.github.io/cini-ustasi/) ·
+[Martı](https://furkiozknn.github.io/marti/) · [Kervan](https://furkiozknn.github.io/kervan/) ·
+[Dolmuş](https://furkiozknn.github.io/dolmus/) · [Peri Golf](https://furkiozknn.github.io/peri-golf/) ·
+[Mehter](https://furkiozknn.github.io/mehter/) · [Boğaz Vapuru](https://furkiozknn.github.io/bogaz-vapuru/) ·
+[Simit Fırını](https://furkiozknn.github.io/simit-firini/) · [Karagöz](https://furkiozknn.github.io/karagoz/) ·
+[Lale Bahçesi](https://furkiozknn.github.io/lale-bahcesi/)
 
-## Assets
+## Türkçe
 
-The models and icons were generated with [Higgsfield](https://higgsfield.ai): Tripo text-to-3D for the fortress,
-the four enemies, the three tower bases, their turrets and the boats, and GPT Image for the icon sheet and the logo crest.
-The models were processed with [glTF-Transform](https://gltf-transform.dev) (pivot at the base, 256-1024 px WebP textures,
-about 900-1,500 triangles each, 5,500 for the fortress) and are normalised in code. About 1.1 MB in `assets/`.
-If a model cannot load, for example when the page is opened from `file://`, the procedural version is used.
-Prompts, sizes and checks per asset: [`docs/assets.md`](docs/assets.md).
+**Hisar**, sahildeki bir kaleyi iki yoldan yürüyen bir orduya karşı savunduğun alçak poligon 3D kule savunma oyunu. Yol
+kenarındaki taş kaidelere okçu kulesi, top tabyası ve katran kazanı kur, kuleleri geliştir ve 15 dalga boyunca hisarı
+ayakta tut; her beşinci dalgada bir koçbaşı gelir. Zaferden sonra sonsuz modda ne kadar dayanacağını gör. Kurulum yok;
+masaüstünde ve telefonda tarayıcıda oynanır. Claude Opus 5.5 tarafından Claude Code ile tek bir prompt'tan yapıldı.
 
-## Tech
-
-Three.js r170 (ES module from jsDelivr), OrbitControls, BufferGeometryUtils, GLTFLoader, Web Audio API, one Google Font (Rubik).
-About 2,050 lines of plain JavaScript, HTML and CSS in one file.
-
-## Changelog
-
-### 2026-10-21 overnight pass
-
-Fixes (from the code review):
-- Space could start wave 16, 17, ... in normal mode: `startWave()` now checks the 15-wave cap itself (`canCallWave()`).
-- Tower panel clicks were lost mid-wave because every kill rebuilt the panel: it is now built once per tower / level /
-  target mode / language, and gold or kills only update the live values in place.
-- The build / tower panel covered the wave box between 761 and 1080 px wide; title and end cards did not fit landscape
-  phones (they now scroll and shrink below 500 px height).
-- Phones in portrait had the fortress off-screen: a portrait camera now looks along the roads down to the gate (62°
-  horizontal field of view), and it is re-applied when the phone is turned.
-- Touch targets are at least 44 px on touch screens; Space no longer hijacks focused buttons; Esc / P open a real pause
-  menu; "Play again" restarts in place instead of reloading the page, and there is a Main menu button.
-- While paused you could still build, upgrade, sell and call waves; the pause menu now blocks all of it.
-- Smaller fixes: projectile pools never write past their buffer, "+gold" text starts above the (scaled) model, a
-  two-finger gesture no longer selects a pad when the fingers lift, `?cam` stops the title orbit, models that arrive after
-  the 15 s loading timeout are still swapped in, toasts sit under the top bar even when it wraps on phones, the wave
-  preview is cached, the HUD buttons have labels for screen readers, browser zoom is allowed again, promise rejections are
-  counted as errors, the first-run language follows the browser, `T` cycles the target mode, the sound icon shows the
-  muted state under `?auto`.
-- Not changed on purpose: "First" targeting still compares the fraction of each road walked. Ranking by remaining distance
-  (the review's suggestion) made the self-test bot fall on wave 10 instead of 15, so it is a balance change, not a fix.
-
-New systems: settings card (master / music / effects volume, TR / EN, Low / High quality switched live, fullscreen),
-saved under `arena.hisar.settings` with a one-time migration of the old keys; pause menu; Continue (the run is saved after
-every cleared wave); end screen with four stats, a "New best!" highlight and Main menu; `M` / `X` / `L` keys; visible
-focus ring; footer credit linking to the arena page; `?debug` shows fps and the error count.
-
-Redesign: the Godot version's 9/8 Hicaz music loop ported to Web Audio (drums only during waves); "Wave 7" banner with the
-wave's enemies; battering-ram health bar; green / red / neutral toasts and toasts for upgrades; new `upgrade` and `boss`
-sounds; the defeat card uses the painted fortress icon.
-
-Removed: the unused `level` string, the `.kbd` selector, the `--danger` variable, the redundant language line, the `icon`
-field on every tower and enemy (it always equalled the key), the "Paused" tag (replaced by the menu), the reflow-based HUD
-bump. The procedural fortress mesh and the replaced procedural geometries are now disposed once the models are in.
-Particles skip their GPU upload when none are alive.
+**Oyna:** https://furkiozknn.github.io/kale-savunmasi/
 
 ## License
 
-Code: [MIT](LICENSE).
+MIT, see [LICENSE](LICENSE).
