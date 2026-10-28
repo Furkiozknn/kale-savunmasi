@@ -18,6 +18,10 @@
 
 <p align="center"><b>Play online: <a href="https://furkiozknn.github.io/kale-savunmasi/">https://furkiozknn.github.io/kale-savunmasi/</a></b> (desktop and phone, no install)</p>
 
+<!-- portals:start -->
+<p align="center">Also on: <a href="https://furkiozknn.itch.io/kale-savunmasi">itch.io</a></p>
+<!-- portals:end -->
+
 ## Highlights
 
 - **Three towers, three levels each.** The Archer Tower fires fast single-target arrows, the Cannon Bastion lobs
@@ -192,3 +196,5 @@ masaüstünde ve telefonda tarayıcıda oynanır. Claude Opus 5.5 tarafından Cl
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+Like the game? You can support new rounds on [Buy Me a Coffee](https://buymeacoffee.com/furkiozkann). The game stays free.
