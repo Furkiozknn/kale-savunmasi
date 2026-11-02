@@ -28,7 +28,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; font-family: Rubik, system-ui, sans-serif; color: var(--ink);
-    background: linear-gradient(180deg, #f7c98b 0%, #f6dcb3 38%, #e9e2cf 70%, #cfd9cf 100%); user-select: none; -webkit-user-select: none; }
+    background: linear-gradient(180deg, #6f9cc4 0%, #a9c4d8 30%, #d9dccf 55%, #dfe0d2 100%); user-select: none; -webkit-user-select: none; }
   canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
   .glass { background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 6px 24px rgba(60, 35, 10, 0.18); border-radius: 14px; }
@@ -230,6 +230,8 @@ const MAX_WAVES = 15;
 const START_GOLD = 180;
 const START_LIVES = 20;
 const ACCENT = 0xf59e0b;
+// art direction (2026-11 redesign): limestone, slate, Bosphorus blue, banner red, torch amber
+const PAL = { lime: 0xcfc3a6, lime2: 0xb9ab8b, slate: 0x4b5563, bosph: 0x1f5f8b, banner: 0xb91c1c, torch: 0xf59e0b, wood: 0x6b4527, ink: 0x2e2216 };
 
 const TOWERS = {
   archer: { cost: [60, 90, 140], range: [9, 10, 11], rate: [0.75, 0.6, 0.45], dmg: [15, 24, 38] },
@@ -392,7 +394,7 @@ renderer.shadowMap.enabled = !low;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xf3dcb6, 95, 190);
+scene.fog = new THREE.Fog(0xdfe0d2, 100, 235); // hazy Bosphorus afternoon; the CSS sky behind the canvas ends in the same colour
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 400);
 camera.position.set(-6, 52, 50);
 
@@ -408,10 +410,14 @@ controls.maxPolarAngle = 1.15;
 controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
 controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 
-const hemi = new THREE.HemisphereLight(0xfff0d8, 0x6b7a4f, 1.6);
+const hemi = new THREE.HemisphereLight(0xe4ecf2, 0x6a5a3c, 1.25);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffdfb0, 2.6);
-sun.position.set(-38, 55, 28);
+// low warm afternoon sun from the south-west for long readable shadows, plus a cool unshadowed bounce from the sea
+const sun = new THREE.DirectionalLight(0xffd49a, 3.0);
+sun.position.set(-46, 44, 34);
+const rim = new THREE.DirectionalLight(0x9cc3e6, 0.75);
+rim.position.set(60, 26, -40);
+scene.add(rim);
 sun.castShadow = !low;
 sun.shadow.mapSize.set(1024, 1024);
 Object.assign(sun.shadow.camera, { left: -58, right: 58, top: 46, bottom: -46, near: 10, far: 160 });
