@@ -367,6 +367,7 @@ function vnoise(x, z) {
 }
 const fbm = (x, z) => vnoise(x * 0.06, z * 0.06) + vnoise(x * 0.13, z * 0.13) * 0.5 + vnoise(x * 0.3, z * 0.3) * 0.2;
 
+const _eY = new THREE.Euler(0, 0, 0, 'YXZ'); // yaw first, then the body's own lean and sway
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color();
 // Bake a transform and a flat vertex colour into a geometry so many parts can be merged into one mesh.
 function part(geo, color, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
@@ -642,7 +643,7 @@ function gridAxis(inner, lo, hi, nLo, nHi) {
   const XS = gridAxis(55, 175, 220, 16, 30), ZS = gridAxis(42, 175, 175, 16, 16), nx = XS.length, nz = ZS.length;
   const pos = new Float32Array(nx * nz * 3), col = new Float32Array(nx * nz * 3), uv = new Float32Array(nx * nz * 2), idx = [];
   const C = hex => new THREE.Color(hex);
-  const meadow = C(0x8db556), meadow2 = C(0x6f9a44), olive = C(0x7d8a3e), dry = C(0xc4b66c), worn = C(0xa99266),
+  const meadow = C(0x8db556), meadow2 = C(0x6f9a44), olive = C(0x7d8a3e), dry = C(0xb3ad5e), worn = C(0xa99266),
     limestone = C(0xd2c6a6), sand = C(0xe6d3a0), seabed = C(0x2c5f63), far = C(0x7f9a5c), far2 = C(0x5f7d4a), c = new THREE.Color();
   for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
     const x = XS[i], z = ZS[j], k = j * nx + i, inside = inPlay(x, z), h = terrainY(x, z);
@@ -656,7 +657,7 @@ function gridAxis(inner, lo, hi, nLo, nHi) {
     else if (h > 2.6) c.copy(limestone).lerp(meadow2, clamp((3.6 - h) / 1.0, 0, 1) * 0.8 + n * 0.2);
     else {
       c.copy(meadow).lerp(meadow2, n);
-      if (n2 > 0.62) c.lerp(dry, smoothstep(0.62, 0.8, n2) * 0.6);
+      if (n2 > 0.62) c.lerp(dry, smoothstep(0.62, 0.85, n2) * 0.4);
       if (n2 < 0.3) c.lerp(olive, 0.35);
       const dp = distToPath(x, z);
       if (dp < 3.4) c.lerp(worn, (1 - smoothstep(1.3, 3.4, dp)) * 0.6);
@@ -865,7 +866,7 @@ function fscatter(count, x0, x1, z0, z1, test) {
   mb.castShadow = true; mb.receiveShadow = true; scene.add(mb);
   lodMeshes.push([mb, b.length, 90]);
   const tuft = merge([0, 1, 2, 3, 4].map(i => part(Cone(0.07, 0.55, 3), 0xffffff, Math.cos(i * 1.3) * 0.12, 0.27, Math.sin(i * 1.3) * 0.12, Math.cos(i * 1.3) * 0.35, 0, Math.sin(i * 1.3) * 0.35)));
-  const t = fscatter(520, -52, 44, -40, 40, (x, z) => distToPath(x, z) > 2.2 && !inFortress(x, z, 1.5) && baseHeight(x, z) > -0.1 && baseHeight(x, z) < 6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 2));
+  const t = fscatter(380, -52, 44, -40, 40, (x, z) => distToPath(x, z) > 2.2 && !inFortress(x, z, 1.5) && baseHeight(x, z) > -0.1 && baseHeight(x, z) < 6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 2));
   const mt = new THREE.InstancedMesh(tuft, matV, t.length);
   const flowers = [0xc8352b, 0xe8c040, 0xf2efe4, 0x9a74b8];
   t.forEach(([x, z], i) => {
@@ -875,7 +876,7 @@ function fscatter(count, x0, x1, z0, z1, test) {
     mt.setColorAt(i, f < 0.16 ? _c.set(flowers[(frand() * 4) | 0]) : _c.setRGB(0.45 + frand() * 0.2, 0.62 + frand() * 0.2, 0.25 + frand() * 0.1));
   });
   mt.receiveShadow = true; scene.add(mt);
-  lodMeshes.push([mt, t.length, 220]);
+  lodMeshes.push([mt, t.length, 160]);
 })();
 // forests on the hills beyond the play area and on the far shore (cheap single cones)
 (function makeFarForest() {
@@ -965,8 +966,8 @@ const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
     P.push(pS(Cyl(r + 0.28, r, 0.45, 14), stone2, x, h + 0.2, z));
     for (let i = 0; i < 3; i++) { const a = i * 2.1 + 0.6; P.push(part(Box(0.14, 0.55, 0.3), dark, x + Math.sin(a) * (r + 0.06), h * 0.6, z + Math.cos(a) * (r + 0.06), 0, a, 0)); }
     if (top === 'cone') {
-      P.push(pR(Cone(r + 0.55, r * 1.9, 14), slate, x, h + 0.42 + r * 0.95, z), part(Cyl(0.05, 0.05, 1.2, 4), iron, x, h + 0.4 + r * 1.9 + 0.5, z));
-      flagSpots.push([x, h + 0.4 + r * 1.9 + 0.9, z, 0.85, 0]);
+      P.push(pR(Cone(r + 0.5, r * 1.45, 12), slate, x, h + 0.42 + r * 0.72, z), part(Cyl(0.05, 0.05, 1.2, 4), iron, x, h + 0.4 + r * 1.45 + 0.5, z));
+      flagSpots.push([x, h + 0.4 + r * 1.45 + 0.9, z, 0.85, 0]);
     } else if (top === 'hoard') { // timber gallery overhanging the top, under a low slate cone
       for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; P.push(pW(Box(0.16, 1.0, (r + 0.4) * 0.56), wood, x + Math.sin(a) * (r + 0.35), h + 0.9, z + Math.cos(a) * (r + 0.35), 0, a + Math.PI / 2, 0)); }
       P.push(pW(Cyl(r + 0.45, r + 0.45, 0.14, 14), 0x5a3a20, x, h + 0.42, z), pR(Cone(r + 0.85, 1.5, 14), slate, x, h + 2.15, z));
@@ -992,8 +993,8 @@ const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
   P.push(pS(Box(11.5, 0.15, 15.5), 0xd2c3a0, 31, 0.07, 0));
   P.push(pS(Cyl(3.1, 3.4, 8.6, 16), stone, 32.4, 4.3, 0), pS(Cyl(3.4, 3.1, 0.5, 16), stone2, 32.4, 8.8, 0));
   for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; P.push(pW(Box(0.16, 1.1, 1.45), wood, 32.4 + Math.sin(a) * 3.45, 9.6, Math.cos(a) * 3.45, 0, a, 0)); }
-  P.push(pR(Cone(4.0, 4.6, 16), slate, 32.4, 12.45, 0), part(Cyl(0.06, 0.06, 1.6, 4), iron, 32.4, 15.4, 0));
-  flagSpots.push([32.4, 15.9, 0, 1.4, 0]);
+  P.push(pR(Cone(3.9, 3.8, 16), slate, 32.4, 12.05, 0), part(Cyl(0.06, 0.06, 1.6, 4), iron, 32.4, 14.6, 0));
+  flagSpots.push([32.4, 15.1, 0, 1.4, 0]);
   for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.5; P.push(part(Box(0.14, 0.55, 0.3), dark, 32.4 + Math.sin(a) * 3.15, 5.5, Math.cos(a) * 3.15, 0, a, 0)); }
   for (const z of [-6.0, 6.0]) {
     P.push(pS(Box(6, 2.2, 2.0), stone, 30.5, 1.1, z));
@@ -1250,6 +1251,162 @@ function emit(x, y, z, n, color, speed = 3, life = 0.8, grav = -9, spread = 1) {
 }
 let pAlive = 0;
 
+// arrow trails: two crossed ribbons behind each arrow, fading towards the tail (vertex alpha), drawn with the arrows' matrices
+const trails = (() => {
+  const v = [], c = [], idx = [];
+  for (const [ax, ay] of [[0.045, 0], [0, 0.045]]) {
+    const b = v.length / 3;
+    v.push(-ax, -ay, -0.25, ax, ay, -0.25, -ax * 0.3, -ay * 0.3, -2.1, ax * 0.3, ay * 0.3, -2.1);
+    c.push(1, 0.96, 0.86, 0.55, 1, 0.96, 0.86, 0.55, 1, 0.96, 0.86, 0, 1, 0.96, 0.86, 0);
+    idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(c, 4));
+  g.setIndex(idx);
+  const m = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide }), 220);
+  m.count = 0; m.frustumCulled = false; m.renderOrder = 4;
+  scene.add(m);
+  return m;
+})();
+
+// smoke and glow: soft point sprites with their own size, growth and fade (one draw call each; glow is additive)
+const softTex = particles.material.map;
+const PUFF_VS = `attribute float size; attribute vec4 rgba; uniform float scale; varying vec4 vC;
+  void main() { vC = rgba; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = min(size * scale / -mv.z, 220.0); gl_Position = projectionMatrix * mv; }`;
+const PUFF_FS = `uniform sampler2D map; varying vec4 vC; void main() { float a = texture2D(map, gl_PointCoord).a * vC.a; if (a < 0.01) discard; gl_FragColor = vec4(vC.rgb, a); }`;
+const puffSystems = [];
+function puffSystem(max, additive) {
+  const geo = new THREE.BufferGeometry(), pos = new Float32Array(max * 3).fill(-999), rgba = new Float32Array(max * 4), size = new Float32Array(max);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('rgba', new THREE.BufferAttribute(rgba, 4));
+  geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
+  const mat = new THREE.ShaderMaterial({ uniforms: { map: { value: softTex }, scale: { value: 360 } }, vertexShader: PUFF_VS, fragmentShader: PUFF_FS,
+    transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false; pts.renderOrder = additive ? 6 : 5;
+  scene.add(pts);
+  const S = { pts, geo, pos, rgba, size, max, head: 0, alive: 0, vel: new Float32Array(max * 3), life: new Float32Array(max), max0: new Float32Array(max),
+    s0: new Float32Array(max), s1: new Float32Array(max), a0: new Float32Array(max), rise: new Float32Array(max) };
+  puffSystems.push(S);
+  return S;
+}
+const smoke = puffSystem(420, false), glow = puffSystem(220, true);
+// one sprite: colour (sRGB hex), size from s0 to s1 over its life, start alpha, velocity, upward drift
+function puff(S, x, y, z, color, s0, s1, life, alpha, vx = 0, vy = 0, vz = 0, rise = 0) {
+  if (low && frand() < 0.5) return;
+  const i = S.head; S.head = (S.head + 1) % S.max;
+  S.pos[i * 3] = x; S.pos[i * 3 + 1] = y; S.pos[i * 3 + 2] = z;
+  S.vel[i * 3] = vx; S.vel[i * 3 + 1] = vy; S.vel[i * 3 + 2] = vz;
+  S.life[i] = S.max0[i] = life * (0.8 + frand() * 0.4); S.s0[i] = s0; S.s1[i] = s1; S.a0[i] = alpha; S.rise[i] = rise;
+  S.rgba[i * 4] = ((color >> 16) & 255) / 255; S.rgba[i * 4 + 1] = ((color >> 8) & 255) / 255; S.rgba[i * 4 + 2] = (color & 255) / 255;
+}
+function stepPuffs(dt) {
+  for (const S of puffSystems) {
+    let alive = 0;
+    for (let i = 0; i < S.max; i++) {
+      if (S.life[i] <= 0) continue;
+      S.life[i] -= dt;
+      if (S.life[i] <= 0) { S.pos[i * 3 + 1] = -999; S.rgba[i * 4 + 3] = 0; continue; }
+      alive++;
+      const k = 1 - S.life[i] / S.max0[i], drag = Math.max(0, 1 - dt * 1.8);
+      S.vel[i * 3] *= drag; S.vel[i * 3 + 2] *= drag; S.vel[i * 3 + 1] = S.vel[i * 3 + 1] * drag + S.rise[i] * dt;
+      S.pos[i * 3] += S.vel[i * 3] * dt; S.pos[i * 3 + 1] += S.vel[i * 3 + 1] * dt; S.pos[i * 3 + 2] += S.vel[i * 3 + 2] * dt;
+      S.size[i] = S.s0[i] + (S.s1[i] - S.s0[i]) * Math.sqrt(k);
+      S.rgba[i * 4 + 3] = S.a0[i] * Math.min(1, k * 8) * (1 - k * k);
+    }
+    if (alive || S.alive) { S.geo.attributes.position.needsUpdate = S.geo.attributes.rgba.needsUpdate = S.geo.attributes.size.needsUpdate = true; }
+    S.alive = alive;
+  }
+}
+const rnd2 = (a = 1) => (frand() - 0.5) * 2 * a;
+// effect recipes
+const FX = {
+  muzzle(x, y, z, yaw) {
+    const fx = Math.sin(yaw), fz = Math.cos(yaw);
+    puff(glow, x, y, z, 0xffb347, 2.2, 0.6, 0.14, 1);
+    for (let k = 0; k < 6; k++) puff(smoke, x + fx * 0.3, y, z + fz * 0.3, 0xe9e4da, 0.9, 3.2, 1.5, 0.75, fx * (2.5 + frand() * 2) + rnd2(0.6), 0.5 + frand(), fz * (2.5 + frand() * 2) + rnd2(0.6), 0.5);
+  },
+  blast(x, z) {
+    puff(glow, x, 0.8, z, 0xffa040, 4.2, 1.5, 0.2, 1);
+    for (let k = 0; k < 8; k++) puff(smoke, x + rnd2(0.6), 0.4, z + rnd2(0.6), k < 3 ? 0x6b6258 : 0xb9a27c, 1.2, 3.6, 1.2, 0.7, rnd2(2.5), 1 + frand() * 1.5, rnd2(2.5), 0.3);
+  },
+  tar(x, z) { for (let k = 0; k < 4; k++) puff(smoke, x + rnd2(0.5), 0.4, z + rnd2(0.5), 0x2b241f, 0.8, 2.4, 1.4, 0.55, rnd2(1), 0.6, rnd2(1), 0.6); puff(glow, x, 0.5, z, 0xff7a1a, 2.2, 0.8, 0.25, 0.8); },
+  dust(x, z, n = 8) { for (let k = 0; k < n; k++) { const a = k / n * 6.28; puff(smoke, x + Math.cos(a) * 1.2, 0.3, z + Math.sin(a) * 1.2, 0xcbbd9f, 0.8, 2.2, 0.9, 0.6, Math.cos(a) * 2.2, 0.4, Math.sin(a) * 2.2, 0.2); } },
+};
+
+// torch flames: two sprites per torch (a wide dim halo and a hot core) that flicker in place
+const torchPts = (() => {
+  const n = torchSpots.length * 2, geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), rgba = new Float32Array(n * 4), size = new Float32Array(n);
+  torchSpots.forEach(([x, y, z], i) => {
+    for (let k = 0; k < 2; k++) {
+      const j = i * 2 + k; pos.set([x, y + k * 0.08, z], j * 3);
+      rgba.set(k ? [1, 0.86, 0.45, 1] : [0.96, 0.55, 0.12, 0.55], j * 4);
+    }
+  });
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('rgba', new THREE.BufferAttribute(rgba, 4));
+  geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
+  const pts = new THREE.Points(geo, glow.pts.material);
+  pts.frustumCulled = false; pts.renderOrder = 6;
+  scene.add(pts);
+  return pts;
+})();
+
+// banners on the fortress and in the camps: cloth grids rippling in the wind (one dynamic mesh)
+const flags = (() => {
+  const CU = 6, CV = 3, verts = [], idx = [];
+  flagSpots.forEach((f, n) => {
+    const b = n * (CU + 1) * (CV + 1);
+    for (let v = 0; v <= CV; v++) for (let u = 0; u <= CU; u++) verts.push(0, 0, 0);
+    for (let v = 0; v < CV; v++) for (let u = 0; u < CU; u++) { const a = b + v * (CU + 1) + u; idx.push(a, a + CU + 1, a + 1, a + 1, a + CU + 1, a + CU + 2); }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setIndex(idx);
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: PAL.banner, side: THREE.DoubleSide }));
+  m.castShadow = true; m.frustumCulled = false;
+  scene.add(m);
+  return { m, CU, CV };
+})();
+function updateFlags(time) {
+  const { m, CU, CV } = flags, p = m.geometry.attributes.position.array;
+  let i = 0;
+  for (const [x, y, z, s] of flagSpots) {
+    const h = s * 0.62, ph = x * 0.7 + z;
+    for (let v = 0; v <= CV; v++) for (let u = 0; u <= CU; u++) {
+      const U = u / CU, w = Math.sin(U * 4.2 - time * 5.5 + ph) * 0.16 * U * s;
+      p[i++] = x + U * s * (1 - Math.abs(w) * 0.3); p[i++] = y - v / CV * h - U * U * 0.08 * s; p[i++] = z + w;
+    }
+  }
+  m.geometry.attributes.position.needsUpdate = true;
+  m.geometry.computeVertexNormals();
+}
+let emberT = 0;
+function updateAmbientFx(dt, time) {
+  // torch flicker
+  const sz = torchPts.geometry.attributes.size.array;
+  for (let i = 0; i < torchSpots.length; i++) {
+    const f = 0.8 + 0.2 * Math.sin(time * 13 + i * 2.1) * Math.sin(time * 7.3 + i);
+    sz[i * 2] = 2.1 * f; sz[i * 2 + 1] = 0.75 * (0.85 + 0.3 * f);
+  }
+  torchPts.geometry.attributes.size.needsUpdate = true;
+  emberT -= dt;
+  if (emberT <= 0) {
+    emberT = low ? 0.22 : 0.11;
+    const [x, y, z] = torchSpots[(frand() * torchSpots.length) | 0];
+    puff(glow, x + rnd2(0.1), y + 0.2, z + rnd2(0.1), 0xffb04a, 0.32, 0.12, 0.9, 0.9, rnd2(0.3), 0.8, rnd2(0.3), 0.6);
+    for (const [cx, cz] of campFires) {
+      const cy = heightAt(cx, cz);
+      puff(smoke, cx + rnd2(0.3), cy + 0.6, cz + rnd2(0.3), 0x8f8a84, 1.0, 4.2, 4.5, 0.42, 0.25, 0.4, rnd2(0.15), 0.35);
+      puff(glow, cx + rnd2(0.35), cy + 0.45, cz + rnd2(0.35), frand() < 0.5 ? 0xff9a3c : 0xffc35a, 1.3, 0.4, 0.45, 0.9, 0, 1.2, 0);
+    }
+  }
+  updateFlags(time);
+}
+// sprite sizes are in world units: scale = half the drawing-buffer height over tan(fov / 2)
+function updatePuffScale() { glow.pts.material.uniforms.scale.value = smoke.pts.material.uniforms.scale.value = renderer.getDrawingBufferSize(new THREE.Vector2()).y / 2 / Math.tan(camera.fov * Math.PI / 360); }
+
 // selection ring + range disc
 const ring = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 72).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.9, depthWrite: false }));
 const disc = new THREE.Mesh(new THREE.CircleGeometry(1, 72).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.12, depthWrite: false }));
@@ -1359,6 +1516,7 @@ function buildTower(pad, type) {
   tw.spent = cost;
   G.built++;
   emit(pad.x, 0.6, pad.z, 22, 0xcbbd9f, 4, 0.6);
+  FX.dust(pad.x, pad.z, 10);
   sfx('build');
   if (!AUTO) toast(t('built', { name: t(type + 'Name') }), 'good');
   updateHUD();
@@ -1394,6 +1552,8 @@ function upgradeTower(tw) {
   G.gold -= cost; tw.spent += cost; tw.level++;
   makeTowerMesh(tw);
   emit(tw.pad.x, 2.5, tw.pad.z, 26, ACCENT, 4, 0.7);
+  FX.dust(tw.pad.x, tw.pad.z, 8);
+  for (let k = 0; k < 6; k++) puff(glow, tw.pad.x + rnd2(1), 1 + frand() * 3, tw.pad.z + rnd2(1), 0xffd27a, 0.6, 0.2, 0.8, 0.9, 0, 1.5, 0);
   sfx('upgrade');
   if (!AUTO) toast(t('upgraded', { name: t(tw.type + 'Name') }), 'good');
   updateHUD();
@@ -1440,7 +1600,8 @@ function fire(tw, e) {
     const tx = _pt.x - _pt.tz * e.lane, tz = _pt.z + _pt.tx * e.lane;
     (tw.type === 'cannon' ? balls : tars).items.push({ x0: ox, y0: oy, z0: oz, x1: tx, z1: tz, T, t: 0, tw, h: 3 + Math.hypot(tx - ox, tz - oz) * 0.18 });
     sfx(tw.type === 'cannon' ? 'boom' : 'lob');
-    if (tw.type === 'cannon') emit(ox + Math.sin(tw.yaw) * 1.2, oy - 0.1, oz + Math.cos(tw.yaw) * 1.2, 8, 0xe5e0d6, 1.6, 0.6, 1.5);
+    if (tw.type === 'cannon') { emit(ox + Math.sin(tw.yaw) * 1.2, oy - 0.1, oz + Math.cos(tw.yaw) * 1.2, 8, 0xe5e0d6, 1.6, 0.6, 1.5); FX.muzzle(ox + Math.sin(tw.yaw) * 1.2, oy - 0.1, oz + Math.cos(tw.yaw) * 1.2, tw.yaw); }
+    else puff(glow, ox, oy, oz, 0xff8a2a, 1.1, 0.4, 0.2, 0.8);
   }
 }
 
@@ -1503,9 +1664,10 @@ function update(dt) {
             e.slowT = 2.6; e.slowF = Math.min(e.slowF, stat(tw, 'slow'));
           }
         }
-        if (list === balls) { emit(b.x1, 0.4, b.z1, 22, 0x9b8a6e, 5, 0.6); emit(b.x1, 0.4, b.z1, 8, 0xffb347, 3, 0.35); shake = Math.max(shake, 0.18); sfx('impact'); }
+        if (list === balls) { emit(b.x1, 0.4, b.z1, 22, 0x9b8a6e, 5, 0.6); emit(b.x1, 0.4, b.z1, 8, 0xffb347, 3, 0.35); FX.blast(b.x1, b.z1); shake = Math.max(shake, 0.18); sfx('impact'); }
         else {
           emit(b.x1, 0.3, b.z1, 14, 0x2a1a0e, 3, 0.5);
+          FX.tar(b.x1, b.z1);
           if (puddles.items.length < 40) puddles.items.push({ x: b.x1, z: b.z1, r, life: 3, max: 3, slow: stat(tw, 'slow') });
           sfx('splash');
         }
@@ -1549,8 +1711,13 @@ function updateVisuals(dt, time) {
     if (e.type === 'ram') { bossHp += Math.max(0, e.hp); bossMax += e.maxHp; }
     const m = enemyMeshes[e.type], i = counts[e.type]++;
     if (i >= MAX_ENEMIES) continue;
-    const s = ENEMY_SCALE[e.type], bob = e.type === 'ram' ? 0 : Math.abs(Math.sin(e.bob)) * 0.08;
-    _m4.compose(_v.set(e.x, bob, e.z), _q.setFromEuler(_e.set(0, e.yaw, e.type === 'ram' ? 0 : Math.sin(e.bob) * 0.06)), _s.set(s, s, s));
+    const s = ENEMY_SCALE[e.type], ph = e.bob;
+    let y, pitch, roll;
+    if (e.type === 'rider') { y = Math.abs(Math.sin(ph * 0.8)) * 0.24; pitch = Math.sin(ph * 1.6) * 0.09; roll = 0; } // gallop: rocking fore and aft
+    else if (e.type === 'ram') { y = Math.abs(Math.sin(ph * 2.2)) * 0.035; pitch = 0; roll = Math.sin(ph * 1.1) * 0.03; } // wheels on a rough road
+    else { y = Math.abs(Math.sin(ph)) * (e.type === 'shield' ? 0.13 : 0.19); pitch = 0.06 + Math.sin(ph * 2) * 0.035; roll = Math.sin(ph) * 0.075; } // march: step, lean, sway
+    _m4.compose(_v.set(e.x, y, e.z), _q.setFromEuler(_eY.set(pitch, e.yaw, roll)), _s.set(s, s, s));
+    if (e.dotT > 0 && frand() < dt * 6) { puff(glow, e.x + rnd2(0.3), 1.0 + frand() * 0.6, e.z + rnd2(0.3), 0xff7a1a, 0.9, 0.3, 0.45, 0.85, 0, 1.6, 0); puff(smoke, e.x, 1.6, e.z, 0x3a302a, 0.5, 1.6, 1.0, 0.4, 0, 1, 0, 0.4); }
     m.setMatrixAt(i, _m4);
     if (e.flash > 0) _c.setRGB(1.6, 0.7, 0.6); else if (e.slowT > 0) _c.setRGB(0.55, 0.62, 0.8); else _c.setRGB(1, 1, 1);
     m.setColorAt(i, _c);
@@ -1586,15 +1753,17 @@ function updateVisuals(dt, time) {
     if (n >= arrows.m.instanceMatrix.count) break; // fixed pool size: extra shots are simulated but not drawn
     _q.setFromUnitVectors(_s.set(0, 0, 1), _v.set(a.dx, a.dy, a.dz));
     _m4.compose(_v.set(a.x, a.y, a.z), _q, _s.set(1, 1, 1));
+    trails.setMatrixAt(n, _m4);
     arrows.m.setMatrixAt(n++, _m4);
   }
-  arrows.m.count = n; arrows.m.instanceMatrix.needsUpdate = true;
+  arrows.m.count = trails.count = n; arrows.m.instanceMatrix.needsUpdate = trails.instanceMatrix.needsUpdate = true;
   for (const list of [balls, tars]) {
     n = 0;
     for (const b of list.items) {
       if (n >= list.m.instanceMatrix.count) break;
-      const k = clamp(b.t / b.T, 0, 1);
-      _m4.makeTranslation(lerp(b.x0, b.x1, k), lerp(b.y0, 0.3, k) + 4 * b.h * k * (1 - k), lerp(b.z0, b.z1, k));
+      const k = clamp(b.t / b.T, 0, 1), bx = lerp(b.x0, b.x1, k), by = lerp(b.y0, 0.3, k) + 4 * b.h * k * (1 - k), bz = lerp(b.z0, b.z1, k);
+      _m4.makeTranslation(bx, by, bz);
+      if (frand() < dt * 28) { if (list === balls) puff(smoke, bx, by, bz, 0xd8d2c6, 0.35, 1.1, 0.6, 0.45, 0, 0.2, 0, 0.2); else puff(glow, bx, by, bz, 0xff8a2a, 0.55, 0.2, 0.3, 0.8); }
       list.m.setMatrixAt(n++, _m4);
     }
     list.m.count = n; list.m.instanceMatrix.needsUpdate = true;
@@ -1626,9 +1795,9 @@ function updateVisuals(dt, time) {
   const wp = water.geometry.attributes.position, wc = water.geometry.attributes.color;
   for (let i = 0; i < wp.count; i++) {
     const x = waterBase[i * 3], z = waterBase[i * 3 + 2], i3 = i * 3;
-    const y = Math.sin(x * 0.35 + time * 1.1) * 0.12 + Math.cos(z * 0.28 + time * 0.8) * 0.1 + Math.sin((x + z) * 0.9 + time * 2.2) * 0.05;
+    const y = Math.sin(x * 0.35 + time * 1.1) * 0.12 + Math.cos(z * 0.28 + time * 0.8) * 0.1 + Math.sin((x + z) * 0.6 + time * 2.2) * 0.04;
     wp.array[i3 + 1] = y;
-    const f = smoothstep(0.12, 0.24, y) * 0.75; // whitecaps on the crests
+    const f = smoothstep(0.15, 0.26, y) * 0.45; // whitecaps on the crests
     wc.array[i3] = waterTint[i3] + (0.9 - waterTint[i3]) * f; wc.array[i3 + 1] = waterTint[i3 + 1] + (0.93 - waterTint[i3 + 1]) * f; wc.array[i3 + 2] = waterTint[i3 + 2] + (0.94 - waterTint[i3 + 2]) * f;
   }
   wp.needsUpdate = wc.needsUpdate = true;
@@ -1640,15 +1809,11 @@ function updateVisuals(dt, time) {
     b.m.position.set(b.x + Math.sin(time * 0.3 + b.x) * 2, -0.45 + Math.sin(time * 1.4 + b.x) * 0.08, b.z);
     b.m.rotation.set(Math.sin(time * 1.2 + b.x) * 0.04, b.dir > 0 ? 0 : Math.PI, Math.cos(time * 1.1) * 0.05);
   }
-  smokeT -= dt;
-  if (smokeT <= 0) {
-    smokeT = low ? 0.5 : 0.25;
-    for (const [x, z] of campFires) { emit(x, heightAt(x, z) + 0.4, z, 1, 0x8f8a84, 0.6, 3.2, 0.6, 0.4); emit(x, heightAt(x, z) + 0.3, z, 1, 0xff9a3c, 0.8, 0.5, 1, 0.3); }
-  }
+  stepPuffs(dt);
+  updateAmbientFx(dt, time);
   // selection ring pulse
   if (ring.visible) { const k = 1 + Math.sin(time * 4) * 0.012; ring.scale.set(ringR * k, 1, ringR * k); disc.scale.set(ringR, 1, ringR); }
 }
-let smokeT = 0;
 
 // ---------------------------------------------------------------- picking + panels
 const raycaster = new THREE.Raycaster();
@@ -2108,6 +2273,7 @@ function applyQuality() {
     scene.traverse(o => { if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true; }); // recompile with / without shadows
   }
   for (const [m, full, part] of lodMeshes) m.count = low ? Math.min(part, full) : full;
+  updatePuffScale();
 }
 
 // ---------------------------------------------------------------- audio (all synthesised)
@@ -2315,6 +2481,7 @@ let wasPortrait = isPortrait();
 function onResize() {
   fitFov();
   renderer.setSize(innerWidth, innerHeight);
+  updatePuffScale();
   if (isPortrait() !== wasPortrait) { wasPortrait = isPortrait(); if (G.running) cameraHome(); }
 }
 addEventListener('resize', onResize);
@@ -2380,6 +2547,7 @@ if (DEBUG) window.hisarSelect = i => { selectPad(pads[i]); return sel ? (sel.tow
 
 applyQuality();
 fitFov();
+updatePuffScale();
 refreshSoundBtn();
 applyLang();
 // the top bar wraps on phones, and its height also changes with the gold digits and the language, not only on resize
