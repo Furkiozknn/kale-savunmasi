@@ -35,10 +35,14 @@
   after the victory the waves keep getting stronger in endless mode.
 - **Tested by a bot.** The `?auto` bot builds, upgrades and calls waves on its own; in the measured run it held out
   until wave 15 and fell there, so a full win asks for better play than the bot's.
-- **Light on a laptop GPU.** 60 fps on an Intel UHD GPU at 1280x720 with 37-42 draw calls in battle, and a `?low` tier
-  for weak GPUs ([measurements](docs/assets.md)).
-- **One file plus generated models.** One `index.html` with Three.js r170 from a CDN, twelve generated low-poly models
-  and a painted icon set; every model keeps a procedural version as the fallback.
+- **A hisar on the Bosphorus.** Textured limestone walls and towers, slate cones, timber hoardings, choppy water with
+  surf, a far shore with a mosque, and a war-table interface of parchment, wax seals and stencil numerals
+  ([redesign](#redesign-2026-11)).
+- **Light on a laptop GPU.** 60 fps on an Intel UHD GPU at 1280x720 with 46-60 draw calls in battle, and a `?low` tier
+  for weak GPUs.
+- **One file plus a few assets.** One `index.html` with Three.js r170 from a CDN, eight generated low-poly models
+  (enemies, turrets, boats), a painted icon set and one stencil font; every model keeps a procedural version as the
+  fallback, and every texture is drawn in code.
 
 ## How to play
 
@@ -105,10 +109,12 @@ The live state is on `window.hisar` (gold, lives, wave, towers, enemies, errors)
 
 ## Screenshots
 
+<p align="center"><img src="docs/redesign-before-after.png" width="100%" alt="The same camera before and after the 2026-11 redesign"><br><sub>Same camera, before and after the redesign</sub></p>
+
 <table>
   <tr>
-    <td width="33%"><img src="docs/remaster-title.png" alt="Title screen with the crest"><br><sub>Title screen</sub></td>
-    <td width="33%"><img src="docs/remaster-battle.png" alt="Wave 14 on both roads"><br><sub>Wave 14 on both roads</sub></td>
+    <td width="33%"><img src="docs/remaster-title.png" alt="Title screen on a parchment card"><br><sub>Title screen</sub></td>
+    <td width="33%"><img src="docs/remaster-battle.png" alt="Wave 10 on both roads"><br><sub>Wave 10 on both roads</sub></td>
     <td width="33%"><img src="docs/remaster-closeup.png" alt="Towers and enemies up close"><br><sub>Towers and enemies up close</sub></td>
   </tr>
   <tr>
@@ -119,22 +125,47 @@ The live state is on `window.hisar` (gold, lives, wave, towers, enemies, errors)
 </table>
 
 <details>
-<summary><b>Phone layout, settings and the procedural look before the remaster</b></summary>
+<summary><b>Phone layout, settings and more views</b></summary>
 
 <table>
   <tr>
     <td width="50%"><img src="docs/overnight-settings.png" alt="Settings"><br><sub>Settings</sub></td>
-    <td width="50%"><img src="docs/title-en.png" alt="Title screen before the remaster"><br><sub>Title screen, procedural</sub></td>
+    <td width="50%"><img src="docs/closeup.png" alt="The gatehouse, torches and the keep"><br><sub>The gate: hoardings, torches and the keep</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/gameplay.png" alt="Battle overview before the remaster"><br><sub>Battle overview, procedural</sub></td>
-    <td><img src="docs/closeup.png" alt="Road junction before the remaster"><br><sub>Road junction, procedural</sub></td>
+    <td><img src="docs/gameplay.png" alt="Battle overview"><br><sub>Battle overview</sub></td>
+    <td><img src="docs/overnight-boss.png" alt="Two battering rams on wave 15"><br><sub>Wave 15: two rams and the boss bar</sub></td>
   </tr>
 </table>
 
-<p align="center"><img src="docs/remaster-phone.png" width="300" alt="Hisar on a phone in portrait"><br><sub>On a phone: the portrait camera looks along the roads</sub></p>
+<p align="center"><img src="docs/remaster-phone.png" width="300" alt="Hisar on a phone in portrait"><br><sub>On a phone: the portrait camera looks along the roads to the gate</sub></p>
 
 </details>
+
+## Redesign (2026-11)
+
+**Art direction:** a stylized 3D strategy defense on the Bosphorus in late-afternoon light. Palette: limestone `#CFC3A6`,
+slate `#4B5563`, Bosphorus blue `#1F5F8B`, banner red `#B91C1C`, torch `#F59E0B`.
+
+- **Light and world:** a low warm sun with long shadows and a cool rim light from the sea; the terrain now runs past
+  the play area to wooded hills and across the strait to the Asian shore (waterfront houses, a mosque with two
+  minarets), with haze for depth. Meadow detail texture, worn verges, packed-earth roads with kerb stones, flagstone
+  pads, stone pines, cypresses, maquis shrubs and poppies; palisaded camps with banners.
+- **Fortress and towers:** rebuilt in code in one style from a drawn limestone-ashlar texture (the same texture reads as
+  planks and shingles through its UV scale): battered curtain walls with merlons, round towers with slate cones and
+  timber hoardings, a gatehouse with plank doors and a banner, a keep, barracks and a small minaret. Archer towers,
+  cannon bastions and machicolated tar towers gain hoardings, banners, a brass band and a pennant by level.
+- **Animation and FX:** marching step, lean and sway for foot soldiers, a rocking gallop for riders; arrow trails;
+  muzzle flashes and drifting cannon smoke; dust and fire where shots land; burning tar; flickering torches with embers;
+  rippling banners; whitecaps and surf on the water.
+- **UI:** a war table: parchment panels with ruled ink borders, red wax-seal buttons, stencil numerals (Stardos Stencil,
+  OFL, self-hosted), Palatino small caps, a compass-rose watermark. No Google Fonts request any more.
+- **Kept:** the 15 waves, towers, enemies, balance, the `?auto` bot, saves (`arena.hisar.*`), every flag and the audio.
+  The generated fortress and tower-base models are no longer loaded; enemy, turret and boat models stay.
+- **Measured** (Intel UHD 620, headless Chrome, 1280x720, `?auto&debug&sim=600`, same camera): before 43 draw calls,
+  90-101 k triangles, 60 fps; after 46-52 draw calls, 195-214 k triangles, 60 fps; 60 draw calls at the end of wave 15.
+  `?low`: 52 draw calls, 162 k triangles, 60 fps. The bot still falls on wave 15 with 0 JS errors, with and without
+  `?noassets`.
 
 ## Balance
 
@@ -165,7 +196,9 @@ the Hicaz mode whose drums come in during waves, was added later in Web Audio as
 The assets were remastered by the orchestrator, **Claude Opus 5.5**, with generated models: Tripo text-to-3D (through
 Higgsfield) for the fortress, the four enemies, the three tower bases, their turrets and the boats, and GPT Image for a
 16-icon sheet and the logo crest. The models were processed with glTF-Transform (about 900-1,500 triangles each, 5,540
-for the fortress, about 1.1 MB in `assets/`), and every procedural model stays as the fallback. Prompts, sizes, the
+for the fortress, about 1.1 MB in `assets/`), and every procedural model stays as the fallback. The 2026-11 redesign
+(also Claude Opus 5.5) replaced the fortress and tower-base models with textured procedural ones, see
+[Redesign](#redesign-2026-11). Prompts, sizes, the
 rejected asset and fps before and after: [docs/assets.md](docs/assets.md). A Godot 4 remake was made in round 2.
 
 Hisar is part of the **Claude Game Arena** series, where each game is built by a Claude model from one prompt. The other

@@ -11,170 +11,200 @@
 <meta property="og:url" content="https://furkiozknn.github.io/kale-savunmasi/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="assets/ui/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/stardos-stencil-700.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  /* 2026-11 redesign: a war table. Parchment panels with ruled ink borders, red wax-seal buttons, stencil numerals. */
+  @font-face { font-family: 'Hisar Stencil'; src: url(assets/fonts/stardos-stencil-700.woff2) format('woff2'); font-weight: 700; font-display: swap; }
   :root {
-    --accent: #f59e0b;
-    --accent-2: #fbbf24;
-    --ink: #2b2118;
-    --glass: rgba(255, 248, 235, 0.72);
-    --glass-dark: rgba(43, 33, 24, 0.82);
-    --line: rgba(80, 55, 30, 0.18);
-    --ok: #16a34a;
-    --bad: #dc2626;
-    --top-h: 56px;
+    --parch: #f1e4c3;
+    --parch-2: #e2cd9c;
+    --edge: #a8854e;
+    --ink: #2e2216;
+    --ink-soft: #5b4630;
+    --rule: rgba(91, 70, 48, 0.38);
+    --seal: #b91c1c;
+    --seal-dark: #6e0f0f;
+    --brass: #c9a227;
+    --bosph: #1f5f8b;
+    --torch: #f59e0b;
+    --ok: #2f6b2a;
+    --bad: #9b1c1c;
+    --top-h: 60px;
+    --serif: 'Palatino Linotype', Palatino, 'Book Antiqua', 'URW Palladio L', Georgia, serif;
+    --stencil: 'Hisar Stencil', Stencil, Impact, var(--serif);
+    --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .36  0 0 0 0 .25  0 0 0 0 .1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.42'/></svg>");
+    --compass: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100' fill='none' stroke='%235b4630' stroke-opacity='.4' stroke-width='.7'><circle r='44'/><circle r='40' stroke-dasharray='1.5 2.5'/><circle r='13'/><path d='M0-46L6-6 46 0 6 6 0 46-6 6-46 0-6-6Z' fill='%235b4630' fill-opacity='.12'/><path d='M0-30L3-3 30 0 3 3 0 30-3 3-30 0-3-3Z' transform='rotate(45)'/></svg>");
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; font-family: Rubik, system-ui, sans-serif; color: var(--ink);
-    background: linear-gradient(180deg, #f7c98b 0%, #f6dcb3 38%, #e9e2cf 70%, #cfd9cf 100%); user-select: none; -webkit-user-select: none; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--serif); color: var(--ink);
+    background: linear-gradient(180deg, #6f9cc4 0%, #a9c4d8 30%, #d9dccf 55%, #dfe0d2 100%); user-select: none; -webkit-user-select: none; }
   canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-  .glass { background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 6px 24px rgba(60, 35, 10, 0.18); border-radius: 14px; }
-  button { font-family: inherit; color: inherit; cursor: pointer; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.7);
-    border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 600; transition: transform .08s, background .15s; }
-  button:hover:not(:disabled) { background: #fff; }
-  button:active:not(:disabled) { transform: scale(0.96); }
-  button:disabled { opacity: .45; cursor: not-allowed; }
-  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .primary { background: linear-gradient(180deg, var(--accent-2), var(--accent)); border-color: #d97706; color: #3b2306; }
-  .primary:hover:not(:disabled) { background: linear-gradient(180deg, #fcd34d, #f59e0b); }
+  .parch { background: radial-gradient(ellipse at 50% 35%, rgba(255, 251, 236, 0.6), rgba(255, 251, 236, 0) 70%), var(--grain), linear-gradient(180deg, var(--parch), var(--parch-2));
+    border: 1px solid var(--edge); border-radius: 5px; color: var(--ink);
+    box-shadow: inset 0 0 0 3px rgba(241, 228, 195, 0.85), inset 0 0 0 4px var(--rule), inset 0 0 26px rgba(150, 105, 45, 0.32), 0 8px 22px rgba(35, 22, 8, 0.38); }
+  .num { font-family: var(--stencil); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+  button { font-family: var(--serif); color: var(--ink); cursor: pointer; border: 1.5px solid #8a6a3e; border-radius: 5px; padding: 6px 11px; font-size: 15px; font-weight: 700;
+    background: linear-gradient(180deg, rgba(255, 252, 240, 0.85), rgba(233, 214, 168, 0.85));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 0 rgba(90, 60, 30, 0.35); transition: transform .08s, background .15s, filter .15s; }
+  button:hover:not(:disabled) { background: linear-gradient(180deg, #fffdf4, #efdcae); }
+  button:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 0 rgba(90, 60, 30, 0.35); }
+  button:disabled { opacity: .5; cursor: not-allowed; filter: grayscale(.6); }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--bosph); outline-offset: 2px; }
+  /* red wax seal: uneven rim, a highlight where the wax pooled, pressed-in shadow below */
+  .primary { color: #fff4e2; border: 2px solid var(--seal-dark); text-shadow: 0 1px 0 rgba(60, 0, 0, 0.65); letter-spacing: 0.02em;
+    border-radius: 20px 16px 22px 15px / 16px 22px 15px 20px;
+    background: radial-gradient(120% 150% at 28% 18%, #e2594a 0%, var(--seal) 42%, #861313 100%);
+    box-shadow: inset 0 2px 1px rgba(255, 205, 185, 0.35), inset 0 -3px 2px rgba(60, 0, 0, 0.35), inset 0 0 0 3px rgba(110, 15, 15, 0.25), 0 3px 6px rgba(60, 10, 10, 0.4); }
+  .primary:hover:not(:disabled) { background: radial-gradient(120% 150% at 28% 18%, #ec6a5a 0%, #c52323 42%, #8f1616 100%); }
 
-  #top { position: fixed; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 8px; z-index: 5; }
-  #top .logo { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 18px; letter-spacing: .5px; padding: 0 6px; white-space: nowrap; }
-  #top .logo img { width: 30px; height: 30px; margin: -4px 0; }
+  #top { position: fixed; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; z-index: 5; }
+  #top .logo { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 21px; letter-spacing: 1.5px; padding: 0 6px 0 2px; white-space: nowrap; font-variant: small-caps; }
+  #top .logo img { width: 32px; height: 32px; margin: -4px 0; }
+  #top .logo small { font-weight: 400; font-style: italic; font-size: 14px; letter-spacing: 0.3px; color: var(--ink-soft); margin-left: 2px; font-variant: normal; }
   .ic { width: 1.35em; height: 1.35em; vertical-align: -0.33em; object-fit: contain; }
-  .ic.big { width: 34px; height: 34px; vertical-align: middle; }
+  .ic.big { width: 36px; height: 36px; vertical-align: middle; }
   button .ic { pointer-events: none; }
   .gl { width: 14px; height: 14px; vertical-align: -2px; fill: currentColor; }
-  #top .logo small { font-weight: 400; font-size: 12px; opacity: .65; margin-left: 4px; }
-  .stat { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.55);
-    font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stat { display: flex; align-items: center; gap: 6px; padding: 3px 11px 2px; border-radius: 3px; background: rgba(255, 250, 232, 0.55); border: 1px solid var(--rule);
+    font-family: var(--stencil); font-weight: 700; font-size: 19px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 -2px 0 rgba(91, 70, 48, 0.12); }
   .spacer { flex: 1; }
-  #top button { min-width: 38px; }
+  #top button { min-width: 40px; min-height: 36px; }
+  #bSpeed { font-family: var(--stencil); font-size: 17px; }
 
-  #wavebox { position: fixed; right: 10px; bottom: 10px; padding: 10px; z-index: 5; width: 250px; }
-  #wavebox .lbl { font-size: 12px; opacity: .7; margin-bottom: 4px; }
-  #wavePreview { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 26px; }
-  #wavePreview span { background: rgba(255, 255, 255, .6); border-radius: 8px; padding: 3px 7px; font-size: 13px; font-weight: 600; }
-  #bWave { width: 100%; padding: 10px; font-size: 15px; }
+  #wavebox { position: fixed; right: 10px; bottom: 10px; padding: 12px; z-index: 5; width: 262px; }
+  #wavebox .lbl { font-size: 14px; font-style: italic; color: var(--ink-soft); margin-bottom: 6px; border-bottom: 1px solid var(--rule); padding-bottom: 4px; }
+  #wavePreview { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; min-height: 28px; }
+  #wavePreview span { background: rgba(255, 250, 232, 0.6); border: 1px solid var(--rule); border-radius: 3px; padding: 2px 7px; font-family: var(--stencil); font-size: 16px; }
+  #bWave { width: 100%; padding: 11px; font-size: 16px; }
   #bWave.pulse { animation: pulse 1.4s infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, .25); } }
+  @keyframes pulse { 50% { box-shadow: inset 0 2px 1px rgba(255, 205, 185, 0.35), inset 0 -3px 2px rgba(60, 0, 0, 0.35), 0 0 0 6px rgba(185, 28, 28, 0.22); } }
 
-  #panel { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 10px 12px; z-index: 6; width: min(560px, calc(100% - 290px)); }
+  #panel { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 12px 14px; z-index: 6; width: min(580px, calc(100% - 300px)); }
   #panel.hidden { display: none; }
-  .ph { display: flex; align-items: center; justify-content: space-between; font-weight: 800; margin-bottom: 8px; }
-  .ph .x { padding: 2px 8px; }
+  .ph { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 17px; margin-bottom: 9px; padding-bottom: 5px; border-bottom: 1px solid var(--rule); font-variant: small-caps; letter-spacing: 0.5px; }
+  .ph .x { padding: 2px 9px; }
   .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; padding: 8px; position: relative; }
-  .card .ico { display: block; height: 34px; }
-  .card small { font-weight: 400; font-size: 12px; opacity: .75; line-height: 1.25; }
-  .card .cost { margin-top: 2px; font-weight: 700; }
-  .card kbd { position: absolute; top: 6px; right: 6px; font-size: 11px; opacity: .55; font-family: inherit; }
-  .tw { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
-  .tstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 14px; font-size: 13px; }
-  .tstats div { display: flex; justify-content: space-between; gap: 8px; }
-  .tstats b { font-variant-numeric: tabular-nums; }
-  .tstats .up { color: var(--ok); font-weight: 600; }
-  .tbtns { display: flex; flex-direction: column; gap: 6px; min-width: 150px; }
-  .lvl { display: inline-flex; gap: 3px; margin-left: 6px; }
-  .lvl i { width: 9px; height: 9px; border-radius: 50%; background: rgba(0, 0, 0, .15); display: inline-block; }
-  .lvl i.on { background: var(--accent); }
+  .card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; padding: 8px; position: relative; border-radius: 4px; }
+  .card .ico { display: block; height: 36px; }
+  .card small { font-weight: 400; font-size: 13px; color: var(--ink-soft); line-height: 1.3; }
+  .card .cost { margin-top: 2px; font-family: var(--stencil); font-size: 17px; }
+  .card kbd { position: absolute; top: 6px; right: 7px; font-size: 12px; color: var(--ink-soft); font-family: var(--stencil); border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+  .tw { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+  .tstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; font-size: 14px; }
+  .tstats div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted var(--rule); }
+  .tstats b { font-family: var(--stencil); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .tstats .up { color: var(--ok); }
+  .tbtns { display: flex; flex-direction: column; gap: 6px; min-width: 160px; }
+  .lvl { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 1px; }
+  .lvl i { width: 10px; height: 10px; border-radius: 50%; background: rgba(91, 70, 48, 0.2); display: inline-block; border: 1px solid var(--rule); }
+  .lvl i.on { background: radial-gradient(circle at 35% 30%, #e2594a, var(--seal) 60%, #861313); border-color: var(--seal-dark); }
 
   #toast { position: fixed; top: calc(var(--top-h) + 16px); left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 6px; width: max-content; max-width: calc(100% - 32px); }
-  #toast div { background: var(--glass-dark); color: #fff7e6; padding: 8px 14px; border-radius: 10px; font-weight: 600; animation: tin .25s; box-shadow: 0 6px 18px rgba(0,0,0,.2); border-left: 4px solid rgba(255, 247, 230, .35); text-align: center; }
-  #toast div.good { border-left-color: #4ade80; }
-  #toast div.bad { border-left-color: #f87171; }
+  #toast div { background: var(--grain), linear-gradient(180deg, #f6ead0, #e8d5a8); color: var(--ink); padding: 7px 16px 7px 14px; border-radius: 2px; font-weight: 700; font-size: 15px; animation: tin .25s;
+    box-shadow: 0 5px 14px rgba(35, 22, 8, 0.35); border: 1px solid var(--edge); border-left: 5px solid var(--ink-soft); text-align: center; }
+  #toast div.good { border-left-color: var(--ok); }
+  #toast div.bad { border-left-color: var(--seal); color: #6e0f0f; }
   #banner { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; text-align: center; display: none; }
   #banner.on { display: block; animation: bannerIn 1.8s ease both; }
-  #banner b { display: block; font-size: 52px; font-weight: 800; letter-spacing: 1px; color: #fff7e6; text-shadow: 0 3px 0 #6b3d06, 0 0 18px rgba(0, 0, 0, .35); }
-  #banner.boss b { color: #fecaca; text-shadow: 0 3px 0 #7f1d1d, 0 0 18px rgba(0, 0, 0, .4); }
-  #banner span { display: inline-flex; gap: 10px; margin-top: 4px; padding: 5px 12px; border-radius: 12px; background: rgba(43, 33, 24, .55); color: #fff7e6; font-weight: 700; }
+  #banner b { display: block; font-family: var(--stencil); font-size: 64px; letter-spacing: 3px; color: #f6ead0; text-shadow: 0 3px 0 #3a2a18, 0 0 2px #3a2a18, 0 0 22px rgba(0, 0, 0, .45); }
+  #banner.boss b { color: #ffd2c4; text-shadow: 0 3px 0 #5a0d0d, 0 0 2px #5a0d0d, 0 0 22px rgba(80, 0, 0, .5); }
+  #banner span { display: inline-flex; gap: 12px; margin-top: 6px; padding: 5px 14px; border-radius: 3px; color: var(--ink); font-family: var(--stencil); font-size: 18px;
+    background: var(--grain), linear-gradient(180deg, #f6ead0, #e2cd9c); border: 1px solid var(--edge); box-shadow: 0 4px 12px rgba(35, 22, 8, .35); }
   #banner .ic { width: 26px; height: 26px; }
   @keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.85); } 15%, 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
-  #boss { position: fixed; left: 50%; top: calc(var(--top-h) + 14px); transform: translateX(-50%); z-index: 5; width: min(360px, calc(100% - 32px)); padding: 6px 10px; display: none; font-weight: 700; font-size: 13px; }
+  #boss { position: fixed; left: 50%; top: calc(var(--top-h) + 14px); transform: translateX(-50%); z-index: 5; width: min(380px, calc(100% - 32px)); padding: 7px 12px 9px; display: none; font-weight: 700; font-size: 15px; font-variant: small-caps; letter-spacing: .5px; }
   #boss.on { display: block; }
-  body.boss #toast { top: calc(var(--top-h) + 62px); }
-  #boss .bar { height: 8px; border-radius: 5px; background: rgba(43, 33, 24, .25); overflow: hidden; margin-top: 4px; }
-  #boss .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #dc2626, #f97316); transform-origin: left; }
+  body.boss #toast { top: calc(var(--top-h) + 66px); }
+  #boss .bar { height: 10px; border-radius: 2px; background: rgba(46, 34, 22, .22); overflow: hidden; margin-top: 4px; border: 1px solid var(--rule); }
+  #boss .bar i { display: block; height: 100%; width: 100%; transform-origin: left; background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .14) 0 6px, rgba(0, 0, 0, 0) 6px 12px), linear-gradient(90deg, #861313, var(--seal) 60%, #d9481f); }
   @keyframes tin { from { opacity: 0; transform: translateY(-6px); } }
-  #flash { position: fixed; inset: 0; pointer-events: none; z-index: 4; box-shadow: inset 0 0 160px rgba(220, 38, 38, .75); opacity: 0; transition: opacity .5s; }
+  #flash { position: fixed; inset: 0; pointer-events: none; z-index: 4; box-shadow: inset 0 0 160px rgba(185, 28, 28, .75); opacity: 0; transition: opacity .5s; }
   #ftxt { position: fixed; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
-  #ftxt div { position: absolute; left: 0; top: 0; font-weight: 800; font-size: 15px; color: #fde68a; text-shadow: 0 1px 0 #6b3d06, 0 0 6px rgba(0,0,0,.35); will-change: transform; white-space: nowrap; }
+  #ftxt div { position: absolute; left: 0; top: 0; font-family: var(--stencil); font-size: 18px; color: #ffe08a; text-shadow: 0 1px 0 #4a2a06, 0 0 3px #4a2a06, 0 0 8px rgba(0,0,0,.35); will-change: transform; white-space: nowrap; }
 
-  #overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(40, 25, 10, .15), rgba(40, 25, 10, .5)); }
+  /* the war table: the scene dims behind a sheet of parchment with a faint compass rose */
+  #overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(25, 15, 5, .12), rgba(25, 15, 5, .55)); }
   #overlay.hidden { display: none; }
-  #overlay.dim { background: rgba(40, 25, 10, .38); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-  .ocard { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 24px; text-align: center; animation: cardIn .22s ease-out; }
+  #overlay.dim { background: radial-gradient(ellipse at center, rgba(25, 15, 5, .35), rgba(25, 15, 5, .7)); }
+  .ocard { position: relative; width: min(540px, calc(100% - 32px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 26px 28px 22px; text-align: center; animation: cardIn .22s ease-out;
+    background: var(--compass) right -56px bottom -56px / 220px no-repeat, radial-gradient(ellipse at 50% 30%, rgba(255, 251, 236, 0.65), rgba(255, 251, 236, 0) 70%), var(--grain), linear-gradient(180deg, var(--parch), var(--parch-2)); }
   @keyframes cardIn { from { opacity: 0; transform: scale(.96); } }
-  .ocard .col { display: flex; flex-direction: column; gap: 8px; width: min(280px, 100%); margin: 16px auto 0; }
-  .ocard .col button { padding: 11px; font-size: 16px; }
-  .ocard .foot { display: block; margin-top: 14px; font-size: 11px; opacity: .55; color: inherit; text-decoration: none; }
-  .ocard .foot:hover { opacity: .85; text-decoration: underline; }
-  .ocard .newbest { display: inline-block; margin-top: 4px; font-weight: 800; font-size: 18px; color: #c2410c; animation: nb 1s ease-in-out infinite; }
+  .ocard .col { display: flex; flex-direction: column; gap: 9px; width: min(290px, 100%); margin: 16px auto 0; }
+  .ocard .col button { padding: 11px; font-size: 17px; }
+  .ocard .foot { display: block; margin-top: 14px; font-size: 13px; font-style: italic; color: var(--ink-soft); text-decoration: none; }
+  .ocard .foot:hover { color: var(--ink); text-decoration: underline; }
+  .ocard .newbest { display: inline-block; margin-top: 4px; font-weight: 700; font-size: 20px; color: var(--seal); animation: nb 1s ease-in-out infinite; font-variant: small-caps; letter-spacing: 1px; }
   @keyframes nb { 50% { transform: scale(1.08); } }
   .set { display: grid; grid-template-columns: auto 1fr auto; gap: 10px 12px; align-items: center; text-align: left; margin-top: 14px; }
-  .set label { font-weight: 600; font-size: 14px; }
-  .set input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
-  .set output { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; min-width: 40px; text-align: right; }
+  .set label { font-weight: 700; font-size: 15px; }
+  .set input[type=range] { width: 100%; accent-color: var(--seal); height: 28px; }
+  .set output { font-family: var(--stencil); font-size: 16px; min-width: 44px; text-align: right; }
   .set .opts { grid-column: 2 / 4; display: flex; gap: 6px; }
   .set .opts button { flex: 1; }
-  .set .opts button.on { background: linear-gradient(180deg, var(--accent-2), var(--accent)); border-color: #d97706; color: #3b2306; }
-  .ocard .crest { display: block; width: 132px; height: 132px; margin: -8px auto 2px; filter: drop-shadow(0 6px 10px rgba(60, 35, 10, .35)); }
-  .ocard h1 { margin: 0; font-size: 46px; font-weight: 800; letter-spacing: 1px; }
-  .ocard h2 { margin: 0; font-size: 32px; font-weight: 800; }
-  .ocard h1 small { display: block; font-size: 16px; font-weight: 400; opacity: .7; letter-spacing: 3px; text-transform: uppercase; }
-  .ocard p { line-height: 1.5; margin: 14px 0; }
-  .ocard .ctl { font-size: 12.5px; opacity: .75; line-height: 1.7; }
+  .set .opts button.on { color: #fff4e2; border-color: var(--seal-dark); text-shadow: 0 1px 0 rgba(60, 0, 0, 0.65); background: radial-gradient(120% 150% at 28% 18%, #e2594a 0%, var(--seal) 42%, #861313 100%); }
+  .ocard .crest { display: block; width: 128px; height: 128px; margin: -6px auto 0; filter: drop-shadow(0 6px 8px rgba(50, 30, 10, .4)); }
+  .ocard h1 { margin: 0; font-size: 50px; font-weight: 700; letter-spacing: 4px; font-variant: small-caps; line-height: 1.05; }
+  .ocard h1.end { font-size: 40px; letter-spacing: 2px; }
+  .ocard h2 { margin: 0 0 4px; font-size: 32px; font-weight: 700; font-variant: small-caps; letter-spacing: 2px; }
+  .ocard h1 small { display: block; font-size: 16px; font-weight: 400; font-style: italic; color: var(--ink-soft); letter-spacing: 2px; font-variant: normal; margin-top: 2px; }
+  .ocard h1::after, .ocard h2::after { content: ''; display: block; width: 150px; height: 9px; margin: 8px auto 0;
+    background: radial-gradient(circle, var(--seal) 0 3.5px, transparent 4px) center / 9px 9px no-repeat, linear-gradient(var(--ink-soft), var(--ink-soft)) left center / 62px 1px no-repeat, linear-gradient(var(--ink-soft), var(--ink-soft)) right center / 62px 1px no-repeat; }
+  .ocard p { line-height: 1.5; margin: 14px 0; font-size: 16px; }
+  .ocard .ctl { font-size: 14px; color: var(--ink-soft); line-height: 1.7; }
   .ocard .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
-  .ocard .big { font-size: 18px; padding: 12px 26px; }
-  .ocard .best { font-size: 13px; opacity: .7; margin-top: 10px; }
+  .ocard .big { font-size: 19px; padding: 12px 28px; }
+  .ocard .big.primary { padding: 13px 36px; font-size: 21px; }
+  .ocard .best { font-size: 15px; color: var(--ink-soft); margin-top: 10px; }
   .estats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
-  .estats div { background: rgba(255, 255, 255, .55); border-radius: 10px; padding: 8px 4px; }
-  .estats b { display: block; font-size: 22px; }
-  .estats small { opacity: .7; font-size: 12px; }
+  .estats div { background: rgba(255, 250, 232, .5); border: 1px solid var(--rule); border-radius: 3px; padding: 8px 4px; }
+  .estats b { display: block; font-family: var(--stencil); font-size: 28px; font-weight: 700; }
+  .estats small { color: var(--ink-soft); font-size: 13px; }
 
   @media (max-width: 1080px) and (min-width: 761px) {
-    #panel { left: 10px; transform: none; width: calc(100% - 290px); }
+    #panel { left: 10px; transform: none; width: calc(100% - 300px); }
   }
   @media (max-width: 760px) {
-    #top { flex-wrap: wrap; gap: 6px; }
+    #top { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
+    #top .logo { font-size: 18px; }
     #top .logo small { display: none; }
-    .stat { padding: 4px 8px; font-size: 13px; }
+    .stat { padding: 2px 8px 1px; font-size: 17px; }
     #wavebox { left: 10px; right: 10px; width: auto; bottom: 10px; display: flex; gap: 8px; align-items: center; padding: 8px; }
     #wavebox .lbl { display: none; }
     #wavePreview { margin: 0; flex: 1; }
     #bWave { width: auto; }
-    #panel { left: 10px; right: 10px; transform: none; width: auto; bottom: 70px; }
+    #panel { left: 10px; right: 10px; transform: none; width: auto; bottom: 74px; }
     .cards { grid-template-columns: 1fr; }
     .card { flex-direction: row; align-items: center; flex-wrap: wrap; }
     .card small { flex-basis: 100%; }
     .tw { grid-template-columns: 1fr; }
     .tbtns { flex-direction: row; flex-wrap: wrap; }
-    .ocard h1 { font-size: 36px; }
-    .ocard .crest { width: 96px; height: 96px; }
+    .ocard { padding: 20px 18px 18px; }
+    .ocard h1 { font-size: 40px; }
+    .ocard h1.end { font-size: 32px; }
+    .ocard .crest { width: 92px; height: 92px; }
     .estats { grid-template-columns: repeat(2, 1fr); }
-    #banner b { font-size: 38px; }
+    #banner b { font-size: 46px; }
   }
   @media (max-height: 500px) {
     .ocard { padding: 14px 18px; }
-    .ocard .crest { width: 60px; height: 60px; margin: -4px auto 0; }
-    .ocard h1 { font-size: 30px; }
-    .ocard h1 small { font-size: 13px; }
+    .ocard .crest { width: 58px; height: 58px; margin: -4px auto 0; }
+    .ocard h1, .ocard h1.end { font-size: 30px; }
+    .ocard h1::after, .ocard h2::after { margin-top: 4px; }
+    .ocard h1 small { font-size: 14px; }
     .ocard p { margin: 8px 0; line-height: 1.35; }
     .ocard .row { margin-top: 8px; }
-    .ocard .big { padding: 9px 22px; }
+    .ocard .big, .ocard .big.primary { padding: 9px 24px; font-size: 18px; }
     .ocard .col { margin-top: 8px; gap: 6px; }
     .ocard .col button { padding: 8px; }
     .estats { margin: 8px 0; }
     .set { margin-top: 8px; gap: 6px 10px; }
     #banner { top: 56%; }
-    #banner b { font-size: 34px; }
+    #banner b { font-size: 38px; }
     #banner .ic { width: 22px; height: 22px; }
   }
   @media (pointer: coarse) {
     button { min-height: 44px; min-width: 44px; }
+    #top button { min-height: 44px; }
     .ph .x { padding: 10px 14px; }
     .set input[type=range] { height: 44px; }
   }
@@ -192,7 +222,7 @@
 <div id="ftxt"></div>
 <div id="flash"></div>
 
-<div id="top" class="glass">
+<div id="top" class="parch">
   <div class="logo"><img src="assets/ui/logo.png" alt="">Hisar<small id="tSub"></small></div>
   <div class="stat" id="sGold" title=""><img class="ic" src="assets/ui/icons/gold.png" alt=""> <span>0</span></div>
   <div class="stat" id="sLives" title=""><img class="ic" src="assets/ui/icons/lives.png" alt=""> <span>0</span></div>
@@ -203,18 +233,18 @@
   <button id="bSound"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
   <button id="bLang">EN</button>
 </div>
-<div id="boss" class="glass"><div id="bossName"></div><div class="bar"><i id="bossBar"></i></div></div>
+<div id="boss" class="parch"><div id="bossName"></div><div class="bar"><i id="bossBar"></i></div></div>
 <div id="banner"></div>
 
-<div id="wavebox" class="glass">
+<div id="wavebox" class="parch">
   <div class="lbl" id="tNext"></div>
   <div id="wavePreview"></div>
   <button id="bWave" class="primary pulse"></button>
 </div>
 
-<div id="panel" class="glass hidden"></div>
+<div id="panel" class="parch hidden"></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<div id="overlay"><div class="ocard glass" id="ocard"></div></div>
+<div id="overlay"><div class="ocard parch" id="ocard"></div></div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -230,6 +260,8 @@ const MAX_WAVES = 15;
 const START_GOLD = 180;
 const START_LIVES = 20;
 const ACCENT = 0xf59e0b;
+// art direction (2026-11 redesign): limestone, slate, Bosphorus blue, banner red, torch amber
+const PAL = { lime: 0xcfc3a6, lime2: 0xb9ab8b, slate: 0x4b5563, bosph: 0x1f5f8b, banner: 0xb91c1c, torch: 0xf59e0b, wood: 0x6b4527, ink: 0x2e2216 };
 
 const TOWERS = {
   archer: { cost: [60, 90, 140], range: [9, 10, 11], rate: [0.75, 0.6, 0.45], dmg: [15, 24, 38] },
@@ -365,6 +397,7 @@ function vnoise(x, z) {
 }
 const fbm = (x, z) => vnoise(x * 0.06, z * 0.06) + vnoise(x * 0.13, z * 0.13) * 0.5 + vnoise(x * 0.3, z * 0.3) * 0.2;
 
+const _eY = new THREE.Euler(0, 0, 0, 'YXZ'); // yaw first, then the body's own lean and sway
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color();
 // Bake a transform and a flat vertex colour into a geometry so many parts can be merged into one mesh.
 function part(geo, color, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
@@ -392,7 +425,7 @@ renderer.shadowMap.enabled = !low;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xf3dcb6, 95, 190);
+scene.fog = new THREE.Fog(0xdfe0d2, 100, 235); // hazy Bosphorus afternoon; the CSS sky behind the canvas ends in the same colour
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 400);
 camera.position.set(-6, 52, 50);
 
@@ -408,10 +441,14 @@ controls.maxPolarAngle = 1.15;
 controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
 controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 
-const hemi = new THREE.HemisphereLight(0xfff0d8, 0x6b7a4f, 1.6);
+const hemi = new THREE.HemisphereLight(0xe4ecf2, 0x6a5a3c, 1.25);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffdfb0, 2.6);
-sun.position.set(-38, 55, 28);
+// low warm afternoon sun from the south-west for long readable shadows, plus a cool unshadowed bounce from the sea
+const sun = new THREE.DirectionalLight(0xffd49a, 3.0);
+sun.position.set(-46, 44, 34);
+const rim = new THREE.DirectionalLight(0x9cc3e6, 0.75);
+rim.position.set(60, 26, -40);
+scene.add(rim);
 sun.castShadow = !low;
 sun.shadow.mapSize.set(1024, 1024);
 Object.assign(sun.shadow.camera, { left: -58, right: 58, top: 46, bottom: -46, near: 10, far: 160 });
@@ -420,6 +457,123 @@ sun.shadow.normalBias = 0.35;
 scene.add(sun);
 
 const matV = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+
+// ---------------------------------------------------------------- canvas textures (drawn at start-up, no files)
+// Decoration uses its own random stream, so the seeded game stream (and with it every battle) stays as it was.
+let fseed = 7331;
+const frand = () => { fseed = (fseed * 16807) % 2147483647; return (fseed - 1) / 2147483646; };
+function canvasTex(w, h, draw, wrap = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  if (wrap) tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 4;
+  return tex;
+}
+// draw something at (x, y) and again across the edges, so the texture tiles without seams
+function tiled(w, h, x, y, r, fn) {
+  for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]) if (x + dx > -r && x + dx < w + r && y + dy > -r && y + dy < h + r) fn(x + dx, y + dy);
+}
+// limestone ashlar: staggered blocks with mortar joints, light and neutral so vertex colours tint it (stretched along u it
+// reads as planks, squeezed it reads as roof shingles)
+const stoneTex = canvasTex(256, 256, (g, W, H) => {
+  g.fillStyle = 'rgb(150,140,122)'; g.fillRect(0, 0, W, H);
+  const rows = 8, rh = H / rows;
+  for (let r = 0; r < rows; r++) {
+    let x = -frand() * 60;
+    while (x < W) {
+      const bw = 44 + frand() * 52, v = 222 + frand() * 28;
+      tiled(W, H, x, r * rh, 100, (px, py) => {
+        g.fillStyle = `rgb(${v | 0},${(v - 5) | 0},${(v - 17) | 0})`; g.fillRect(px + 1.5, py + 1.5, bw - 3, rh - 3);
+        g.fillStyle = 'rgba(255,255,255,0.28)'; g.fillRect(px + 1.5, py + 1.5, bw - 3, 2);
+        g.fillStyle = 'rgba(60,45,25,0.18)'; g.fillRect(px + 1.5, py + rh - 4, bw - 3, 2.5);
+      });
+      x += bw;
+    }
+  }
+  for (let i = 0; i < 2600; i++) { // grain and chips
+    const x = frand() * W, y = frand() * H, d = frand() < 0.5;
+    g.fillStyle = d ? `rgba(70,55,35,${0.05 + frand() * 0.12})` : `rgba(255,252,240,${0.05 + frand() * 0.15})`;
+    g.fillRect(x, y, 1 + frand() * 2.5, 1 + frand() * 1.5);
+  }
+});
+stoneTex.generateMipmaps = true;
+// meadow detail: grass blades and soft patches, multiplied over the terrain's vertex colours
+const grassTex = canvasTex(256, 256, (g, W, H) => {
+  g.fillStyle = 'rgb(226,226,214)'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 26; i++) {
+    const x = frand() * W, y = frand() * H, r = 18 + frand() * 40, a = frand() < 0.5;
+    tiled(W, H, x, y, r, (px, py) => {
+      const gr = g.createRadialGradient(px, py, 0, px, py, r);
+      gr.addColorStop(0, a ? 'rgba(255,255,235,0.22)' : 'rgba(70,80,40,0.16)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gr; g.fillRect(px - r, py - r, r * 2, r * 2);
+    });
+  }
+  g.lineCap = 'round';
+  for (let i = 0; i < 3200; i++) {
+    const x = frand() * W, y = frand() * H, l = 2 + frand() * 5, lean = (frand() - 0.5) * 3, light = frand() < 0.45;
+    g.strokeStyle = light ? `rgba(255,255,230,${0.18 + frand() * 0.25})` : `rgba(40,55,20,${0.12 + frand() * 0.22})`;
+    g.lineWidth = 0.8 + frand();
+    tiled(W, H, x, y, 8, (px, py) => { g.beginPath(); g.moveTo(px, py); g.lineTo(px + lean, py - l); g.stroke(); });
+  }
+});
+// packed-earth road: two wheel ruts, pebbles and grassy verges (u across the road, v along it)
+const dirtTex = canvasTex(128, 256, (g, W, H) => {
+  const gr = g.createLinearGradient(0, 0, W, 0);
+  gr.addColorStop(0, 'rgb(140,138,82)'); gr.addColorStop(0.1, 'rgb(186,152,100)'); gr.addColorStop(0.5, 'rgb(206,172,118)');
+  gr.addColorStop(0.9, 'rgb(186,152,100)'); gr.addColorStop(1, 'rgb(140,138,82)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (const u of [0.3, 0.7]) {
+    const rg = g.createLinearGradient((u - 0.08) * W, 0, (u + 0.08) * W, 0);
+    rg.addColorStop(0, 'rgba(120,88,52,0)'); rg.addColorStop(0.5, 'rgba(120,88,52,0.35)'); rg.addColorStop(1, 'rgba(120,88,52,0)');
+    g.fillStyle = rg; g.fillRect((u - 0.08) * W, 0, 0.16 * W, H);
+  }
+  for (let i = 0; i < 900; i++) {
+    const x = frand() * W, y = frand() * H, r = 0.6 + frand() * 2.2, light = frand() < 0.5;
+    g.fillStyle = light ? `rgba(240,225,190,${0.3 + frand() * 0.4})` : `rgba(90,65,40,${0.2 + frand() * 0.35})`;
+    tiled(W, H, x, y, 4, (px, py) => { g.beginPath(); g.ellipse(px, py, r * 1.3, r, frand() * 3, 0, 6.3); g.fill(); });
+  }
+  for (let i = 0; i < 260; i++) { // grass creeping in at the verges
+    const side = frand() < 0.5, x = side ? frand() * W * 0.14 : W - frand() * W * 0.14, y = frand() * H;
+    g.strokeStyle = `rgba(80,100,40,${0.35 + frand() * 0.4})`; g.lineWidth = 1;
+    tiled(W, H, x, y, 6, (px, py) => { g.beginPath(); g.moveTo(px, py); g.lineTo(px + (frand() - 0.5) * 3, py - 3 - frand() * 4); g.stroke(); });
+  }
+});
+dirtTex.wrapS = THREE.ClampToEdgeWrapping;
+// broken surf line for the shore (alpha only)
+const foamTex = canvasTex(64, 256, (g, W, H) => {
+  for (let i = 0; i < 700; i++) {
+    const y = frand() * H, x = Math.pow(frand(), 1.8) * W, r = 1 + frand() * 3.5;
+    g.fillStyle = `rgba(255,255,255,${(1 - x / W) * (0.35 + frand() * 0.5)})`;
+    tiled(W, H, x, y, 5, (px, py) => { g.beginPath(); g.arc(px, py, r, 0, 6.3); g.fill(); });
+  }
+  const gr = g.createLinearGradient(0, 0, W, 0);
+  gr.addColorStop(0, 'rgba(255,255,255,0.75)'); gr.addColorStop(0.18, 'rgba(255,255,255,0.25)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+});
+foamTex.wrapS = THREE.ClampToEdgeWrapping;
+// textured stone (and planks / shingles through the uv scale) for the fortress, towers and pads
+const matStone = new THREE.MeshLambertMaterial({ vertexColors: true, map: stoneTex });
+// world-space uvs after part(): caps project from above, upright cylinders and cones unroll around their axis (keeping
+// their own seam), everything else projects along its dominant axis. su / sv: texture repeats per metre.
+function uvw(geo, su = 0.25, sv = 0.25, round = 0) {
+  const p = geo.attributes.position, n = geo.attributes.normal, src = geo.attributes.uv, uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i)), az = Math.abs(n.getZ(i));
+    let u, v;
+    if (ay > 0.82) { u = x; v = z; }
+    else if (round) { u = src.getX(i) * Math.PI * 2 * round; v = y; }
+    else if (ax > az) { u = z; v = y; } else { u = x; v = y; }
+    uv[i * 2] = u * su; uv[i * 2 + 1] = v * sv;
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return geo;
+}
+// stone, plank and shingle variants of part()
+const pS = (geo, color, x, y, z, rx, ry, rz, sx, sy, sz) => uvw(part(geo, color, x, y, z, rx, ry, rz, sx, sy, sz), 0.25, 0.25, geo.type === 'CylinderGeometry' || geo.type === 'ConeGeometry' ? geo.parameters.radiusBottom ?? geo.parameters.radius : 0);
+const pW = (geo, color, x, y, z, rx, ry, rz, sx, sy, sz) => uvw(part(geo, color, x, y, z, rx, ry, rz, sx, sy, sz), 0.035, 0.7, geo.type === 'CylinderGeometry' ? geo.parameters.radiusBottom : 0);
+const pR = (geo, color, x, y, z, rx, ry, rz, sx, sy, sz) => uvw(part(geo, color, x, y, z, rx, ry, rz, sx, sy, sz), 0.9, 1.1, geo.parameters.radiusBottom ?? geo.parameters.radius ?? 0);
 
 // ---------------------------------------------------------------- paths
 // Two roads from the western camps merge at (10, 0) and end at the fortress gate.
@@ -493,70 +647,170 @@ function heightAt(x, z) {
   // keep the shore line: flattening never lifts the sea floor above water near the fortress
   return h * (1 - flat) + Math.min(0, h) * flat * smoothstep(39, 44, x);
 }
+const lodMeshes = []; // [mesh, full count, count drawn on Low]
+// The terrain mesh reaches to the horizon: 1 m cells over the play area (110 x 84), then cells that grow outwards over
+// the hills, the strait and the Asian shore. Inside the play area the height is exactly heightAt(), as before.
+const WATER_Y = -0.55;
+function outerHeight(x, z) {
+  const ox = Math.max(0, -55 - x, x - 55), oz = Math.max(0, Math.abs(z) - 42), out = Math.hypot(ox, oz);
+  return out > 0 ? smoothstep(0, 34, out) * (5 + 12 * vnoise(x * 0.03 + 7, z * 0.03)) : 0;
+}
+const farShore = (x, z) => smoothstep(122, 140, x) * (3.8 + 8 * vnoise(x * 0.035 + 5, z * 0.03));
+const inPlay = (x, z) => x >= -55 && x <= 55 && Math.abs(z) <= 42;
+function terrainY(x, z) {
+  if (inPlay(x, z)) return heightAt(x, z);
+  const sea = smoothstep(39, 47, x);
+  return baseHeight(x, z) + outerHeight(x, z) * (1 - sea) + farShore(x, z);
+}
+function gridAxis(inner, lo, hi, nLo, nHi) {
+  const a = [];
+  for (let i = nLo; i >= 1; i--) a.push(-inner - (lo - inner) * Math.pow(i / nLo, 1.6));
+  for (let v = -inner; v <= inner + 1e-6; v += 1) a.push(v);
+  for (let i = 1; i <= nHi; i++) a.push(inner + (hi - inner) * Math.pow(i / nHi, 1.6));
+  return a;
+}
 (function makeTerrain() {
-  const g = new THREE.PlaneGeometry(110, 84, 110, 84);
-  g.rotateX(-Math.PI / 2);
-  const pos = g.attributes.position, col = new Float32Array(pos.count * 3);
-  const sand = new THREE.Color(0xe6cf9a), grass = new THREE.Color(0x86ad55), grass2 = new THREE.Color(0x6f9a46),
-    dry = new THREE.Color(0xb7b062), rock = new THREE.Color(0x9d8f78), peak = new THREE.Color(0xe2d9c6), c = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i), h = heightAt(x, z);
-    pos.setY(i, h);
-    const n = vnoise(x * 0.25, z * 0.25);
-    if (h < -0.25 && x > 34) c.copy(sand);
-    else if (h < -0.25) c.copy(grass2).lerp(dry, 0.25);
-    else if (h > 6.5) c.copy(peak);
-    else if (h > 2.6) c.copy(rock).lerp(grass2, clamp((3.4 - h) / 0.8, 0, 1));
-    else { c.copy(grass).lerp(grass2, n); if (n > 0.72) c.lerp(dry, 0.5); }
-    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  const XS = gridAxis(55, 175, 220, 16, 30), ZS = gridAxis(42, 175, 175, 16, 16), nx = XS.length, nz = ZS.length;
+  const pos = new Float32Array(nx * nz * 3), col = new Float32Array(nx * nz * 3), uv = new Float32Array(nx * nz * 2), idx = [];
+  const C = hex => new THREE.Color(hex);
+  const meadow = C(0x8db556), meadow2 = C(0x6f9a44), olive = C(0x7d8a3e), dry = C(0xb3ad5e), worn = C(0xa99266),
+    limestone = C(0xd2c6a6), sand = C(0xe6d3a0), seabed = C(0x2c5f63), far = C(0x7f9a5c), far2 = C(0x5f7d4a), c = new THREE.Color();
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    const x = XS[i], z = ZS[j], k = j * nx + i, inside = inPlay(x, z), h = terrainY(x, z);
+    pos[k * 3] = x; pos[k * 3 + 1] = h; pos[k * 3 + 2] = z;
+    uv[k * 2] = x / 5; uv[k * 2 + 1] = z / 5;
+    const n = vnoise(x * 0.25, z * 0.25), n2 = vnoise(x * 0.07 + 30, z * 0.07);
+    if (h < WATER_Y + 0.35 && (x > 34 || !inside)) c.copy(sand).lerp(seabed, smoothstep(WATER_Y + 0.2, WATER_Y - 2.2, h));
+    else if (h < 0.05 && x > 34) c.copy(sand);
+    else if (inside && h < -0.25) c.copy(meadow2).lerp(dry, 0.25 + n * 0.15); // inland hollows stay grassy
+    else if (!inside) { c.copy(far).lerp(far2, n); if (h > 9) c.lerp(limestone, smoothstep(9, 16, h) * 0.6 * n2); if (x > 118) c.lerp(olive, 0.25); }
+    else if (h > 6.5) c.copy(limestone).lerp(olive, n * 0.35);
+    else if (h > 2.6) c.copy(limestone).lerp(meadow2, clamp((3.6 - h) / 1.0, 0, 1) * 0.8 + n * 0.2);
+    else {
+      c.copy(meadow).lerp(meadow2, n);
+      if (n2 > 0.62) c.lerp(dry, smoothstep(0.62, 0.85, n2) * 0.4);
+      if (n2 < 0.3) c.lerp(olive, 0.35);
+      const dp = distToPath(x, z);
+      if (dp < 3.4) c.lerp(worn, (1 - smoothstep(1.3, 3.4, dp)) * 0.6);
+    }
+    col[k * 3] = c.r; col[k * 3 + 1] = c.g; col[k * 3 + 2] = c.b;
   }
+  for (let j = 0; j < nz - 1; j++) for (let i = 0; i < nx - 1; i++) {
+    const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
+    idx.push(a, d, b, b, d, e);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setIndex(idx);
   g.computeVertexNormals();
-  const m = new THREE.Mesh(g, matV);
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassTex }));
   m.receiveShadow = true;
   scene.add(m);
 })();
 
-// water with a cheap CPU ripple (flat shading means no normal recompute is needed)
+// the Bosphorus: choppy CPU waves with flat facets, deep blue in the channel, teal in the shallows, foam on the crests
 const water = (() => {
-  const g = new THREE.PlaneGeometry(90, 140, 36, 50);
+  const g = new THREE.PlaneGeometry(190, 350, 60, 100);
   g.rotateX(-Math.PI / 2);
-  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0x3f8fb0, transparent: true, opacity: 0.86, flatShading: true }));
-  m.position.set(83, -0.55, 0);
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.9, flatShading: true }));
+  m.position.set(132, WATER_Y, 0);
   m.receiveShadow = true;
   scene.add(m);
   return m;
 })();
 const waterBase = Float32Array.from(water.geometry.attributes.position.array);
+const waterTint = (() => { // per-vertex base colour by distance from either shore
+  const n = waterBase.length / 3, out = new Float32Array(n * 3), deep = new THREE.Color(PAL.bosph), shallow = new THREE.Color(0x3f9aa6), c = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    const x = waterBase[i * 3] + 132, sh = Math.max(1 - smoothstep(42, 62, x), smoothstep(112, 132, x));
+    c.copy(deep).lerp(shallow, sh * 0.85);
+    out[i * 3] = c.r; out[i * 3 + 1] = c.g; out[i * 3 + 2] = c.b;
+  }
+  return out;
+})();
+// surf along both shores: a ribbon on the waterline with a scrolling foam texture
+const shoreFoam = (() => {
+  const verts = [], uvs = [], idx = [];
+  const strip = (find, dir) => {
+    const base = verts.length / 3;
+    let n = 0;
+    for (let z = -170; z <= 170; z += 2) {
+      const x = find(z);
+      verts.push(x - dir * 0.3, WATER_Y + 0.08, z, x + dir * 2.2, WATER_Y + 0.08, z);
+      uvs.push(0, z / 12, 1, z / 12);
+      if (n > 0) { const a = base + (n - 1) * 2; idx.push(...(dir > 0 ? [a, a + 2, a + 1, a + 1, a + 2, a + 3] : [a, a + 1, a + 2, a + 1, a + 3, a + 2])); }
+      n++;
+    }
+  };
+  const crossing = (x0, x1, step, z) => { for (let x = x0; step > 0 ? x < x1 : x > x1; x += step) if (terrainY(x, z) < WATER_Y + 0.05) return x; return x1; };
+  strip(z => crossing(30, 60, 0.25, z), 1);
+  strip(z => crossing(170, 110, -0.5, z), -1);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: foamTex, transparent: true, opacity: 0.85, depthWrite: false, color: 0xf4f8f6, side: THREE.DoubleSide }));
+  m.renderOrder = 1;
+  scene.add(m);
+  return m;
+})();
 
-// roads: flat ribbons along both paths
+// roads: packed earth ribbons along both paths, edged with field stones
 (function makeRoads() {
-  const pt = {};
+  const pt = {}, mat = new THREE.MeshLambertMaterial({ map: dirtTex });
   paths.forEach((path, pi) => {
-    const verts = [], idx = [], w = 1.35, step = 0.6;
+    const verts = [], uvs = [], idx = [], w = 1.45, step = 0.6;
     let n = 0;
     for (let d = 0; d <= path.len; d += step) {
       samplePath(path, d, pt);
       const nx = -pt.tz, nz = pt.tx, y = 0.04 + pi * 0.012;
       verts.push(pt.x + nx * w, y, pt.z + nz * w, pt.x - nx * w, y, pt.z - nz * w);
+      uvs.push(0, d / 5.5, 1, d / 5.5);
       if (n > 0) { const a = (n - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } // counter-clockwise from above, so the road faces up
       n++;
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     g.setIndex(idx);
     g.computeVertexNormals();
-    const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0xcfa86b }));
+    const m = new THREE.Mesh(g, mat);
     m.receiveShadow = true;
     scene.add(m);
   });
+  // kerb stones on both verges (skipped where the two roads overlap near the gate)
+  const spots = [];
+  paths.forEach(path => {
+    for (let d = 1; d < path.len - 1; d += 1.15 + frand() * 0.9) {
+      samplePath(path, d, pt);
+      for (const s of [-1, 1]) {
+        const off = 1.6 + frand() * 0.35, x = pt.x - pt.tz * s * off, z = pt.z + pt.tx * s * off;
+        if (distToPath(x, z) < 1.5 || inFortress(x, z, 0.5)) continue;
+        spots.push([x, z]);
+      }
+    }
+  });
+  const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.22, 0), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
+  const tints = [0xc9bd9f, 0xb8ab8c, 0xd8cfb8, 0xa59a82];
+  spots.forEach(([x, z], i) => {
+    const s = 0.7 + frand() * 0.9;
+    _m4.compose(_v.set(x, heightAt(x, z) + 0.06, z), _q.setFromEuler(_e.set(frand() * 3, frand() * 3, frand() * 3)), _s.set(s * 1.3, s * 0.6, s));
+    m.setMatrixAt(i, _m4); m.setColorAt(i, _c.set(tints[(frand() * 4) | 0]));
+  });
+  m.receiveShadow = true;
+  scene.add(m);
+  lodMeshes.push([m, spots.length, Math.ceil(spots.length / 2)]);
 })();
 
-// pads (instanced, coloured on hover / select)
+// pads: octagonal flagstone platforms (instanced, tinted on hover / select)
 const padMesh = new THREE.InstancedMesh(
-  merge([part(Cyl(1.5, 1.65, 0.3, 10), 0xc9bfac, 0, 0.15, 0), part(Cyl(1.2, 1.2, 0.04, 10), 0xb1a690, 0, 0.32, 0)]),
-  new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }), pads.length);
-pads.forEach((p, i) => { _m4.makeTranslation(p.x, 0, p.z); padMesh.setMatrixAt(i, _m4); padMesh.setColorAt(i, _c.set(0xffffff)); });
+  merge([pS(Cyl(1.5, 1.72, 0.34, 8), 0xc9bfa8, 0, 0.17, 0), pS(Cyl(1.25, 1.3, 0.06, 8), 0xe2d8c0, 0, 0.36, 0), pS(Cyl(1.62, 1.62, 0.07, 8), 0x9c8f75, 0, 0.3, 0)]),
+  matStone, pads.length);
+pads.forEach((p, i) => { _m4.compose(_v.set(p.x, 0, p.z), _q.setFromEuler(_e.set(0, hash(p.x, p.z) * 0.8, 0)), _s.set(1, 1, 1)); padMesh.setMatrixAt(i, _m4); padMesh.setColorAt(i, _c.set(0xffffff)); });
 padMesh.receiveShadow = true;
 padMesh.castShadow = true;
 scene.add(padMesh);
@@ -574,36 +828,122 @@ function scatter(count, test) {
 const clearOfPlay = (x, z) => distToPath(x, z) > 4.6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 3.2) && !inFortress(x, z, 3) && baseHeight(x, z) > -0.2;
 // Trees and rocks are always built at the High count (so the seeded random stream, and with it every battle, is the same in
 // both qualities); Low quality only draws the first part of each instanced mesh.
-const lodMeshes = [];
+// Three kinds of tree share the old spots and random draws: firs inland, umbrella stone pines and cypresses towards the sea.
+function shade(geo, bottom, top, y0, y1) { // vertical colour gradient baked into a crown
+  const p = geo.attributes.position, c = geo.attributes.color, a = new THREE.Color(bottom), b = new THREE.Color(top);
+  for (let i = 0; i < p.count; i++) { _c.copy(a).lerp(b, clamp((p.getY(i) - y0) / (y1 - y0), 0, 1)); c.setXYZ(i, _c.r, _c.g, _c.b); }
+  return geo;
+}
+const TREE_GEO = {
+  fir: merge([part(Cyl(0.12, 0.18, 0.9, 5), 0x5b3c22, 0, 0.45, 0),
+    shade(merge([part(Cone(0.95, 1.6, 7), 0xffffff, 0, 1.5, 0), part(Cone(0.72, 1.3, 7), 0xffffff, 0, 2.3, 0), part(Cone(0.44, 0.95, 7), 0xffffff, 0, 2.95, 0)]), 0x2f5a2c, 0x6f9c48, 0.7, 3.4)]),
+  pine: merge([part(Cyl(0.1, 0.17, 2.3, 5), 0x6a4126, 0, 1.15, 0, 0, 0, 0.08), part(Cyl(0.06, 0.08, 0.9, 4), 0x6a4126, 0.3, 2.1, 0, 0, 0, -0.7),
+    shade(merge([part(Sph(0.95, 8, 5), 0xffffff, 0.15, 2.55, 0, 0, 0, 0, 1, 0.42, 1), part(Sph(0.7, 7, 5), 0xffffff, 0.75, 2.4, 0.25, 0, 0, 0, 1, 0.45, 1),
+      part(Sph(0.6, 7, 5), 0xffffff, -0.45, 2.45, -0.3, 0, 0, 0, 1, 0.45, 1)]), 0x2d4d26, 0x7aa04a, 2.1, 2.95)]),
+  cypress: merge([part(Cyl(0.08, 0.12, 0.5, 5), 0x4a3320, 0, 0.25, 0),
+    shade(merge([part(Cyl(0.32, 0.42, 1.6, 7), 0xffffff, 0, 1.1, 0), part(Cone(0.36, 1.9, 7), 0xffffff, 0, 2.85, 0)]), 0x1f3d22, 0x55804a, 0.3, 3.6)]),
+};
 (function makeTrees() {
   const spots = scatter(280, (x, z) => clearOfPlay(x, z) && !(x < -40 && Math.abs(Math.abs(z) - 21) < 7) && baseHeight(x, z) < 7.5);
-  const trunk = part(Cyl(0.12, 0.18, 0.9, 5), 0x6b4a2b, 0, 0.45, 0);
-  const crown = merge([part(Cone(0.95, 1.6, 7), 0xffffff, 0, 1.5, 0), part(Cone(0.7, 1.3, 7), 0xffffff, 0, 2.3, 0), part(Cone(0.42, 0.9, 7), 0xffffff, 0, 2.95, 0)]);
-  const mt = new THREE.InstancedMesh(trunk, matV, spots.length), mc = new THREE.InstancedMesh(crown, matV, spots.length);
-  const greens = [0x4f7f3a, 0x5e8f40, 0x3f6e35, 0x6c9a45];
-  spots.forEach(([x, z], i) => {
-    const s = 0.75 + rand() * 0.7, y = heightAt(x, z);
-    _m4.compose(_v.set(x, y - 0.05, z), _q.setFromEuler(_e.set(0, rand() * 6.28, 0)), _s.set(s, s, s));
-    mt.setMatrixAt(i, _m4); mc.setMatrixAt(i, _m4);
-    mc.setColorAt(i, _c.set(greens[(rand() * greens.length) | 0]));
+  const kind = (x, z) => { const h = hash(x * 1.7, z * 2.3); return x > 18 ? (h < 0.45 ? 'pine' : h < 0.75 ? 'cypress' : 'fir') : (h < 0.58 ? 'fir' : h < 0.8 ? 'pine' : 'cypress'); };
+  const lists = { fir: [], pine: [], cypress: [] };
+  spots.forEach(([x, z]) => {
+    const s = 0.75 + rand() * 0.7, y = heightAt(x, z), ry = rand() * 6.28, tint = 0.82 + rand() * 0.3; // three draws per tree, as before
+    lists[kind(x, z)].push([x, y, z, s, ry, tint]);
   });
-  for (const m of [mt, mc]) { m.castShadow = true; m.receiveShadow = true; scene.add(m); lodMeshes.push([m, spots.length, 170]); }
+  for (const k in lists) {
+    const L = lists[k], m = new THREE.InstancedMesh(TREE_GEO[k], matV, Math.max(1, L.length));
+    m.count = L.length;
+    L.forEach(([x, y, z, s, ry, tint], i) => {
+      _m4.compose(_v.set(x, y - 0.05, z), _q.setFromEuler(_e.set(0, ry, 0)), _s.set(s, s * (k === 'cypress' ? 1.15 : 1), s));
+      m.setMatrixAt(i, _m4); m.setColorAt(i, _c.setRGB(tint, tint * (0.97 + hash(x, z) * 0.06), tint * 0.95));
+    });
+    m.castShadow = true; m.receiveShadow = true; scene.add(m);
+    lodMeshes.push([m, L.length, Math.round(L.length * 170 / 280)]);
+  }
 })();
 (function makeRocks() {
   const spots = scatter(70, (x, z) => clearOfPlay(x, z) && (Math.abs(z) > 20 || rand() < 0.25));
-  const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.8, 0), new THREE.MeshLambertMaterial({ color: 0xa79b86, flatShading: true }), spots.length);
+  const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.8, 0), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
+  const tints = [0xcfc3a6, 0xbdb193, 0xa79b86, 0xd9cfb6];
   spots.forEach(([x, z], i) => {
     const s = 0.5 + rand() * 1.4;
     _m4.compose(_v.set(x, heightAt(x, z) + s * 0.25, z), _q.setFromEuler(_e.set(rand() * 3, rand() * 3, rand() * 3)), _s.set(s, s * 0.7, s));
-    m.setMatrixAt(i, _m4);
+    m.setMatrixAt(i, _m4); m.setColorAt(i, _c.set(tints[(hash(x, z) * 4) | 0]));
   });
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
   lodMeshes.push([m, spots.length, 40]);
 })();
+// maquis shrubs and grass tufts with poppies and broom (own random stream)
+function fscatter(count, x0, x1, z0, z1, test) {
+  const out = [];
+  for (let tries = 0; out.length < count && tries < count * 20; tries++) {
+    const x = x0 + frand() * (x1 - x0), z = z0 + frand() * (z1 - z0);
+    if (test(x, z)) out.push([x, z]);
+  }
+  return out;
+}
+(function makeUndergrowth() {
+  const bush = merge([part(Sph(0.55, 7, 5), 0xffffff, 0, 0.3, 0, 0, 0, 0, 1, 0.75, 1), part(Sph(0.42, 6, 4), 0xffffff, 0.45, 0.22, 0.15, 0, 0, 0, 1, 0.7, 1), part(Sph(0.38, 6, 4), 0xffffff, -0.35, 0.2, -0.25, 0, 0, 0, 1, 0.7, 1)]);
+  shade(bush, 0x3d5a2a, 0x86a552, 0, 0.7);
+  const b = fscatter(190, -52, 44, -40, 40, (x, z) => clearOfPlay(x, z) && baseHeight(x, z) < 6);
+  const mb = new THREE.InstancedMesh(bush, matV, b.length);
+  b.forEach(([x, z], i) => {
+    const s = 0.7 + frand() * 0.9;
+    _m4.compose(_v.set(x, heightAt(x, z) - 0.05, z), _q.setFromEuler(_e.set(0, frand() * 6.3, 0)), _s.set(s, s * (0.8 + frand() * 0.4), s));
+    mb.setMatrixAt(i, _m4); mb.setColorAt(i, _c.setRGB(0.85 + frand() * 0.25, 0.9 + frand() * 0.15, 0.8 + frand() * 0.2));
+  });
+  mb.castShadow = true; mb.receiveShadow = true; scene.add(mb);
+  lodMeshes.push([mb, b.length, 90]);
+  const tuft = merge([0, 1, 2, 3, 4].map(i => part(Cone(0.07, 0.55, 3), 0xffffff, Math.cos(i * 1.3) * 0.12, 0.27, Math.sin(i * 1.3) * 0.12, Math.cos(i * 1.3) * 0.35, 0, Math.sin(i * 1.3) * 0.35)));
+  const t = fscatter(380, -52, 44, -40, 40, (x, z) => distToPath(x, z) > 2.2 && !inFortress(x, z, 1.5) && baseHeight(x, z) > -0.1 && baseHeight(x, z) < 6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 2));
+  const mt = new THREE.InstancedMesh(tuft, matV, t.length);
+  const flowers = [0xc8352b, 0xe8c040, 0xf2efe4, 0x9a74b8];
+  t.forEach(([x, z], i) => {
+    const s = 0.7 + frand() * 0.8, f = frand();
+    _m4.compose(_v.set(x, heightAt(x, z), z), _q.setFromEuler(_e.set(0, frand() * 6.3, 0)), _s.set(s, s, s));
+    mt.setMatrixAt(i, _m4);
+    mt.setColorAt(i, f < 0.16 ? _c.set(flowers[(frand() * 4) | 0]) : _c.setRGB(0.45 + frand() * 0.2, 0.62 + frand() * 0.2, 0.25 + frand() * 0.1));
+  });
+  mt.receiveShadow = true; scene.add(mt);
+  lodMeshes.push([mt, t.length, 160]);
+})();
+// forests on the hills beyond the play area and on the far shore (cheap single cones)
+(function makeFarForest() {
+  const spots = fscatter(620, -175, 220, -175, 175, (x, z) => !inPlay(x, z) && Math.hypot(Math.max(0, -55 - x, x - 55), Math.max(0, Math.abs(z) - 42)) > 3 && terrainY(x, z) > 0.6 && (x < 44 || x > 134));
+  const geo = merge([part(Cyl(0.15, 0.2, 1, 4), 0x4a3320, 0, 0.5, 0), part(Cone(1.4, 4.2, 6), 0x3c6234, 0, 2.9, 0)]);
+  shade(geo, 0x2c4a2a, 0x5f8a45, 1, 5);
+  const m = new THREE.InstancedMesh(geo, matV, spots.length);
+  spots.forEach(([x, z], i) => {
+    const s = 0.9 + frand() * 1.1;
+    _m4.compose(_v.set(x, terrainY(x, z) - 0.2, z), _q.setFromEuler(_e.set(0, frand() * 6, 0)), _s.set(s, s * (0.8 + frand() * 0.6), s));
+    m.setMatrixAt(i, _m4); m.setColorAt(i, _c.setRGB(0.8 + frand() * 0.3, 0.85 + frand() * 0.25, 0.8 + frand() * 0.2));
+  });
+  scene.add(m);
+  lodMeshes.push([m, spots.length, 260]);
+})();
+// the Asian shore across the strait: waterfront houses, a mosque with two minarets and cypresses, one merged mesh
+(function makeFarShore() {
+  const P = [], walls = [0xf1e6cf, 0xe2b673, 0xd9a291, 0xf4f1ea, 0xb9cbd6, 0xe8d2a8], roof = 0xa4512f;
+  const coast = z => { for (let x = 112; x < 170; x += 0.5) if (terrainY(x, z) > WATER_Y + 0.3) return x; return 150; };
+  for (let z = -160; z < 160; z += 4.5 + frand() * 5) {
+    if (Math.abs(z + 18) < 9) continue; // the mosque stands here
+    const x = coast(z) + 1.5 + frand() * 3, w = 2.6 + frand() * 2.2, h = 2.4 + frand() * 2.2, d = 2.6 + frand() * 1.5, y = terrainY(x + 1, z) - 0.3;
+    P.push(part(Box(d, h, w), walls[(frand() * walls.length) | 0], x + d / 2, y + h / 2, z), part(Cone(Math.max(w, d) * 0.78, 1.3, 4), roof, x + d / 2, y + h + 0.62, z, 0, Math.PI / 4, 0));
+    if (frand() < 0.45) { const x2 = x + d + 3 + frand() * 6, y2 = terrainY(x2, z); P.push(part(Box(2.4, 2.6, 2.6), walls[(frand() * walls.length) | 0], x2, y2 + 1.1, z + 1), part(Cone(1.9, 1.1, 4), roof, x2, y2 + 2.95, z + 1, 0, Math.PI / 4, 0)); }
+  }
+  const mx = coast(-18) + 6, my = terrainY(mx, -18) - 0.2, mw = 0xf2ece0;
+  P.push(part(Box(8, 4.5, 8), mw, mx, my + 2.25, -18), part(Cyl(3, 3.2, 1, 12), mw, mx, my + 5, -18), part(new THREE.SphereGeometry(3, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0x8f9aa3, mx, my + 5.4, -18));
+  for (const [dx, dz] of [[-3.6, -4.4], [-3.6, 4.4]]) P.push(part(Cyl(0.42, 0.5, 11, 8), mw, mx + dx, my + 5.5, -18 + dz), part(Cyl(0.6, 0.6, 0.3, 8), mw, mx + dx, my + 8.5, -18 + dz), part(Cone(0.45, 2.2, 8), 0x8f9aa3, mx + dx, my + 12.1, -18 + dz));
+  for (let i = 0; i < 26; i++) { const z = -150 + frand() * 300, x = coast(z) + 7 + frand() * 12, y = terrainY(x, z); P.push(part(Cone(0.6, 4.5, 6), 0x2c4a2a, x, y + 2.2, z)); }
+  const m = new THREE.Mesh(merge(P), matV);
+  scene.add(m);
+})();
 
-// enemy camps: tents, palisade posts, fire pits (smoke comes from the particle system)
+// enemy camps: tents, palisades, banners and fire pits (smoke and fire come from the particle systems)
 const campFires = [[-44.5, -24.5], [-44.5, 26]];
+const flagSpots = []; // [x, y, z, size, yaw]: cloth banners animated in updateVisuals
 (function makeCamps() {
   const tent = merge([part(Cone(1.5, 2.2, 6), 0xffffff, 0, 1.1, 0), part(Cyl(0.04, 0.04, 0.8, 4), 0x4b3621, 0, 2.5, 0)]);
   const spots = [];
@@ -620,49 +960,107 @@ const campFires = [[-44.5, -24.5], [-44.5, 26]];
   });
   m.castShadow = true;
   scene.add(m);
-  const pit = merge(campFires.map(([x, z]) => part(Cyl(0.6, 0.7, 0.25, 8), 0x4a3b2c, x, heightAt(x, z) + 0.12, z)));
-  scene.add(new THREE.Mesh(pit, matV));
+  const P = campFires.map(([x, z]) => part(Cyl(0.6, 0.7, 0.25, 8), 0x4a3b2c, x, heightAt(x, z) + 0.12, z));
+  for (const [x, z] of campFires) for (let i = 0; i < 4; i++) P.push(part(Cyl(0.07, 0.08, 1.1, 5), 0x5a3a20, x, heightAt(x, z) + 0.32, z, Math.PI / 2, i * 0.8, 0));
+  // sharpened palisade stakes on an arc in front of each camp, open where the road leaves
+  for (const [cx, cz] of [[-45, -20], [-45, 22]]) for (let a = -1.25; a <= 1.25; a += 0.085) {
+    const x = cx + Math.cos(a) * 9.5, z = cz + Math.sin(a) * 10.5;
+    if (distToPath(x, z) < 2.6) continue;
+    const h = 1.3 + frand() * 0.4, y = heightAt(x, z);
+    P.push(part(Cyl(0.11, 0.13, h, 5), 0x7a5634, x, y + h / 2, z, (frand() - 0.5) * 0.15, 0, (frand() - 0.5) * 0.15), part(Cone(0.11, 0.3, 5), 0x9b7448, x, y + h + 0.15, z));
+  }
+  for (const [cx, cz] of [[-47, -20], [-47, 22]]) { const y = heightAt(cx, cz); P.push(part(Cyl(0.06, 0.07, 4.2, 5), 0x4b3621, cx, y + 2.1, cz)); flagSpots.push([cx, y + 3.55, cz, 1.3, 0]); }
+  scene.add(new THREE.Mesh(merge(P), matV));
 })();
 
-// fortress: one merged mesh
-const fortressMesh = (function makeFortress() {
-  const P = [], stone = 0xd8ccb4, stone2 = 0xc4b79c, roof = 0xb3261e, wood = 0x6e4a2a;
-  const X0 = 25, X1 = 37, Z0 = -8, Z1 = 8, H = 3.4, T = 1.2;
-  const wall = (x0, z0, x1, z1) => {
+// fortress: a limestone hisar on the strait (curtain walls with crenellations, round towers with slate cones, wooden
+// hoardings over the gate), one merged mesh with the stone texture
+const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
+(function makeFortress() {
+  const P = [], stone = 0xddd1b5, stone2 = 0xc4b597, slate = 0x7d8796, wood = 0x7a5232, dark = 0x2a1d12, iron = 0x3a3d42;
+  const X0 = 25, X1 = 37, Z0 = -8, Z1 = 8, H = 3.8, T = 1.3;
+  // a straight curtain wall with a battered plinth and merlons on its outer edge (nx, nz: outward normal)
+  const wall = (x0, z0, x1, z1, nx, nz) => {
     const l = Math.hypot(x1 - x0, z1 - z0), a = Math.atan2(x1 - x0, z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-    P.push(part(Box(T, H, l), stone, cx, H / 2, cz, 0, a, 0));
-    for (let s = 0.7; s < l - 0.3; s += 1.4) {
-      const k = s / l;
-      P.push(part(Box(T + 0.1, 0.6, 0.7), stone2, lerp(x0, x1, k), H + 0.3, lerp(z0, z1, k), 0, a, 0));
+    P.push(pS(Box(T + 0.7, 0.9, l), stone2, cx + nx * 0.2, 0.45, cz + nz * 0.2, 0, a, 0), pS(Box(T, H, l), stone, cx, H / 2, cz, 0, a, 0));
+    P.push(pS(Box(T + 0.16, 0.18, l), stone2, cx, H - 0.05, cz, 0, a, 0)); // string course under the parapet
+    for (let s = 0.55; s < l - 0.3; s += 1.25) {
+      const k = s / l, x = lerp(x0, x1, k) + nx * (T / 2 - 0.2), z = lerp(z0, z1, k) + nz * (T / 2 - 0.2);
+      P.push(pS(Box(0.42, 0.75, 0.75), stone, x, H + 0.37, z, 0, a, 0));
     }
   };
-  wall(X1, Z0, X1, Z1); wall(X0, Z1, X1, Z1); wall(X0, Z0, X1, Z0);
-  wall(X0, Z0, X0, -1.7); wall(X0, 1.7, X0, Z1);
-  P.push(part(Box(T, 1.2, 3.4), stone2, X0, H - 0.6 + 0.6, 0)); // lintel over the gate
-  P.push(part(Box(0.3, 2.3, 3.2), 0x3a2a1b, X0 - 0.2, 1.15, 0)); // gate doors
-  for (const [x, z] of [[X0, Z0], [X0, Z1], [X1, Z0], [X1, Z1]]) {
-    P.push(part(Cyl(1.9, 2.1, 5.2, 10), stone, x, 2.6, z), part(Cyl(2.15, 2.15, 0.5, 10), stone2, x, 5.4, z), part(Cone(2.3, 2.6, 10), roof, x, 6.95, z));
-    P.push(part(Cyl(0.05, 0.05, 1.6, 4), wood, x, 8.9, z), part(Box(0.04, 0.55, 0.9), roof, x, 9.4, z + 0.47));
+  wall(X1, Z0, X1, Z1, 1, 0); wall(X0, Z1, X1, Z1, 0, 1); wall(X0, Z0, X1, Z0, 0, -1);
+  wall(X0, Z0, X0, -2.2, -1, 0); wall(X0, 2.2, X0, Z1, -1, 0);
+  // round tower with a battered foot, a corbelled crown and either merlons, a wooden hoarding or a slate cone
+  const tower = (x, z, r, h, top) => {
+    P.push(pS(Cyl(r + 0.35, r + 0.7, 1.4, 14), stone2, x, 0.7, z), pS(Cyl(r, r + 0.12, h, 14), stone, x, h / 2, z));
+    P.push(pS(Cyl(r + 0.28, r, 0.45, 14), stone2, x, h + 0.2, z));
+    for (let i = 0; i < 3; i++) { const a = i * 2.1 + 0.6; P.push(part(Box(0.14, 0.55, 0.3), dark, x + Math.sin(a) * (r + 0.06), h * 0.6, z + Math.cos(a) * (r + 0.06), 0, a, 0)); }
+    if (top === 'cone') {
+      P.push(pR(Cone(r + 0.5, r * 1.45, 12), slate, x, h + 0.42 + r * 0.72, z), part(Cyl(0.05, 0.05, 1.2, 4), iron, x, h + 0.4 + r * 1.45 + 0.5, z));
+      flagSpots.push([x, h + 0.4 + r * 1.45 + 0.9, z, 0.85, 0]);
+    } else if (top === 'hoard') { // timber gallery overhanging the top, under a low slate cone
+      for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; P.push(pW(Box(0.16, 1.0, (r + 0.4) * 0.56), wood, x + Math.sin(a) * (r + 0.35), h + 0.9, z + Math.cos(a) * (r + 0.35), 0, a + Math.PI / 2, 0)); }
+      P.push(pW(Cyl(r + 0.45, r + 0.45, 0.14, 14), 0x5a3a20, x, h + 0.42, z), pR(Cone(r + 0.85, 1.5, 14), slate, x, h + 2.15, z));
+    } else for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; P.push(pS(Box(0.5, 0.7, 0.42), stone, x + Math.sin(a) * (r + 0.05), h + 0.75, z + Math.cos(a) * (r + 0.05), 0, a, 0)); }
+  };
+  tower(X0, Z0, 2.1, 5.6, 'hoard'); tower(X0, Z1, 2.1, 5.6, 'hoard');
+  tower(X1, Z0, 2.3, 6.4, 'cone'); tower(X1, Z1, 2.3, 6.4, 'crown');
+  // gatehouse: two slim cone towers, a dark arch with plank doors, a timber hoarding and a banner over the gate
+  tower(X0, -2.9, 1.35, 5.4, 'cone'); tower(X0, 2.9, 1.35, 5.4, 'cone');
+  P.push(pS(Box(1.9, 4.5, 3.4), stone, X0 + 0.1, 2.25, 0), pS(Box(2.1, 0.2, 3.6), stone2, X0 + 0.1, 4.45, 0));
+  P.push(part(Box(0.4, 2.7, 2.2), dark, X0 - 0.8, 1.35, 0), part(Cyl(1.1, 1.1, 0.4, 12, 1), dark, X0 - 0.8, 2.7, 0, 0, 0, Math.PI / 2, 1, 1, 1));
+  P.push(pW(Box(0.16, 2.5, 2.0), 0x6b4527, X0 - 0.92, 1.25, 0));
+  for (const y of [0.55, 1.25, 1.95]) P.push(part(Box(0.06, 0.1, 2.02), iron, X0 - 1.01, y, 0));
+  P.push(pW(Box(1.0, 1.1, 3.6), wood, X0 - 1.2, 5.1, 0), pR(Box(1.5, 0.12, 3.9), slate, X0 - 1.1, 5.82, 0, 0, 0, 0.42));
+  for (const z of [-1.4, -0.45, 0.45, 1.4]) P.push(part(Box(0.6, 0.18, 0.18), 0x5a3a20, X0 - 1.1, 4.5, z));
+  P.push(pW(Box(0.06, 1.5, 1.1), PAL.banner, X0 - 1.74, 3.75, 0), part(Box(0.07, 0.36, 0.36), 0xe6c35a, X0 - 1.76, 3.85, 0, Math.PI / 4, 0, 0));
+  // torches on iron brackets either side of the gate and at the corners
+  for (const [x, y, z] of [[X0 - 1.0, 2.9, -1.75], [X0 - 1.0, 2.9, 1.75], [X0 - 2.2, 3.5, Z0 - 1.6], [X0 - 2.2, 3.5, Z1 + 1.6], [X1 + 2.4, 3.6, Z0 - 1.4], [X1 + 2.4, 3.6, Z1 + 1.4]]) {
+    P.push(part(Box(0.4, 0.07, 0.07), iron, x + 0.18, y - 0.25, z), part(Cone(0.13, 0.32, 6), iron, x, y - 0.05, z, Math.PI, 0, 0));
+    torchSpots.push([x, y + 0.12, z]);
   }
-  for (const z of [-2.7, 2.7]) P.push(part(Cyl(1.3, 1.4, 4.6, 8), stone, X0, 2.3, z), part(Cone(1.6, 2, 8), roof, X0, 5.6, z));
-  P.push(part(Box(11.5, 0.15, 15.5), 0xd9c39a, 31, 0.07, 0)); // courtyard
-  P.push(part(Box(5, 6.4, 5), stone, 32, 3.2, 0), part(Box(5.4, 0.5, 5.4), stone2, 32, 6.6, 0), part(Cone(4, 3, 4), roof, 32, 8.35, 0, 0, Math.PI / 4, 0));
-  P.push(part(Cyl(0.06, 0.06, 2.6, 4), wood, 32, 11, 0), part(Box(0.05, 0.8, 1.4), ACCENT, 32, 11.8, 0.72));
-  for (let i = 0; i < 6; i++) P.push(part(Box(0.6, 0.9, 0.15), 0x2b2118, 32 + (i % 3 - 1) * 1.4, 2 + Math.floor(i / 3) * 2, 2.55)); // windows
-  const m = new THREE.Mesh(merge(P), matV);
+  // the courtyard: flagstones, the keep with its hoarding and slate cone, two barracks with tiled roofs, a small minaret
+  P.push(pS(Box(11.5, 0.15, 15.5), 0xd2c3a0, 31, 0.07, 0));
+  P.push(pS(Cyl(3.1, 3.4, 7.0, 16), stone, 32.4, 3.5, 0), pS(Cyl(3.4, 3.1, 0.5, 16), stone2, 32.4, 7.2, 0));
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; P.push(pW(Box(0.16, 1.1, 1.45), wood, 32.4 + Math.sin(a) * 3.45, 8.0, Math.cos(a) * 3.45, 0, a, 0)); }
+  P.push(pR(Cone(3.9, 3.2, 16), slate, 32.4, 10.15, 0), part(Cyl(0.06, 0.06, 1.6, 4), iron, 32.4, 12.4, 0));
+  flagSpots.push([32.4, 12.9, 0, 1.4, 0]);
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.5; P.push(part(Box(0.14, 0.55, 0.3), dark, 32.4 + Math.sin(a) * 3.15, 4.6, Math.cos(a) * 3.15, 0, a, 0)); }
+  for (const z of [-6.0, 6.0]) {
+    P.push(pS(Box(6, 2.2, 2.0), stone, 30.5, 1.1, z));
+    for (const s of [-1, 1]) P.push(pR(Box(6.4, 0.12, 1.45), 0xa4412f, 30.5, 2.55, z + s * 0.55, s * 0.62, 0, 0));
+  }
+  P.push(pS(Cyl(0.45, 0.55, 4.6, 10), stone, 27.6, 2.3, -3.9), pS(Cyl(0.65, 0.65, 0.25, 10), stone2, 27.6, 3.9, -3.9), pR(Cone(0.5, 1.6, 10), slate, 27.6, 5.4, -3.9));
+  const m = new THREE.Mesh(merge(P), matStone);
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
-  return m;
+})();
+// torches along the last stretch of road to the gate
+(function makeRoadTorches() {
+  const P = [], pt = {};
+  for (const [pi, back] of [[0, 4], [0, 11], [0, 21], [1, 21]]) {
+    samplePath(paths[pi], paths[pi].len - back, pt);
+    for (const s of [-1, 1]) {
+      const x = pt.x - pt.tz * s * 2.3, z = pt.z + pt.tx * s * 2.3, y = heightAt(x, z);
+      if (inFortress(x, z, -0.5) || pads.some(p => Math.hypot(p.x - x, p.z - z) < 2.3)) continue;
+      P.push(part(Cyl(0.07, 0.09, 2.2, 5), 0x4a3020, x, y + 1.1, z), part(Cone(0.16, 0.36, 6), 0x3a3d42, x, y + 2.3, z, Math.PI, 0, 0));
+      torchSpots.push([x, y + 2.5, z]);
+    }
+  }
+  const m = new THREE.Mesh(merge(P), matV);
+  m.castShadow = true;
+  scene.add(m);
 })();
 
 // boats on the sea
-const boats = [0, 1].map(i => {
+const boats = [0, 1, 2, 3].map(i => {
   const g = merge([part(Box(1.2, 0.5, 3.2), 0x7a5232, 0, 0.25, 0), part(Box(0.9, 0.2, 2.6), 0x9c6f45, 0, 0.55, 0),
     part(Cyl(0.06, 0.06, 3, 4), 0x5a3d22, 0, 2, 0.2), part(new THREE.PlaneGeometry(1.8, 2.2), 0xf5ead2, 0, 2.2, 0.25, 0, Math.PI / 2, 0)]);
   const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide }));
   m.castShadow = true;
   scene.add(m);
-  return { m, x: 52 + i * 9, z: i ? 18 : -22, dir: i ? -1 : 1, sp: 1.2 + i * 0.5 };
+  return { m, x: [52, 61, 84, 104][i], z: [-22, 18, -6, 30][i], dir: i % 2 ? -1 : 1, sp: 1.2 + i * 0.35, lim: i < 2 ? 34 : 70 };
 });
 
 // ---------------------------------------------------------------- enemy models (instanced per type)
@@ -703,14 +1101,10 @@ barBg.renderOrder = 10; barFg.renderOrder = 11;
 // Models from assets/models replace the procedural meshes once they have loaded. Every procedural builder stays as the
 // fallback: if a file is missing or cannot be fetched (from file:// the loader is skipped, since Chrome blocks fetch
 // there), the game keeps its original look. ?noassets forces the fallback.
-const MODEL_FILES = ['raider', 'rider', 'shield', 'ram', 'fortress', 'boat', 'tower-archer', 'tower-cannon', 'tower-tar', 'head-archer', 'head-cannon', 'head-tar'];
-const MODEL_YAW = { raider: -Math.PI / 2, rider: Math.PI, shield: -Math.PI / 2, fortress: Math.PI, 'head-archer': -Math.PI / 2, 'head-cannon': -Math.PI / 2 }; // turns each model to face +Z
-// towers: world height per level, footprint width, height of the top platform as a fraction of the model height
-const TOWER_FIT = {
-  archer: { h: [5, 5.8, 6.6], w: 3.0, floor: 0.49 },
-  cannon: { h: [1.7, 2.2, 2.7], w: 3.6, floor: 0.77 },
-  tar: { h: [2.4, 3.1, 3.8], w: 2.4, floor: 0.86 },
-};
+// The 2026-11 redesign builds the fortress and the tower bases in code (textured limestone in one style); the generated
+// fortress and tower-base files are no longer loaded.
+const MODEL_FILES = ['raider', 'rider', 'shield', 'ram', 'boat', 'head-archer', 'head-cannon', 'head-tar'];
+const MODEL_YAW = { raider: -Math.PI / 2, rider: Math.PI, shield: -Math.PI / 2, 'head-archer': -Math.PI / 2, 'head-cannon': -Math.PI / 2 }; // turns each model to face +Z
 const HEAD_SIZE = { archer: 1.3, cannon: 1.5, tar: 1.2 }; // largest dimension of the turret model at level 1
 const models = {}, loadedModels = {};
 const assetState = { done: false, loaded: 0, total: MODEL_FILES.length };
@@ -719,23 +1113,6 @@ const assetState = { done: false, loaded: 0, total: MODEL_FILES.length };
 function sized(M, size) {
   const s = size / Math.max(M.size.x, M.size.y, M.size.z);
   return M.geo.clone().scale(s, s, s);
-}
-function modelTower(type, L, M) {
-  const F = TOWER_FIT[type], h = F.h[L], sxz = F.w * (1 + 0.06 * L) / Math.max(M.size.x, M.size.z);
-  const geo = M.geo.clone().scale(sxz, h / M.size.y, sxz);
-  const pos = geo.attributes.position, P = [], wood = 0x5a3d22;
-  // widest point of the model in a height band, to fit trims around it
-  const radiusAt = (y0, y1) => { let r = 0; for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y >= y0 && y <= y1) r = Math.max(r, Math.hypot(pos.getX(i), pos.getZ(i))); } return r; };
-  if (L >= 1) { // level 2: a pennant on top
-    const fx = type === 'archer' ? 0 : radiusAt(h * 0.8, h) * 0.62, top = type === 'archer' ? h - 0.15 : h;
-    P.push(part(Cyl(0.035, 0.035, 1.3, 4), wood, fx, top + 0.6, 0), part(Box(0.05, 0.42, 0.75), ACCENT, fx, top + 1.0, 0.4));
-  }
-  if (L >= 2) { // level 3: a gold band around the walls
-    const y = h * (type === 'cannon' ? 0.45 : 0.32), r = radiusAt(y - h * 0.06, y + h * 0.06);
-    if (type === 'tar') P.push(part(Box(r * 1.42 + 0.1, 0.16, r * 1.42 + 0.1), ACCENT, 0, y, 0));
-    else P.push(part(new THREE.TorusGeometry(r * 0.98, 0.1, 5, 20), ACCENT, 0, y, 0, Math.PI / 2, 0, 0));
-  }
-  return { geo, mat: M.mat, pivot: h * F.floor, trim: P.length ? merge(P) : null };
 }
 function loadAssets() {
   if (params.has('noassets') || location.protocol === 'file:') return Promise.resolve(); // file:// blocks fetch anyway
@@ -786,63 +1163,61 @@ function applyAssets() {
     m.geometry = M.geo.clone().scale(s, s, s);
     m.material = M.mat;
   }
-  if (fresh.includes('fortress')) {
-    const M = models.fortress, s = 14;
-    const f = new THREE.Mesh(M.geo.clone().scale(s, s, s), M.mat);
-    f.position.set(25 + M.size.x * s / 2 - 0.3, 0, 0); // gate wall on x = 25, where the roads end
-    f.castShadow = true; f.receiveShadow = true;
-    scene.remove(fortressMesh); fortressMesh.geometry.dispose(); // the procedural fortress is not needed any more
-    scene.add(f);
-  }
   if (fresh.includes('boat')) {
     const M = models.boat, geo = sized(M, 3.6).translate(0, -0.3, 0);
     boats[0].m.geometry.dispose();
     for (const b of boats) { b.m.geometry = geo; b.m.material = M.mat; }
   }
-  if (fresh.some(k => k.startsWith('tower-') || k.startsWith('head-'))) {
-    const old = [...Object.values(towerGeoCache), ...Object.values(headGeoCache)];
-    for (const k in towerGeoCache) delete towerGeoCache[k];
+  if (fresh.some(k => k.startsWith('head-'))) {
+    const old = Object.values(headGeoCache);
     for (const k in headGeoCache) delete headGeoCache[k];
     for (const tw of G.towers) makeTowerMesh(tw);
-    for (const o of old) { o.geo.dispose(); o.trim?.dispose(); } // no tower uses the old geometry now
+    for (const o of old) o.geo.dispose(); // no tower uses the old geometry now
   }
   G.assets = Object.keys(models);
 }
 
 // ---------------------------------------------------------------- tower models
 const towerGeoCache = {};
+// limestone towers in the fortress style; level 2 adds a hoarding or buttresses and a banner, level 3 a brass band and a pennant
 function towerGeo(type, L) {
   const key = type + L;
   if (towerGeoCache[key]) return towerGeoCache[key];
-  if (models['tower-' + type]) return (towerGeoCache[key] = modelTower(type, L, models['tower-' + type]));
-  const P = [], stone = 0xcfc4ae, stone2 = 0xb3a78f, wood = 0x8b5e34, roof = 0xb3261e;
+  const P = [], stone = 0xd8ccb0, stone2 = 0xbfb193, wood = 0x7a5232, slate = 0x7d8796, dark = 0x2a1d12;
+  const pennant = (x, y) => P.push(part(Cyl(0.035, 0.035, 1.3, 4), 0x4a3020, x, y + 0.65, 0), pW(Box(0.05, 0.42, 0.8), PAL.banner, x, y + 1.05, 0.42));
   let pivot = 0;
   if (type === 'archer') {
-    const H = 2.2 + L * 0.8;
-    P.push(part(Cyl(1.25, 1.4, 0.7, 8), stone2, 0, 0.35, 0), part(Cyl(0.95, 1.1, H, 8), stone, 0, 0.7 + H / 2, 0), part(Cyl(1.35, 1.2, 0.3, 8), wood, 0, 0.85 + H, 0));
-    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; P.push(part(Box(0.14, 1.3, 0.14), 0x6e4a2a, Math.cos(a) * 1.1, 1.65 + H, Math.sin(a) * 1.1)); }
-    P.push(part(Cone(1.75, 1.3, 8), roof, 0, 2.95 + H, 0));
-    for (let i = 0; i < 3; i++) P.push(part(Box(0.12, 0.3, 0.4), 0x3a2a1b, Math.cos(i * 2.1) * 0.97, 0.9 + H * 0.55, Math.sin(i * 2.1) * 0.97, 0, -i * 2.1, 0));
-    if (L >= 1) P.push(part(Cyl(0.03, 0.03, 1.1, 4), 0x5a3d22, 0, 4.15 + H, 0), part(Box(0.04, 0.4, 0.7), ACCENT, 0, 4.5 + H, 0.36));
-    if (L >= 2) P.push(part(new THREE.TorusGeometry(1.02, 0.08, 5, 16), ACCENT, 0, 0.7 + H * 0.82, 0, Math.PI / 2, 0, 0));
-    pivot = 1.0 + H;
+    const H = 2.2 + L * 0.55, top = 0.5 + H;
+    P.push(pS(Cyl(1.45, 1.62, 0.5, 12), stone2, 0, 0.25, 0), pS(Cyl(1.0, 1.18, H, 12), stone, 0, 0.5 + H / 2, 0), pS(Cyl(1.4, 1.02, 0.38, 12), stone2, 0, top + 0.18, 0));
+    for (let i = 0; i < 3; i++) { const a = i * 2.1 + 0.3; P.push(part(Box(0.12, 0.42, 0.3), dark, Math.sin(a) * 1.07, 0.5 + H * 0.58, Math.cos(a) * 1.07, 0, a, 0)); }
+    pivot = top + 0.48;
+    P.push(pW(Cyl(1.42, 1.42, 0.14, 12), 0x5a3a20, 0, pivot - 0.07, 0));
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; P.push(pW(Box(0.13, 1.55, 0.13), wood, Math.cos(a) * 1.18, pivot + 0.77, Math.sin(a) * 1.18)); }
+    if (L >= 1) for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; if (i === 2) continue; P.push(pW(Box(0.1, 0.5, 0.8), wood, Math.sin(a) * 1.36, pivot + 0.25, Math.cos(a) * 1.36, 0, a + Math.PI / 2, 0)); }
+    else for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; P.push(pW(Box(0.08, 0.08, 1.6), wood, Math.sin(a) * 1.15, pivot + 0.45, Math.cos(a) * 1.15, 0, a + Math.PI / 2, 0)); }
+    P.push(pR(Cone(1.9, 1.25, 12), slate, 0, pivot + 2.15, 0));
+    if (L >= 1) P.push(pW(Box(0.62, 1.15, 0.05), PAL.banner, 0, 0.5 + H * 0.62, 1.14), part(Box(0.22, 0.22, 0.06), 0xe6c35a, 0, 0.5 + H * 0.66, 1.17, 0, 0, Math.PI / 4));
+    if (L >= 2) { P.push(part(new THREE.TorusGeometry(1.1, 0.07, 5, 20), 0xc9a227, 0, 0.5 + H * 0.3, 0, Math.PI / 2, 0, 0)); pennant(0, pivot + 2.7); }
   } else if (type === 'cannon') {
-    const H = 1.3 + L * 0.5;
-    P.push(part(Cyl(1.55, 1.75, H, 10), stone, 0, H / 2, 0), part(Cyl(1.62, 1.62, 0.18, 10), stone2, 0, H + 0.09, 0));
-    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; P.push(part(Box(0.45, 0.45, 0.35), stone2, Math.cos(a) * 1.45, H + 0.4, Math.sin(a) * 1.45, 0, -a, 0)); }
-    if (L >= 1) for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; P.push(part(Box(0.5, H * 0.9, 0.6), stone2, Math.cos(a) * 1.65, H * 0.45, Math.sin(a) * 1.65, 0, -a, 0)); }
-    if (L >= 2) P.push(part(new THREE.TorusGeometry(1.66, 0.09, 5, 20), ACCENT, 0, H * 0.7, 0, Math.PI / 2, 0, 0));
-    pivot = H + 0.18;
+    const H = 1.4 + L * 0.45;
+    P.push(pS(Cyl(1.62, 1.98, H, 14), stone, 0, H / 2, 0), pS(Cyl(1.7, 1.7, 0.16, 14), stone2, 0, H, 0), pS(Cyl(1.5, 1.5, 0.06, 14), 0xc8b996, 0, H + 0.03, 0));
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2; P.push(pS(Box(0.62, 0.52, 0.42), stone, Math.cos(a) * 1.5, H + 0.34, Math.sin(a) * 1.5, 0, -a, 0)); }
+    if (L >= 1) for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.6; P.push(pS(Box(0.55, H * 0.85, 0.75), stone2, Math.cos(a) * 1.85, H * 0.42, Math.sin(a) * 1.85, 0, -a)); }
+    if (L >= 1) for (const [x, z] of [[-0.95, 0.75], [-0.75, 1.05]]) P.push(pW(Cyl(0.17, 0.17, 0.36, 8), 0x6b4527, x, H + 0.21, z));
+    if (L >= 2) { P.push(part(new THREE.TorusGeometry(1.74, 0.08, 5, 24), 0xc9a227, 0, H * 0.62, 0, Math.PI / 2, 0, 0)); pennant(1.45, H + 0.55); }
+    pivot = H + 0.06;
   } else {
-    const H = 1.5 + L * 0.7;
-    P.push(part(Box(2.1, H, 2.1), 0xb0a58f, 0, H / 2, 0), part(Box(2.3, 0.2, 2.3), stone2, 0, H + 0.1, 0));
-    for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) P.push(part(Box(0.3, 0.6, 0.3), stone2, x, H + 0.5, z));
-    for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2; P.push(part(Box(0.1, 1.9, 0.1), 0x5a3d22, Math.cos(a) * 0.55, H + 1.05, Math.sin(a) * 0.55, Math.sin(a) * 0.3, 0, -Math.cos(a) * 0.3)); }
-    if (L >= 1) P.push(part(Box(0.05, 0.9, 0.6), roof, 1.16, H * 0.6, 0));
-    if (L >= 2) P.push(part(Box(2.16, 0.14, 2.16), ACCENT, 0, H * 0.75, 0));
-    pivot = H + 0.2;
+    const H = 1.9 + L * 0.6, top = 0.4 + H;
+    P.push(pS(Box(2.45, 0.4, 2.45), stone2, 0, 0.2, 0), pS(Box(2.0, H, 2.0), stone, 0, 0.4 + H / 2, 0));
+    for (const s of [-1, 1]) for (const k of [-0.75, -0.25, 0.25, 0.75]) P.push(pS(Box(0.24, 0.32, 0.3), stone2, k, top + 0.06, s * 1.08), pS(Box(0.3, 0.32, 0.24), stone2, s * 1.08, top + 0.06, k)); // machicolation corbels
+    P.push(pS(Box(2.5, 0.24, 2.5), stone2, 0, top + 0.34, 0));
+    for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) P.push(pS(Box(0.42, 0.6, 0.42), stone, x * 1.04, top + 0.76, z * 1.04));
+    for (const x of [-0.5, 0.45]) P.push(part(Box(0.26, H * 0.55, 0.04), dark, x, top - H * 0.28, 1.01)); // tar stains below the drop holes
+    if (L >= 1) P.push(pW(Box(0.05, 1.0, 0.65), PAL.banner, 1.02, 0.4 + H * 0.5, 0), part(Box(0.06, 0.2, 0.2), 0xe6c35a, 1.04, 0.4 + H * 0.55, 0, Math.PI / 4, 0, 0));
+    if (L >= 2) { P.push(part(Box(2.08, 0.14, 2.08), 0xc9a227, 0, 0.4 + H * 0.3, 0)); pennant(1.0, top + 1.0); }
+    pivot = top + 0.46;
   }
-  return (towerGeoCache[key] = { geo: merge(P), mat: matV, pivot, trim: null });
+  return (towerGeoCache[key] = { geo: merge(P), mat: matStone, pivot });
 }
 const headGeoCache = {};
 function headGeo(type, L) {
@@ -906,6 +1281,162 @@ function emit(x, y, z, n, color, speed = 3, life = 0.8, grav = -9, spread = 1) {
   pGeo.attributes.color.needsUpdate = true;
 }
 let pAlive = 0;
+
+// arrow trails: two crossed ribbons behind each arrow, fading towards the tail (vertex alpha), drawn with the arrows' matrices
+const trails = (() => {
+  const v = [], c = [], idx = [];
+  for (const [ax, ay] of [[0.045, 0], [0, 0.045]]) {
+    const b = v.length / 3;
+    v.push(-ax, -ay, -0.25, ax, ay, -0.25, -ax * 0.3, -ay * 0.3, -2.1, ax * 0.3, ay * 0.3, -2.1);
+    c.push(1, 0.96, 0.86, 0.55, 1, 0.96, 0.86, 0.55, 1, 0.96, 0.86, 0, 1, 0.96, 0.86, 0);
+    idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(c, 4));
+  g.setIndex(idx);
+  const m = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide }), 220);
+  m.count = 0; m.frustumCulled = false; m.renderOrder = 4;
+  scene.add(m);
+  return m;
+})();
+
+// smoke and glow: soft point sprites with their own size, growth and fade (one draw call each; glow is additive)
+const softTex = particles.material.map;
+const PUFF_VS = `attribute float size; attribute vec4 rgba; uniform float scale; varying vec4 vC;
+  void main() { vC = rgba; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = min(size * scale / -mv.z, 220.0); gl_Position = projectionMatrix * mv; }`;
+const PUFF_FS = `uniform sampler2D map; varying vec4 vC; void main() { float a = texture2D(map, gl_PointCoord).a * vC.a; if (a < 0.01) discard; gl_FragColor = vec4(vC.rgb, a); }`;
+const puffSystems = [];
+function puffSystem(max, additive) {
+  const geo = new THREE.BufferGeometry(), pos = new Float32Array(max * 3).fill(-999), rgba = new Float32Array(max * 4), size = new Float32Array(max);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('rgba', new THREE.BufferAttribute(rgba, 4));
+  geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
+  const mat = new THREE.ShaderMaterial({ uniforms: { map: { value: softTex }, scale: { value: 360 } }, vertexShader: PUFF_VS, fragmentShader: PUFF_FS,
+    transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false; pts.renderOrder = additive ? 6 : 5;
+  scene.add(pts);
+  const S = { pts, geo, pos, rgba, size, max, head: 0, alive: 0, vel: new Float32Array(max * 3), life: new Float32Array(max), max0: new Float32Array(max),
+    s0: new Float32Array(max), s1: new Float32Array(max), a0: new Float32Array(max), rise: new Float32Array(max) };
+  puffSystems.push(S);
+  return S;
+}
+const smoke = puffSystem(420, false), glow = puffSystem(220, true);
+// one sprite: colour (sRGB hex), size from s0 to s1 over its life, start alpha, velocity, upward drift
+function puff(S, x, y, z, color, s0, s1, life, alpha, vx = 0, vy = 0, vz = 0, rise = 0) {
+  if (low && frand() < 0.5) return;
+  const i = S.head; S.head = (S.head + 1) % S.max;
+  S.pos[i * 3] = x; S.pos[i * 3 + 1] = y; S.pos[i * 3 + 2] = z;
+  S.vel[i * 3] = vx; S.vel[i * 3 + 1] = vy; S.vel[i * 3 + 2] = vz;
+  S.life[i] = S.max0[i] = life * (0.8 + frand() * 0.4); S.s0[i] = s0; S.s1[i] = s1; S.a0[i] = alpha; S.rise[i] = rise;
+  S.rgba[i * 4] = ((color >> 16) & 255) / 255; S.rgba[i * 4 + 1] = ((color >> 8) & 255) / 255; S.rgba[i * 4 + 2] = (color & 255) / 255;
+}
+function stepPuffs(dt) {
+  for (const S of puffSystems) {
+    let alive = 0;
+    for (let i = 0; i < S.max; i++) {
+      if (S.life[i] <= 0) continue;
+      S.life[i] -= dt;
+      if (S.life[i] <= 0) { S.pos[i * 3 + 1] = -999; S.rgba[i * 4 + 3] = 0; continue; }
+      alive++;
+      const k = 1 - S.life[i] / S.max0[i], drag = Math.max(0, 1 - dt * 1.8);
+      S.vel[i * 3] *= drag; S.vel[i * 3 + 2] *= drag; S.vel[i * 3 + 1] = S.vel[i * 3 + 1] * drag + S.rise[i] * dt;
+      S.pos[i * 3] += S.vel[i * 3] * dt; S.pos[i * 3 + 1] += S.vel[i * 3 + 1] * dt; S.pos[i * 3 + 2] += S.vel[i * 3 + 2] * dt;
+      S.size[i] = S.s0[i] + (S.s1[i] - S.s0[i]) * Math.sqrt(k);
+      S.rgba[i * 4 + 3] = S.a0[i] * Math.min(1, k * 8) * (1 - k * k);
+    }
+    if (alive || S.alive) { S.geo.attributes.position.needsUpdate = S.geo.attributes.rgba.needsUpdate = S.geo.attributes.size.needsUpdate = true; }
+    S.alive = alive;
+  }
+}
+const rnd2 = (a = 1) => (frand() - 0.5) * 2 * a;
+// effect recipes
+const FX = {
+  muzzle(x, y, z, yaw) {
+    const fx = Math.sin(yaw), fz = Math.cos(yaw);
+    puff(glow, x, y, z, 0xffb347, 2.2, 0.6, 0.14, 1);
+    for (let k = 0; k < 6; k++) puff(smoke, x + fx * 0.3, y, z + fz * 0.3, 0xe9e4da, 0.9, 3.2, 1.5, 0.75, fx * (2.5 + frand() * 2) + rnd2(0.6), 0.5 + frand(), fz * (2.5 + frand() * 2) + rnd2(0.6), 0.5);
+  },
+  blast(x, z) {
+    puff(glow, x, 0.8, z, 0xffa040, 4.2, 1.5, 0.2, 1);
+    for (let k = 0; k < 8; k++) puff(smoke, x + rnd2(0.6), 0.4, z + rnd2(0.6), k < 3 ? 0x6b6258 : 0xb9a27c, 1.2, 3.6, 1.2, 0.7, rnd2(2.5), 1 + frand() * 1.5, rnd2(2.5), 0.3);
+  },
+  tar(x, z) { for (let k = 0; k < 4; k++) puff(smoke, x + rnd2(0.5), 0.4, z + rnd2(0.5), 0x2b241f, 0.8, 2.4, 1.4, 0.55, rnd2(1), 0.6, rnd2(1), 0.6); puff(glow, x, 0.5, z, 0xff7a1a, 2.2, 0.8, 0.25, 0.8); },
+  dust(x, z, n = 8) { for (let k = 0; k < n; k++) { const a = k / n * 6.28; puff(smoke, x + Math.cos(a) * 1.2, 0.3, z + Math.sin(a) * 1.2, 0xcbbd9f, 0.8, 2.2, 0.9, 0.6, Math.cos(a) * 2.2, 0.4, Math.sin(a) * 2.2, 0.2); } },
+};
+
+// torch flames: two sprites per torch (a wide dim halo and a hot core) that flicker in place
+const torchPts = (() => {
+  const n = torchSpots.length * 2, geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), rgba = new Float32Array(n * 4), size = new Float32Array(n);
+  torchSpots.forEach(([x, y, z], i) => {
+    for (let k = 0; k < 2; k++) {
+      const j = i * 2 + k; pos.set([x, y + k * 0.08, z], j * 3);
+      rgba.set(k ? [1, 0.86, 0.45, 1] : [0.96, 0.55, 0.12, 0.55], j * 4);
+    }
+  });
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('rgba', new THREE.BufferAttribute(rgba, 4));
+  geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
+  const pts = new THREE.Points(geo, glow.pts.material);
+  pts.frustumCulled = false; pts.renderOrder = 6;
+  scene.add(pts);
+  return pts;
+})();
+
+// banners on the fortress and in the camps: cloth grids rippling in the wind (one dynamic mesh)
+const flags = (() => {
+  const CU = 6, CV = 3, verts = [], idx = [];
+  flagSpots.forEach((f, n) => {
+    const b = n * (CU + 1) * (CV + 1);
+    for (let v = 0; v <= CV; v++) for (let u = 0; u <= CU; u++) verts.push(0, 0, 0);
+    for (let v = 0; v < CV; v++) for (let u = 0; u < CU; u++) { const a = b + v * (CU + 1) + u; idx.push(a, a + CU + 1, a + 1, a + 1, a + CU + 1, a + CU + 2); }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setIndex(idx);
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: PAL.banner, side: THREE.DoubleSide }));
+  m.castShadow = true; m.frustumCulled = false;
+  scene.add(m);
+  return { m, CU, CV };
+})();
+function updateFlags(time) {
+  const { m, CU, CV } = flags, p = m.geometry.attributes.position.array;
+  let i = 0;
+  for (const [x, y, z, s] of flagSpots) {
+    const h = s * 0.62, ph = x * 0.7 + z;
+    for (let v = 0; v <= CV; v++) for (let u = 0; u <= CU; u++) {
+      const U = u / CU, w = Math.sin(U * 4.2 - time * 5.5 + ph) * 0.16 * U * s;
+      p[i++] = x + U * s * (1 - Math.abs(w) * 0.3); p[i++] = y - v / CV * h - U * U * 0.08 * s; p[i++] = z + w;
+    }
+  }
+  m.geometry.attributes.position.needsUpdate = true;
+  m.geometry.computeVertexNormals();
+}
+let emberT = 0;
+function updateAmbientFx(dt, time) {
+  // torch flicker
+  const sz = torchPts.geometry.attributes.size.array;
+  for (let i = 0; i < torchSpots.length; i++) {
+    const f = 0.8 + 0.2 * Math.sin(time * 13 + i * 2.1) * Math.sin(time * 7.3 + i);
+    sz[i * 2] = 2.1 * f; sz[i * 2 + 1] = 0.75 * (0.85 + 0.3 * f);
+  }
+  torchPts.geometry.attributes.size.needsUpdate = true;
+  emberT -= dt;
+  if (emberT <= 0) {
+    emberT = low ? 0.22 : 0.11;
+    const [x, y, z] = torchSpots[(frand() * torchSpots.length) | 0];
+    puff(glow, x + rnd2(0.1), y + 0.2, z + rnd2(0.1), 0xffb04a, 0.32, 0.12, 0.9, 0.9, rnd2(0.3), 0.8, rnd2(0.3), 0.6);
+    for (const [cx, cz] of campFires) {
+      const cy = heightAt(cx, cz);
+      puff(smoke, cx + rnd2(0.3), cy + 0.6, cz + rnd2(0.3), 0x8f8a84, 1.0, 4.2, 4.5, 0.42, 0.25, 0.4, rnd2(0.15), 0.35);
+      puff(glow, cx + rnd2(0.35), cy + 0.45, cz + rnd2(0.35), frand() < 0.5 ? 0xff9a3c : 0xffc35a, 1.3, 0.4, 0.45, 0.9, 0, 1.2, 0);
+    }
+  }
+  updateFlags(time);
+}
+// sprite sizes are in world units: scale = half the drawing-buffer height over tan(fov / 2)
+function updatePuffScale() { glow.pts.material.uniforms.scale.value = smoke.pts.material.uniforms.scale.value = renderer.getDrawingBufferSize(new THREE.Vector2()).y / 2 / Math.tan(camera.fov * Math.PI / 360); }
 
 // selection ring + range disc
 const ring = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 72).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.9, depthWrite: false }));
@@ -1016,6 +1547,7 @@ function buildTower(pad, type) {
   tw.spent = cost;
   G.built++;
   emit(pad.x, 0.6, pad.z, 22, 0xcbbd9f, 4, 0.6);
+  FX.dust(pad.x, pad.z, 10);
   sfx('build');
   if (!AUTO) toast(t('built', { name: t(type + 'Name') }), 'good');
   updateHUD();
@@ -1030,9 +1562,8 @@ function placeTower(pad, type, level) {
 }
 function makeTowerMesh(tw) {
   if (tw.base) { scene.remove(tw.base); scene.remove(tw.head); }
-  const { geo, mat, pivot, trim } = towerGeo(tw.type, tw.level);
+  const { geo, mat, pivot } = towerGeo(tw.type, tw.level);
   tw.base = new THREE.Mesh(geo, mat);
-  if (trim) { const tm = new THREE.Mesh(trim, matV); tm.castShadow = true; tw.base.add(tm); } // flag / gold band on top of a generated model
   tw.base.position.set(tw.pad.x, 0.3, tw.pad.z);
   tw.base.castShadow = true; tw.base.receiveShadow = true;
   tw.base.userData.pad = tw.pad;
@@ -1052,6 +1583,8 @@ function upgradeTower(tw) {
   G.gold -= cost; tw.spent += cost; tw.level++;
   makeTowerMesh(tw);
   emit(tw.pad.x, 2.5, tw.pad.z, 26, ACCENT, 4, 0.7);
+  FX.dust(tw.pad.x, tw.pad.z, 8);
+  for (let k = 0; k < 6; k++) puff(glow, tw.pad.x + rnd2(1), 1 + frand() * 3, tw.pad.z + rnd2(1), 0xffd27a, 0.6, 0.2, 0.8, 0.9, 0, 1.5, 0);
   sfx('upgrade');
   if (!AUTO) toast(t('upgraded', { name: t(tw.type + 'Name') }), 'good');
   updateHUD();
@@ -1098,7 +1631,8 @@ function fire(tw, e) {
     const tx = _pt.x - _pt.tz * e.lane, tz = _pt.z + _pt.tx * e.lane;
     (tw.type === 'cannon' ? balls : tars).items.push({ x0: ox, y0: oy, z0: oz, x1: tx, z1: tz, T, t: 0, tw, h: 3 + Math.hypot(tx - ox, tz - oz) * 0.18 });
     sfx(tw.type === 'cannon' ? 'boom' : 'lob');
-    if (tw.type === 'cannon') emit(ox + Math.sin(tw.yaw) * 1.2, oy - 0.1, oz + Math.cos(tw.yaw) * 1.2, 8, 0xe5e0d6, 1.6, 0.6, 1.5);
+    if (tw.type === 'cannon') { emit(ox + Math.sin(tw.yaw) * 1.2, oy - 0.1, oz + Math.cos(tw.yaw) * 1.2, 8, 0xe5e0d6, 1.6, 0.6, 1.5); FX.muzzle(ox + Math.sin(tw.yaw) * 1.2, oy - 0.1, oz + Math.cos(tw.yaw) * 1.2, tw.yaw); }
+    else puff(glow, ox, oy, oz, 0xff8a2a, 1.1, 0.4, 0.2, 0.8);
   }
 }
 
@@ -1161,9 +1695,10 @@ function update(dt) {
             e.slowT = 2.6; e.slowF = Math.min(e.slowF, stat(tw, 'slow'));
           }
         }
-        if (list === balls) { emit(b.x1, 0.4, b.z1, 22, 0x9b8a6e, 5, 0.6); emit(b.x1, 0.4, b.z1, 8, 0xffb347, 3, 0.35); shake = Math.max(shake, 0.18); sfx('impact'); }
+        if (list === balls) { emit(b.x1, 0.4, b.z1, 22, 0x9b8a6e, 5, 0.6); emit(b.x1, 0.4, b.z1, 8, 0xffb347, 3, 0.35); FX.blast(b.x1, b.z1); shake = Math.max(shake, 0.18); sfx('impact'); }
         else {
           emit(b.x1, 0.3, b.z1, 14, 0x2a1a0e, 3, 0.5);
+          FX.tar(b.x1, b.z1);
           if (puddles.items.length < 40) puddles.items.push({ x: b.x1, z: b.z1, r, life: 3, max: 3, slow: stat(tw, 'slow') });
           sfx('splash');
         }
@@ -1207,8 +1742,13 @@ function updateVisuals(dt, time) {
     if (e.type === 'ram') { bossHp += Math.max(0, e.hp); bossMax += e.maxHp; }
     const m = enemyMeshes[e.type], i = counts[e.type]++;
     if (i >= MAX_ENEMIES) continue;
-    const s = ENEMY_SCALE[e.type], bob = e.type === 'ram' ? 0 : Math.abs(Math.sin(e.bob)) * 0.08;
-    _m4.compose(_v.set(e.x, bob, e.z), _q.setFromEuler(_e.set(0, e.yaw, e.type === 'ram' ? 0 : Math.sin(e.bob) * 0.06)), _s.set(s, s, s));
+    const s = ENEMY_SCALE[e.type], ph = e.bob;
+    let y, pitch, roll;
+    if (e.type === 'rider') { y = Math.abs(Math.sin(ph * 0.8)) * 0.24; pitch = Math.sin(ph * 1.6) * 0.09; roll = 0; } // gallop: rocking fore and aft
+    else if (e.type === 'ram') { y = Math.abs(Math.sin(ph * 2.2)) * 0.035; pitch = 0; roll = Math.sin(ph * 1.1) * 0.03; } // wheels on a rough road
+    else { y = Math.abs(Math.sin(ph)) * (e.type === 'shield' ? 0.13 : 0.19); pitch = 0.06 + Math.sin(ph * 2) * 0.035; roll = Math.sin(ph) * 0.075; } // march: step, lean, sway
+    _m4.compose(_v.set(e.x, y, e.z), _q.setFromEuler(_eY.set(pitch, e.yaw, roll)), _s.set(s, s, s));
+    if (e.dotT > 0 && frand() < dt * 6) { puff(glow, e.x + rnd2(0.3), 1.0 + frand() * 0.6, e.z + rnd2(0.3), 0xff7a1a, 0.9, 0.3, 0.45, 0.85, 0, 1.6, 0); puff(smoke, e.x, 1.6, e.z, 0x3a302a, 0.5, 1.6, 1.0, 0.4, 0, 1, 0, 0.4); }
     m.setMatrixAt(i, _m4);
     if (e.flash > 0) _c.setRGB(1.6, 0.7, 0.6); else if (e.slowT > 0) _c.setRGB(0.55, 0.62, 0.8); else _c.setRGB(1, 1, 1);
     m.setColorAt(i, _c);
@@ -1244,15 +1784,17 @@ function updateVisuals(dt, time) {
     if (n >= arrows.m.instanceMatrix.count) break; // fixed pool size: extra shots are simulated but not drawn
     _q.setFromUnitVectors(_s.set(0, 0, 1), _v.set(a.dx, a.dy, a.dz));
     _m4.compose(_v.set(a.x, a.y, a.z), _q, _s.set(1, 1, 1));
+    trails.setMatrixAt(n, _m4);
     arrows.m.setMatrixAt(n++, _m4);
   }
-  arrows.m.count = n; arrows.m.instanceMatrix.needsUpdate = true;
+  arrows.m.count = trails.count = n; arrows.m.instanceMatrix.needsUpdate = trails.instanceMatrix.needsUpdate = true;
   for (const list of [balls, tars]) {
     n = 0;
     for (const b of list.items) {
       if (n >= list.m.instanceMatrix.count) break;
-      const k = clamp(b.t / b.T, 0, 1);
-      _m4.makeTranslation(lerp(b.x0, b.x1, k), lerp(b.y0, 0.3, k) + 4 * b.h * k * (1 - k), lerp(b.z0, b.z1, k));
+      const k = clamp(b.t / b.T, 0, 1), bx = lerp(b.x0, b.x1, k), by = lerp(b.y0, 0.3, k) + 4 * b.h * k * (1 - k), bz = lerp(b.z0, b.z1, k);
+      _m4.makeTranslation(bx, by, bz);
+      if (frand() < dt * 28) { if (list === balls) puff(smoke, bx, by, bz, 0xd8d2c6, 0.35, 1.1, 0.6, 0.45, 0, 0.2, 0, 0.2); else puff(glow, bx, by, bz, 0xff8a2a, 0.55, 0.2, 0.3, 0.8); }
       list.m.setMatrixAt(n++, _m4);
     }
     list.m.count = n; list.m.instanceMatrix.needsUpdate = true;
@@ -1281,27 +1823,28 @@ function updateVisuals(dt, time) {
   pAlive = alive;
 
   // ambient life: water, boats, camp smoke
-  const wp = water.geometry.attributes.position;
+  const wp = water.geometry.attributes.position, wc = water.geometry.attributes.color;
   for (let i = 0; i < wp.count; i++) {
-    const x = waterBase[i * 3], z = waterBase[i * 3 + 2];
-    wp.array[i * 3 + 1] = Math.sin(x * 0.35 + time * 1.1) * 0.12 + Math.cos(z * 0.28 + time * 0.8) * 0.1;
+    const x = waterBase[i * 3], z = waterBase[i * 3 + 2], i3 = i * 3;
+    const y = Math.sin(x * 0.35 + time * 1.1) * 0.12 + Math.cos(z * 0.28 + time * 0.8) * 0.1 + Math.sin((x + z) * 0.6 + time * 2.2) * 0.04;
+    wp.array[i3 + 1] = y;
+    const f = smoothstep(0.15, 0.26, y) * 0.45; // whitecaps on the crests
+    wc.array[i3] = waterTint[i3] + (0.9 - waterTint[i3]) * f; wc.array[i3 + 1] = waterTint[i3 + 1] + (0.93 - waterTint[i3 + 1]) * f; wc.array[i3 + 2] = waterTint[i3 + 2] + (0.94 - waterTint[i3 + 2]) * f;
   }
-  wp.needsUpdate = true;
+  wp.needsUpdate = wc.needsUpdate = true;
+  foamTex.offset.set(Math.sin(time * 0.9) * 0.06, time * 0.02); // surf washing in and out
+  shoreFoam.material.opacity = 0.62 + Math.sin(time * 0.9) * 0.22;
   for (const b of boats) {
     b.z += b.dir * b.sp * dt;
-    if (Math.abs(b.z) > 34) b.dir *= -1;
+    if (Math.abs(b.z) > b.lim) { b.dir *= -1; b.z = Math.sign(b.z) * b.lim; }
     b.m.position.set(b.x + Math.sin(time * 0.3 + b.x) * 2, -0.45 + Math.sin(time * 1.4 + b.x) * 0.08, b.z);
     b.m.rotation.set(Math.sin(time * 1.2 + b.x) * 0.04, b.dir > 0 ? 0 : Math.PI, Math.cos(time * 1.1) * 0.05);
   }
-  smokeT -= dt;
-  if (smokeT <= 0) {
-    smokeT = low ? 0.5 : 0.25;
-    for (const [x, z] of campFires) { emit(x, heightAt(x, z) + 0.4, z, 1, 0x8f8a84, 0.6, 3.2, 0.6, 0.4); emit(x, heightAt(x, z) + 0.3, z, 1, 0xff9a3c, 0.8, 0.5, 1, 0.3); }
-  }
+  stepPuffs(dt);
+  updateAmbientFx(dt, time);
   // selection ring pulse
   if (ring.visible) { const k = 1 + Math.sin(time * 4) * 0.012; ring.scale.set(ringR * k, 1, ringR * k); disc.scale.set(ringR, 1, ringR); }
 }
-let smokeT = 0;
 
 // ---------------------------------------------------------------- picking + panels
 const raycaster = new THREE.Raycaster();
@@ -1694,7 +2237,7 @@ function openSettings(from) { settingsFrom = from; showScreen('settings'); }
 function settingsBack() { saveSettings(); showScreen(settingsFrom === 'pause' && G.running && !G.over ? 'pause' : 'title'); }
 function fillOver() {
   const win = endWin;
-  ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1>${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+  ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
     ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
     <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
     <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>`;
@@ -1761,6 +2304,7 @@ function applyQuality() {
     scene.traverse(o => { if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true; }); // recompile with / without shadows
   }
   for (const [m, full, part] of lodMeshes) m.count = low ? Math.min(part, full) : full;
+  updatePuffScale();
 }
 
 // ---------------------------------------------------------------- audio (all synthesised)
@@ -1961,13 +2505,15 @@ function fitFov() {
 }
 function cameraHome() {
   if (camParam) return;
-  if (isPortrait()) { controls.target.set(-4, 0, 0); camera.position.set(-4 + Math.cos(1.05) * 60, Math.sin(1.05) * 60, 0); }
+  // (redesign: a little steeper and further west, so the taller hisar sits at the bottom edge instead of filling it)
+  if (isPortrait()) { controls.target.set(-6, 0, 0); camera.position.set(-6 + Math.cos(1.12) * 63, Math.sin(1.12) * 63, 0); }
   // landscape keeps the view the title orbit ended on, as before
 }
 let wasPortrait = isPortrait();
 function onResize() {
   fitFov();
   renderer.setSize(innerWidth, innerHeight);
+  updatePuffScale();
   if (isPortrait() !== wasPortrait) { wasPortrait = isPortrait(); if (G.running) cameraHome(); }
 }
 addEventListener('resize', onResize);
@@ -1978,7 +2524,7 @@ const clock = new THREE.Clock();
 let time = 0, perfT = 0, hoverT = 0, fpsEma = 60;
 const minT = new THREE.Vector3(-46, 0, -32), maxT = new THREE.Vector3(40, 0, 32);
 const dbgEl = document.createElement('div');
-if (DEBUG) { dbgEl.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:20;font:600 13px Rubik,sans-serif;background:#000a;color:#fff;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(dbgEl); }
+if (DEBUG) { dbgEl.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:20;font:600 13px system-ui,sans-serif;background:#000a;color:#fff;padding:4px 8px;border-radius:6px;pointer-events:none'; document.body.appendChild(dbgEl); }
 const camParam = params.get('cam');
 function frame() {
   requestAnimationFrame(frame);
@@ -2033,6 +2579,7 @@ if (DEBUG) window.hisarSelect = i => { selectPad(pads[i]); return sel ? (sel.tow
 
 applyQuality();
 fitFov();
+updatePuffScale();
 refreshSoundBtn();
 applyLang();
 // the top bar wraps on phones, and its height also changes with the gold digits and the language, not only on resize
