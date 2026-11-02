@@ -73,3 +73,9 @@ within the 70-credit budget. The raider and fortress pilot (about 10 credits) wa
   60 fps; after 37 draw calls / 84-94 k tris, 60 fps. At `sim=900` (wave 13): before 33 / 55 k, after 42 / 105 k, 60 fps.
 - Bot run `?auto&debug&sim=2000`: same result as the original build (the bot falls on wave 15 with the same 13 towers in both), 0 JS errors.
 - `file://`: runs with the procedural look and no console messages; icons still show.
+
+## Redesign (2026-11)
+
+The fortress and the three tower-base models are no longer loaded: the redesign builds them in code with a drawn
+limestone texture so the whole scene shares one style. The files stay in `assets/models/` (not deleted). Enemy, turret
+and boat models are still used. New asset: `assets/fonts/stardos-stencil-700.woff2` (14 KB, OFL, see `CREDITS.md`).
