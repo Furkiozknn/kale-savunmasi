@@ -427,6 +427,123 @@ scene.add(sun);
 
 const matV = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
 
+// ---------------------------------------------------------------- canvas textures (drawn at start-up, no files)
+// Decoration uses its own random stream, so the seeded game stream (and with it every battle) stays as it was.
+let fseed = 7331;
+const frand = () => { fseed = (fseed * 16807) % 2147483647; return (fseed - 1) / 2147483646; };
+function canvasTex(w, h, draw, wrap = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  if (wrap) tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 4;
+  return tex;
+}
+// draw something at (x, y) and again across the edges, so the texture tiles without seams
+function tiled(w, h, x, y, r, fn) {
+  for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]) if (x + dx > -r && x + dx < w + r && y + dy > -r && y + dy < h + r) fn(x + dx, y + dy);
+}
+// limestone ashlar: staggered blocks with mortar joints, light and neutral so vertex colours tint it (stretched along u it
+// reads as planks, squeezed it reads as roof shingles)
+const stoneTex = canvasTex(256, 256, (g, W, H) => {
+  g.fillStyle = 'rgb(150,140,122)'; g.fillRect(0, 0, W, H);
+  const rows = 8, rh = H / rows;
+  for (let r = 0; r < rows; r++) {
+    let x = -frand() * 60;
+    while (x < W) {
+      const bw = 44 + frand() * 52, v = 222 + frand() * 28;
+      tiled(W, H, x, r * rh, 100, (px, py) => {
+        g.fillStyle = `rgb(${v | 0},${(v - 5) | 0},${(v - 17) | 0})`; g.fillRect(px + 1.5, py + 1.5, bw - 3, rh - 3);
+        g.fillStyle = 'rgba(255,255,255,0.28)'; g.fillRect(px + 1.5, py + 1.5, bw - 3, 2);
+        g.fillStyle = 'rgba(60,45,25,0.18)'; g.fillRect(px + 1.5, py + rh - 4, bw - 3, 2.5);
+      });
+      x += bw;
+    }
+  }
+  for (let i = 0; i < 2600; i++) { // grain and chips
+    const x = frand() * W, y = frand() * H, d = frand() < 0.5;
+    g.fillStyle = d ? `rgba(70,55,35,${0.05 + frand() * 0.12})` : `rgba(255,252,240,${0.05 + frand() * 0.15})`;
+    g.fillRect(x, y, 1 + frand() * 2.5, 1 + frand() * 1.5);
+  }
+});
+stoneTex.generateMipmaps = true;
+// meadow detail: grass blades and soft patches, multiplied over the terrain's vertex colours
+const grassTex = canvasTex(256, 256, (g, W, H) => {
+  g.fillStyle = 'rgb(226,226,214)'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 26; i++) {
+    const x = frand() * W, y = frand() * H, r = 18 + frand() * 40, a = frand() < 0.5;
+    tiled(W, H, x, y, r, (px, py) => {
+      const gr = g.createRadialGradient(px, py, 0, px, py, r);
+      gr.addColorStop(0, a ? 'rgba(255,255,235,0.22)' : 'rgba(70,80,40,0.16)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gr; g.fillRect(px - r, py - r, r * 2, r * 2);
+    });
+  }
+  g.lineCap = 'round';
+  for (let i = 0; i < 3200; i++) {
+    const x = frand() * W, y = frand() * H, l = 2 + frand() * 5, lean = (frand() - 0.5) * 3, light = frand() < 0.45;
+    g.strokeStyle = light ? `rgba(255,255,230,${0.18 + frand() * 0.25})` : `rgba(40,55,20,${0.12 + frand() * 0.22})`;
+    g.lineWidth = 0.8 + frand();
+    tiled(W, H, x, y, 8, (px, py) => { g.beginPath(); g.moveTo(px, py); g.lineTo(px + lean, py - l); g.stroke(); });
+  }
+});
+// packed-earth road: two wheel ruts, pebbles and grassy verges (u across the road, v along it)
+const dirtTex = canvasTex(128, 256, (g, W, H) => {
+  const gr = g.createLinearGradient(0, 0, W, 0);
+  gr.addColorStop(0, 'rgb(140,138,82)'); gr.addColorStop(0.1, 'rgb(186,152,100)'); gr.addColorStop(0.5, 'rgb(206,172,118)');
+  gr.addColorStop(0.9, 'rgb(186,152,100)'); gr.addColorStop(1, 'rgb(140,138,82)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (const u of [0.3, 0.7]) {
+    const rg = g.createLinearGradient((u - 0.08) * W, 0, (u + 0.08) * W, 0);
+    rg.addColorStop(0, 'rgba(120,88,52,0)'); rg.addColorStop(0.5, 'rgba(120,88,52,0.35)'); rg.addColorStop(1, 'rgba(120,88,52,0)');
+    g.fillStyle = rg; g.fillRect((u - 0.08) * W, 0, 0.16 * W, H);
+  }
+  for (let i = 0; i < 900; i++) {
+    const x = frand() * W, y = frand() * H, r = 0.6 + frand() * 2.2, light = frand() < 0.5;
+    g.fillStyle = light ? `rgba(240,225,190,${0.3 + frand() * 0.4})` : `rgba(90,65,40,${0.2 + frand() * 0.35})`;
+    tiled(W, H, x, y, 4, (px, py) => { g.beginPath(); g.ellipse(px, py, r * 1.3, r, frand() * 3, 0, 6.3); g.fill(); });
+  }
+  for (let i = 0; i < 260; i++) { // grass creeping in at the verges
+    const side = frand() < 0.5, x = side ? frand() * W * 0.14 : W - frand() * W * 0.14, y = frand() * H;
+    g.strokeStyle = `rgba(80,100,40,${0.35 + frand() * 0.4})`; g.lineWidth = 1;
+    tiled(W, H, x, y, 6, (px, py) => { g.beginPath(); g.moveTo(px, py); g.lineTo(px + (frand() - 0.5) * 3, py - 3 - frand() * 4); g.stroke(); });
+  }
+});
+dirtTex.wrapS = THREE.ClampToEdgeWrapping;
+// broken surf line for the shore (alpha only)
+const foamTex = canvasTex(64, 256, (g, W, H) => {
+  for (let i = 0; i < 700; i++) {
+    const y = frand() * H, x = Math.pow(frand(), 1.8) * W, r = 1 + frand() * 3.5;
+    g.fillStyle = `rgba(255,255,255,${(1 - x / W) * (0.35 + frand() * 0.5)})`;
+    tiled(W, H, x, y, 5, (px, py) => { g.beginPath(); g.arc(px, py, r, 0, 6.3); g.fill(); });
+  }
+  const gr = g.createLinearGradient(0, 0, W, 0);
+  gr.addColorStop(0, 'rgba(255,255,255,0.75)'); gr.addColorStop(0.18, 'rgba(255,255,255,0.25)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+});
+foamTex.wrapS = THREE.ClampToEdgeWrapping;
+// textured stone (and planks / shingles through the uv scale) for the fortress, towers and pads
+const matStone = new THREE.MeshLambertMaterial({ vertexColors: true, map: stoneTex });
+// world-space uvs after part(): caps project from above, upright cylinders and cones unroll around their axis (keeping
+// their own seam), everything else projects along its dominant axis. su / sv: texture repeats per metre.
+function uvw(geo, su = 0.25, sv = 0.25, round = 0) {
+  const p = geo.attributes.position, n = geo.attributes.normal, src = geo.attributes.uv, uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i)), az = Math.abs(n.getZ(i));
+    let u, v;
+    if (ay > 0.82) { u = x; v = z; }
+    else if (round) { u = src.getX(i) * Math.PI * 2 * round; v = y; }
+    else if (ax > az) { u = z; v = y; } else { u = x; v = y; }
+    uv[i * 2] = u * su; uv[i * 2 + 1] = v * sv;
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return geo;
+}
+// stone, plank and shingle variants of part()
+const pS = (geo, color, x, y, z, rx, ry, rz, sx, sy, sz) => uvw(part(geo, color, x, y, z, rx, ry, rz, sx, sy, sz), 0.25, 0.25, geo.type === 'CylinderGeometry' || geo.type === 'ConeGeometry' ? geo.parameters.radiusBottom ?? geo.parameters.radius : 0);
+const pW = (geo, color, x, y, z, rx, ry, rz, sx, sy, sz) => uvw(part(geo, color, x, y, z, rx, ry, rz, sx, sy, sz), 0.035, 0.7, geo.type === 'CylinderGeometry' ? geo.parameters.radiusBottom : 0);
+const pR = (geo, color, x, y, z, rx, ry, rz, sx, sy, sz) => uvw(part(geo, color, x, y, z, rx, ry, rz, sx, sy, sz), 0.9, 1.1, geo.parameters.radiusBottom ?? geo.parameters.radius ?? 0);
+
 // ---------------------------------------------------------------- paths
 // Two roads from the western camps merge at (10, 0) and end at the fortress gate.
 const P_A = [[-48, -20], [-37, -21], [-28, -14], [-25, -5], [-16, -3], [-10, -12], [0, -15], [8, -8], [10, 0]];
@@ -499,70 +616,169 @@ function heightAt(x, z) {
   // keep the shore line: flattening never lifts the sea floor above water near the fortress
   return h * (1 - flat) + Math.min(0, h) * flat * smoothstep(39, 44, x);
 }
+const lodMeshes = []; // [mesh, full count, count drawn on Low]
+// The terrain mesh reaches to the horizon: 1 m cells over the play area (110 x 84), then cells that grow outwards over
+// the hills, the strait and the Asian shore. Inside the play area the height is exactly heightAt(), as before.
+const WATER_Y = -0.55;
+function outerHeight(x, z) {
+  const ox = Math.max(0, -55 - x, x - 55), oz = Math.max(0, Math.abs(z) - 42), out = Math.hypot(ox, oz);
+  return out > 0 ? smoothstep(0, 34, out) * (5 + 12 * vnoise(x * 0.03 + 7, z * 0.03)) : 0;
+}
+const farShore = (x, z) => smoothstep(122, 140, x) * (3.8 + 8 * vnoise(x * 0.035 + 5, z * 0.03));
+const inPlay = (x, z) => x >= -55 && x <= 55 && Math.abs(z) <= 42;
+function terrainY(x, z) {
+  if (inPlay(x, z)) return heightAt(x, z);
+  const sea = smoothstep(39, 47, x);
+  return baseHeight(x, z) + outerHeight(x, z) * (1 - sea) + farShore(x, z);
+}
+function gridAxis(inner, lo, hi, nLo, nHi) {
+  const a = [];
+  for (let i = nLo; i >= 1; i--) a.push(-inner - (lo - inner) * Math.pow(i / nLo, 1.6));
+  for (let v = -inner; v <= inner + 1e-6; v += 1) a.push(v);
+  for (let i = 1; i <= nHi; i++) a.push(inner + (hi - inner) * Math.pow(i / nHi, 1.6));
+  return a;
+}
 (function makeTerrain() {
-  const g = new THREE.PlaneGeometry(110, 84, 110, 84);
-  g.rotateX(-Math.PI / 2);
-  const pos = g.attributes.position, col = new Float32Array(pos.count * 3);
-  const sand = new THREE.Color(0xe6cf9a), grass = new THREE.Color(0x86ad55), grass2 = new THREE.Color(0x6f9a46),
-    dry = new THREE.Color(0xb7b062), rock = new THREE.Color(0x9d8f78), peak = new THREE.Color(0xe2d9c6), c = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i), h = heightAt(x, z);
-    pos.setY(i, h);
-    const n = vnoise(x * 0.25, z * 0.25);
-    if (h < -0.25 && x > 34) c.copy(sand);
-    else if (h < -0.25) c.copy(grass2).lerp(dry, 0.25);
-    else if (h > 6.5) c.copy(peak);
-    else if (h > 2.6) c.copy(rock).lerp(grass2, clamp((3.4 - h) / 0.8, 0, 1));
-    else { c.copy(grass).lerp(grass2, n); if (n > 0.72) c.lerp(dry, 0.5); }
-    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  const XS = gridAxis(55, 175, 220, 16, 30), ZS = gridAxis(42, 175, 175, 16, 16), nx = XS.length, nz = ZS.length;
+  const pos = new Float32Array(nx * nz * 3), col = new Float32Array(nx * nz * 3), uv = new Float32Array(nx * nz * 2), idx = [];
+  const C = hex => new THREE.Color(hex);
+  const meadow = C(0x8db556), meadow2 = C(0x6f9a44), olive = C(0x7d8a3e), dry = C(0xc4b66c), worn = C(0xa99266),
+    limestone = C(0xd2c6a6), sand = C(0xe6d3a0), seabed = C(0x2c5f63), far = C(0x7f9a5c), far2 = C(0x5f7d4a), c = new THREE.Color();
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    const x = XS[i], z = ZS[j], k = j * nx + i, inside = inPlay(x, z), h = terrainY(x, z);
+    pos[k * 3] = x; pos[k * 3 + 1] = h; pos[k * 3 + 2] = z;
+    uv[k * 2] = x / 5; uv[k * 2 + 1] = z / 5;
+    const n = vnoise(x * 0.25, z * 0.25), n2 = vnoise(x * 0.07 + 30, z * 0.07);
+    if (h < WATER_Y + 0.35) c.copy(sand).lerp(seabed, smoothstep(WATER_Y + 0.2, WATER_Y - 2.2, h));
+    else if (h < 0.05 && x > 34) c.copy(sand);
+    else if (!inside) { c.copy(far).lerp(far2, n); if (h > 9) c.lerp(limestone, smoothstep(9, 16, h) * 0.6 * n2); if (x > 118) c.lerp(olive, 0.25); }
+    else if (h > 6.5) c.copy(limestone).lerp(olive, n * 0.35);
+    else if (h > 2.6) c.copy(limestone).lerp(meadow2, clamp((3.6 - h) / 1.0, 0, 1) * 0.8 + n * 0.2);
+    else {
+      c.copy(meadow).lerp(meadow2, n);
+      if (n2 > 0.62) c.lerp(dry, smoothstep(0.62, 0.8, n2) * 0.6);
+      if (n2 < 0.3) c.lerp(olive, 0.35);
+      const dp = distToPath(x, z);
+      if (dp < 3.4) c.lerp(worn, (1 - smoothstep(1.3, 3.4, dp)) * 0.6);
+    }
+    col[k * 3] = c.r; col[k * 3 + 1] = c.g; col[k * 3 + 2] = c.b;
   }
+  for (let j = 0; j < nz - 1; j++) for (let i = 0; i < nx - 1; i++) {
+    const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
+    idx.push(a, d, b, b, d, e);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setIndex(idx);
   g.computeVertexNormals();
-  const m = new THREE.Mesh(g, matV);
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassTex }));
   m.receiveShadow = true;
   scene.add(m);
 })();
 
-// water with a cheap CPU ripple (flat shading means no normal recompute is needed)
+// the Bosphorus: choppy CPU waves with flat facets, deep blue in the channel, teal in the shallows, foam on the crests
 const water = (() => {
-  const g = new THREE.PlaneGeometry(90, 140, 36, 50);
+  const g = new THREE.PlaneGeometry(190, 350, 60, 100);
   g.rotateX(-Math.PI / 2);
-  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0x3f8fb0, transparent: true, opacity: 0.86, flatShading: true }));
-  m.position.set(83, -0.55, 0);
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3), 3));
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.9, flatShading: true }));
+  m.position.set(132, WATER_Y, 0);
   m.receiveShadow = true;
   scene.add(m);
   return m;
 })();
 const waterBase = Float32Array.from(water.geometry.attributes.position.array);
+const waterTint = (() => { // per-vertex base colour by distance from either shore
+  const n = waterBase.length / 3, out = new Float32Array(n * 3), deep = new THREE.Color(PAL.bosph), shallow = new THREE.Color(0x3f9aa6), c = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    const x = waterBase[i * 3] + 132, sh = Math.max(1 - smoothstep(42, 62, x), smoothstep(112, 132, x));
+    c.copy(deep).lerp(shallow, sh * 0.85);
+    out[i * 3] = c.r; out[i * 3 + 1] = c.g; out[i * 3 + 2] = c.b;
+  }
+  return out;
+})();
+// surf along both shores: a ribbon on the waterline with a scrolling foam texture
+const shoreFoam = (() => {
+  const verts = [], uvs = [], idx = [];
+  const strip = (find, dir) => {
+    const base = verts.length / 3;
+    let n = 0;
+    for (let z = -170; z <= 170; z += 2) {
+      const x = find(z);
+      verts.push(x - dir * 0.3, WATER_Y + 0.08, z, x + dir * 2.2, WATER_Y + 0.08, z);
+      uvs.push(0, z / 12, 1, z / 12);
+      if (n > 0) { const a = base + (n - 1) * 2; idx.push(...(dir > 0 ? [a, a + 2, a + 1, a + 1, a + 2, a + 3] : [a, a + 1, a + 2, a + 1, a + 3, a + 2])); }
+      n++;
+    }
+  };
+  const crossing = (x0, x1, step, z) => { for (let x = x0; step > 0 ? x < x1 : x > x1; x += step) if (terrainY(x, z) < WATER_Y + 0.05) return x; return x1; };
+  strip(z => crossing(30, 60, 0.25, z), 1);
+  strip(z => crossing(170, 110, -0.5, z), -1);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: foamTex, transparent: true, opacity: 0.85, depthWrite: false, color: 0xf4f8f6, side: THREE.DoubleSide }));
+  m.renderOrder = 1;
+  scene.add(m);
+  return m;
+})();
 
-// roads: flat ribbons along both paths
+// roads: packed earth ribbons along both paths, edged with field stones
 (function makeRoads() {
-  const pt = {};
+  const pt = {}, mat = new THREE.MeshLambertMaterial({ map: dirtTex });
   paths.forEach((path, pi) => {
-    const verts = [], idx = [], w = 1.35, step = 0.6;
+    const verts = [], uvs = [], idx = [], w = 1.45, step = 0.6;
     let n = 0;
     for (let d = 0; d <= path.len; d += step) {
       samplePath(path, d, pt);
       const nx = -pt.tz, nz = pt.tx, y = 0.04 + pi * 0.012;
       verts.push(pt.x + nx * w, y, pt.z + nz * w, pt.x - nx * w, y, pt.z - nz * w);
+      uvs.push(0, d / 5.5, 1, d / 5.5);
       if (n > 0) { const a = (n - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } // counter-clockwise from above, so the road faces up
       n++;
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     g.setIndex(idx);
     g.computeVertexNormals();
-    const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0xcfa86b }));
+    const m = new THREE.Mesh(g, mat);
     m.receiveShadow = true;
     scene.add(m);
   });
+  // kerb stones on both verges (skipped where the two roads overlap near the gate)
+  const spots = [];
+  paths.forEach(path => {
+    for (let d = 1; d < path.len - 1; d += 1.15 + frand() * 0.9) {
+      samplePath(path, d, pt);
+      for (const s of [-1, 1]) {
+        const off = 1.6 + frand() * 0.35, x = pt.x - pt.tz * s * off, z = pt.z + pt.tx * s * off;
+        if (distToPath(x, z) < 1.5 || inFortress(x, z, 0.5)) continue;
+        spots.push([x, z]);
+      }
+    }
+  });
+  const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.22, 0), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
+  const tints = [0xc9bd9f, 0xb8ab8c, 0xd8cfb8, 0xa59a82];
+  spots.forEach(([x, z], i) => {
+    const s = 0.7 + frand() * 0.9;
+    _m4.compose(_v.set(x, heightAt(x, z) + 0.06, z), _q.setFromEuler(_e.set(frand() * 3, frand() * 3, frand() * 3)), _s.set(s * 1.3, s * 0.6, s));
+    m.setMatrixAt(i, _m4); m.setColorAt(i, _c.set(tints[(frand() * 4) | 0]));
+  });
+  m.receiveShadow = true;
+  scene.add(m);
+  lodMeshes.push([m, spots.length, Math.ceil(spots.length / 2)]);
 })();
 
-// pads (instanced, coloured on hover / select)
+// pads: octagonal flagstone platforms (instanced, tinted on hover / select)
 const padMesh = new THREE.InstancedMesh(
-  merge([part(Cyl(1.5, 1.65, 0.3, 10), 0xc9bfac, 0, 0.15, 0), part(Cyl(1.2, 1.2, 0.04, 10), 0xb1a690, 0, 0.32, 0)]),
-  new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }), pads.length);
-pads.forEach((p, i) => { _m4.makeTranslation(p.x, 0, p.z); padMesh.setMatrixAt(i, _m4); padMesh.setColorAt(i, _c.set(0xffffff)); });
+  merge([pS(Cyl(1.5, 1.72, 0.34, 8), 0xc9bfa8, 0, 0.17, 0), pS(Cyl(1.25, 1.3, 0.06, 8), 0xe2d8c0, 0, 0.36, 0), pS(Cyl(1.62, 1.62, 0.07, 8), 0x9c8f75, 0, 0.3, 0)]),
+  matStone, pads.length);
+pads.forEach((p, i) => { _m4.compose(_v.set(p.x, 0, p.z), _q.setFromEuler(_e.set(0, hash(p.x, p.z) * 0.8, 0)), _s.set(1, 1, 1)); padMesh.setMatrixAt(i, _m4); padMesh.setColorAt(i, _c.set(0xffffff)); });
 padMesh.receiveShadow = true;
 padMesh.castShadow = true;
 scene.add(padMesh);
@@ -580,36 +796,122 @@ function scatter(count, test) {
 const clearOfPlay = (x, z) => distToPath(x, z) > 4.6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 3.2) && !inFortress(x, z, 3) && baseHeight(x, z) > -0.2;
 // Trees and rocks are always built at the High count (so the seeded random stream, and with it every battle, is the same in
 // both qualities); Low quality only draws the first part of each instanced mesh.
-const lodMeshes = [];
+// Three kinds of tree share the old spots and random draws: firs inland, umbrella stone pines and cypresses towards the sea.
+function shade(geo, bottom, top, y0, y1) { // vertical colour gradient baked into a crown
+  const p = geo.attributes.position, c = geo.attributes.color, a = new THREE.Color(bottom), b = new THREE.Color(top);
+  for (let i = 0; i < p.count; i++) { _c.copy(a).lerp(b, clamp((p.getY(i) - y0) / (y1 - y0), 0, 1)); c.setXYZ(i, _c.r, _c.g, _c.b); }
+  return geo;
+}
+const TREE_GEO = {
+  fir: merge([part(Cyl(0.12, 0.18, 0.9, 5), 0x5b3c22, 0, 0.45, 0),
+    shade(merge([part(Cone(0.95, 1.6, 7), 0xffffff, 0, 1.5, 0), part(Cone(0.72, 1.3, 7), 0xffffff, 0, 2.3, 0), part(Cone(0.44, 0.95, 7), 0xffffff, 0, 2.95, 0)]), 0x2f5a2c, 0x6f9c48, 0.7, 3.4)]),
+  pine: merge([part(Cyl(0.1, 0.17, 2.3, 5), 0x6a4126, 0, 1.15, 0, 0, 0, 0.08), part(Cyl(0.06, 0.08, 0.9, 4), 0x6a4126, 0.3, 2.1, 0, 0, 0, -0.7),
+    shade(merge([part(Sph(0.95, 8, 5), 0xffffff, 0.15, 2.55, 0, 0, 0, 0, 1, 0.42, 1), part(Sph(0.7, 7, 5), 0xffffff, 0.75, 2.4, 0.25, 0, 0, 0, 1, 0.45, 1),
+      part(Sph(0.6, 7, 5), 0xffffff, -0.45, 2.45, -0.3, 0, 0, 0, 1, 0.45, 1)]), 0x2d4d26, 0x7aa04a, 2.1, 2.95)]),
+  cypress: merge([part(Cyl(0.08, 0.12, 0.5, 5), 0x4a3320, 0, 0.25, 0),
+    shade(merge([part(Cyl(0.32, 0.42, 1.6, 7), 0xffffff, 0, 1.1, 0), part(Cone(0.36, 1.9, 7), 0xffffff, 0, 2.85, 0)]), 0x1f3d22, 0x55804a, 0.3, 3.6)]),
+};
 (function makeTrees() {
   const spots = scatter(280, (x, z) => clearOfPlay(x, z) && !(x < -40 && Math.abs(Math.abs(z) - 21) < 7) && baseHeight(x, z) < 7.5);
-  const trunk = part(Cyl(0.12, 0.18, 0.9, 5), 0x6b4a2b, 0, 0.45, 0);
-  const crown = merge([part(Cone(0.95, 1.6, 7), 0xffffff, 0, 1.5, 0), part(Cone(0.7, 1.3, 7), 0xffffff, 0, 2.3, 0), part(Cone(0.42, 0.9, 7), 0xffffff, 0, 2.95, 0)]);
-  const mt = new THREE.InstancedMesh(trunk, matV, spots.length), mc = new THREE.InstancedMesh(crown, matV, spots.length);
-  const greens = [0x4f7f3a, 0x5e8f40, 0x3f6e35, 0x6c9a45];
-  spots.forEach(([x, z], i) => {
-    const s = 0.75 + rand() * 0.7, y = heightAt(x, z);
-    _m4.compose(_v.set(x, y - 0.05, z), _q.setFromEuler(_e.set(0, rand() * 6.28, 0)), _s.set(s, s, s));
-    mt.setMatrixAt(i, _m4); mc.setMatrixAt(i, _m4);
-    mc.setColorAt(i, _c.set(greens[(rand() * greens.length) | 0]));
+  const kind = (x, z) => { const h = hash(x * 1.7, z * 2.3); return x > 18 ? (h < 0.45 ? 'pine' : h < 0.75 ? 'cypress' : 'fir') : (h < 0.58 ? 'fir' : h < 0.8 ? 'pine' : 'cypress'); };
+  const lists = { fir: [], pine: [], cypress: [] };
+  spots.forEach(([x, z]) => {
+    const s = 0.75 + rand() * 0.7, y = heightAt(x, z), ry = rand() * 6.28, tint = 0.82 + rand() * 0.3; // three draws per tree, as before
+    lists[kind(x, z)].push([x, y, z, s, ry, tint]);
   });
-  for (const m of [mt, mc]) { m.castShadow = true; m.receiveShadow = true; scene.add(m); lodMeshes.push([m, spots.length, 170]); }
+  for (const k in lists) {
+    const L = lists[k], m = new THREE.InstancedMesh(TREE_GEO[k], matV, Math.max(1, L.length));
+    m.count = L.length;
+    L.forEach(([x, y, z, s, ry, tint], i) => {
+      _m4.compose(_v.set(x, y - 0.05, z), _q.setFromEuler(_e.set(0, ry, 0)), _s.set(s, s * (k === 'cypress' ? 1.15 : 1), s));
+      m.setMatrixAt(i, _m4); m.setColorAt(i, _c.setRGB(tint, tint * (0.97 + hash(x, z) * 0.06), tint * 0.95));
+    });
+    m.castShadow = true; m.receiveShadow = true; scene.add(m);
+    lodMeshes.push([m, L.length, Math.round(L.length * 170 / 280)]);
+  }
 })();
 (function makeRocks() {
   const spots = scatter(70, (x, z) => clearOfPlay(x, z) && (Math.abs(z) > 20 || rand() < 0.25));
-  const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.8, 0), new THREE.MeshLambertMaterial({ color: 0xa79b86, flatShading: true }), spots.length);
+  const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.8, 0), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
+  const tints = [0xcfc3a6, 0xbdb193, 0xa79b86, 0xd9cfb6];
   spots.forEach(([x, z], i) => {
     const s = 0.5 + rand() * 1.4;
     _m4.compose(_v.set(x, heightAt(x, z) + s * 0.25, z), _q.setFromEuler(_e.set(rand() * 3, rand() * 3, rand() * 3)), _s.set(s, s * 0.7, s));
-    m.setMatrixAt(i, _m4);
+    m.setMatrixAt(i, _m4); m.setColorAt(i, _c.set(tints[(hash(x, z) * 4) | 0]));
   });
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
   lodMeshes.push([m, spots.length, 40]);
 })();
+// maquis shrubs and grass tufts with poppies and broom (own random stream)
+function fscatter(count, x0, x1, z0, z1, test) {
+  const out = [];
+  for (let tries = 0; out.length < count && tries < count * 20; tries++) {
+    const x = x0 + frand() * (x1 - x0), z = z0 + frand() * (z1 - z0);
+    if (test(x, z)) out.push([x, z]);
+  }
+  return out;
+}
+(function makeUndergrowth() {
+  const bush = merge([part(Sph(0.55, 7, 5), 0xffffff, 0, 0.3, 0, 0, 0, 0, 1, 0.75, 1), part(Sph(0.42, 6, 4), 0xffffff, 0.45, 0.22, 0.15, 0, 0, 0, 1, 0.7, 1), part(Sph(0.38, 6, 4), 0xffffff, -0.35, 0.2, -0.25, 0, 0, 0, 1, 0.7, 1)]);
+  shade(bush, 0x3d5a2a, 0x86a552, 0, 0.7);
+  const b = fscatter(190, -52, 44, -40, 40, (x, z) => clearOfPlay(x, z) && baseHeight(x, z) < 6);
+  const mb = new THREE.InstancedMesh(bush, matV, b.length);
+  b.forEach(([x, z], i) => {
+    const s = 0.7 + frand() * 0.9;
+    _m4.compose(_v.set(x, heightAt(x, z) - 0.05, z), _q.setFromEuler(_e.set(0, frand() * 6.3, 0)), _s.set(s, s * (0.8 + frand() * 0.4), s));
+    mb.setMatrixAt(i, _m4); mb.setColorAt(i, _c.setRGB(0.85 + frand() * 0.25, 0.9 + frand() * 0.15, 0.8 + frand() * 0.2));
+  });
+  mb.castShadow = true; mb.receiveShadow = true; scene.add(mb);
+  lodMeshes.push([mb, b.length, 90]);
+  const tuft = merge([0, 1, 2, 3, 4].map(i => part(Cone(0.07, 0.55, 3), 0xffffff, Math.cos(i * 1.3) * 0.12, 0.27, Math.sin(i * 1.3) * 0.12, Math.cos(i * 1.3) * 0.35, 0, Math.sin(i * 1.3) * 0.35)));
+  const t = fscatter(520, -52, 44, -40, 40, (x, z) => distToPath(x, z) > 2.2 && !inFortress(x, z, 1.5) && baseHeight(x, z) > -0.1 && baseHeight(x, z) < 6 && !pads.some(p => Math.hypot(p.x - x, p.z - z) < 2));
+  const mt = new THREE.InstancedMesh(tuft, matV, t.length);
+  const flowers = [0xc8352b, 0xe8c040, 0xf2efe4, 0x9a74b8];
+  t.forEach(([x, z], i) => {
+    const s = 0.7 + frand() * 0.8, f = frand();
+    _m4.compose(_v.set(x, heightAt(x, z), z), _q.setFromEuler(_e.set(0, frand() * 6.3, 0)), _s.set(s, s, s));
+    mt.setMatrixAt(i, _m4);
+    mt.setColorAt(i, f < 0.16 ? _c.set(flowers[(frand() * 4) | 0]) : _c.setRGB(0.45 + frand() * 0.2, 0.62 + frand() * 0.2, 0.25 + frand() * 0.1));
+  });
+  mt.receiveShadow = true; scene.add(mt);
+  lodMeshes.push([mt, t.length, 220]);
+})();
+// forests on the hills beyond the play area and on the far shore (cheap single cones)
+(function makeFarForest() {
+  const spots = fscatter(620, -175, 220, -175, 175, (x, z) => !inPlay(x, z) && Math.hypot(Math.max(0, -55 - x, x - 55), Math.max(0, Math.abs(z) - 42)) > 3 && terrainY(x, z) > 0.6 && (x < 44 || x > 134));
+  const geo = merge([part(Cyl(0.15, 0.2, 1, 4), 0x4a3320, 0, 0.5, 0), part(Cone(1.4, 4.2, 6), 0x3c6234, 0, 2.9, 0)]);
+  shade(geo, 0x2c4a2a, 0x5f8a45, 1, 5);
+  const m = new THREE.InstancedMesh(geo, matV, spots.length);
+  spots.forEach(([x, z], i) => {
+    const s = 0.9 + frand() * 1.1;
+    _m4.compose(_v.set(x, terrainY(x, z) - 0.2, z), _q.setFromEuler(_e.set(0, frand() * 6, 0)), _s.set(s, s * (0.8 + frand() * 0.6), s));
+    m.setMatrixAt(i, _m4); m.setColorAt(i, _c.setRGB(0.8 + frand() * 0.3, 0.85 + frand() * 0.25, 0.8 + frand() * 0.2));
+  });
+  scene.add(m);
+  lodMeshes.push([m, spots.length, 260]);
+})();
+// the Asian shore across the strait: waterfront houses, a mosque with two minarets and cypresses, one merged mesh
+(function makeFarShore() {
+  const P = [], walls = [0xf1e6cf, 0xe2b673, 0xd9a291, 0xf4f1ea, 0xb9cbd6, 0xe8d2a8], roof = 0xa4512f;
+  const coast = z => { for (let x = 112; x < 170; x += 0.5) if (terrainY(x, z) > WATER_Y + 0.3) return x; return 150; };
+  for (let z = -160; z < 160; z += 4.5 + frand() * 5) {
+    if (Math.abs(z + 18) < 9) continue; // the mosque stands here
+    const x = coast(z) + 1.5 + frand() * 3, w = 2.6 + frand() * 2.2, h = 2.4 + frand() * 2.2, d = 2.6 + frand() * 1.5, y = terrainY(x + 1, z) - 0.3;
+    P.push(part(Box(d, h, w), walls[(frand() * walls.length) | 0], x + d / 2, y + h / 2, z), part(Cone(Math.max(w, d) * 0.78, 1.3, 4), roof, x + d / 2, y + h + 0.62, z, 0, Math.PI / 4, 0));
+    if (frand() < 0.45) { const x2 = x + d + 3 + frand() * 6, y2 = terrainY(x2, z); P.push(part(Box(2.4, 2.6, 2.6), walls[(frand() * walls.length) | 0], x2, y2 + 1.1, z + 1), part(Cone(1.9, 1.1, 4), roof, x2, y2 + 2.95, z + 1, 0, Math.PI / 4, 0)); }
+  }
+  const mx = coast(-18) + 6, my = terrainY(mx, -18) - 0.2, mw = 0xf2ece0;
+  P.push(part(Box(8, 4.5, 8), mw, mx, my + 2.25, -18), part(Cyl(3, 3.2, 1, 12), mw, mx, my + 5, -18), part(new THREE.SphereGeometry(3, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0x8f9aa3, mx, my + 5.4, -18));
+  for (const [dx, dz] of [[-3.6, -4.4], [-3.6, 4.4]]) P.push(part(Cyl(0.42, 0.5, 11, 8), mw, mx + dx, my + 5.5, -18 + dz), part(Cyl(0.6, 0.6, 0.3, 8), mw, mx + dx, my + 8.5, -18 + dz), part(Cone(0.45, 2.2, 8), 0x8f9aa3, mx + dx, my + 12.1, -18 + dz));
+  for (let i = 0; i < 26; i++) { const z = -150 + frand() * 300, x = coast(z) + 7 + frand() * 12, y = terrainY(x, z); P.push(part(Cone(0.6, 4.5, 6), 0x2c4a2a, x, y + 2.2, z)); }
+  const m = new THREE.Mesh(merge(P), matV);
+  scene.add(m);
+})();
 
-// enemy camps: tents, palisade posts, fire pits (smoke comes from the particle system)
+// enemy camps: tents, palisades, banners and fire pits (smoke and fire come from the particle systems)
 const campFires = [[-44.5, -24.5], [-44.5, 26]];
+const flagSpots = []; // [x, y, z, size, yaw]: cloth banners animated in updateVisuals
 (function makeCamps() {
   const tent = merge([part(Cone(1.5, 2.2, 6), 0xffffff, 0, 1.1, 0), part(Cyl(0.04, 0.04, 0.8, 4), 0x4b3621, 0, 2.5, 0)]);
   const spots = [];
@@ -626,8 +928,17 @@ const campFires = [[-44.5, -24.5], [-44.5, 26]];
   });
   m.castShadow = true;
   scene.add(m);
-  const pit = merge(campFires.map(([x, z]) => part(Cyl(0.6, 0.7, 0.25, 8), 0x4a3b2c, x, heightAt(x, z) + 0.12, z)));
-  scene.add(new THREE.Mesh(pit, matV));
+  const P = campFires.map(([x, z]) => part(Cyl(0.6, 0.7, 0.25, 8), 0x4a3b2c, x, heightAt(x, z) + 0.12, z));
+  for (const [x, z] of campFires) for (let i = 0; i < 4; i++) P.push(part(Cyl(0.07, 0.08, 1.1, 5), 0x5a3a20, x, heightAt(x, z) + 0.32, z, Math.PI / 2, i * 0.8, 0));
+  // sharpened palisade stakes on an arc in front of each camp, open where the road leaves
+  for (const [cx, cz] of [[-45, -20], [-45, 22]]) for (let a = -1.25; a <= 1.25; a += 0.085) {
+    const x = cx + Math.cos(a) * 9.5, z = cz + Math.sin(a) * 10.5;
+    if (distToPath(x, z) < 2.6) continue;
+    const h = 1.3 + frand() * 0.4, y = heightAt(x, z);
+    P.push(part(Cyl(0.11, 0.13, h, 5), 0x7a5634, x, y + h / 2, z, (frand() - 0.5) * 0.15, 0, (frand() - 0.5) * 0.15), part(Cone(0.11, 0.3, 5), 0x9b7448, x, y + h + 0.15, z));
+  }
+  for (const [cx, cz] of [[-47, -20], [-47, 22]]) { const y = heightAt(cx, cz); P.push(part(Cyl(0.06, 0.07, 4.2, 5), 0x4b3621, cx, y + 2.1, cz)); flagSpots.push([cx, y + 3.55, cz, 1.3, 0]); }
+  scene.add(new THREE.Mesh(merge(P), matV));
 })();
 
 // fortress: one merged mesh
@@ -662,13 +973,13 @@ const fortressMesh = (function makeFortress() {
 })();
 
 // boats on the sea
-const boats = [0, 1].map(i => {
+const boats = [0, 1, 2, 3].map(i => {
   const g = merge([part(Box(1.2, 0.5, 3.2), 0x7a5232, 0, 0.25, 0), part(Box(0.9, 0.2, 2.6), 0x9c6f45, 0, 0.55, 0),
     part(Cyl(0.06, 0.06, 3, 4), 0x5a3d22, 0, 2, 0.2), part(new THREE.PlaneGeometry(1.8, 2.2), 0xf5ead2, 0, 2.2, 0.25, 0, Math.PI / 2, 0)]);
   const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide }));
   m.castShadow = true;
   scene.add(m);
-  return { m, x: 52 + i * 9, z: i ? 18 : -22, dir: i ? -1 : 1, sp: 1.2 + i * 0.5 };
+  return { m, x: [52, 61, 84, 104][i], z: [-22, 18, -6, 30][i], dir: i % 2 ? -1 : 1, sp: 1.2 + i * 0.35, lim: i < 2 ? 34 : 70 };
 });
 
 // ---------------------------------------------------------------- enemy models (instanced per type)
@@ -1287,15 +1598,20 @@ function updateVisuals(dt, time) {
   pAlive = alive;
 
   // ambient life: water, boats, camp smoke
-  const wp = water.geometry.attributes.position;
+  const wp = water.geometry.attributes.position, wc = water.geometry.attributes.color;
   for (let i = 0; i < wp.count; i++) {
-    const x = waterBase[i * 3], z = waterBase[i * 3 + 2];
-    wp.array[i * 3 + 1] = Math.sin(x * 0.35 + time * 1.1) * 0.12 + Math.cos(z * 0.28 + time * 0.8) * 0.1;
+    const x = waterBase[i * 3], z = waterBase[i * 3 + 2], i3 = i * 3;
+    const y = Math.sin(x * 0.35 + time * 1.1) * 0.12 + Math.cos(z * 0.28 + time * 0.8) * 0.1 + Math.sin((x + z) * 0.9 + time * 2.2) * 0.05;
+    wp.array[i3 + 1] = y;
+    const f = smoothstep(0.12, 0.24, y) * 0.75; // whitecaps on the crests
+    wc.array[i3] = waterTint[i3] + (0.9 - waterTint[i3]) * f; wc.array[i3 + 1] = waterTint[i3 + 1] + (0.93 - waterTint[i3 + 1]) * f; wc.array[i3 + 2] = waterTint[i3 + 2] + (0.94 - waterTint[i3 + 2]) * f;
   }
-  wp.needsUpdate = true;
+  wp.needsUpdate = wc.needsUpdate = true;
+  foamTex.offset.set(Math.sin(time * 0.9) * 0.06, time * 0.02); // surf washing in and out
+  shoreFoam.material.opacity = 0.62 + Math.sin(time * 0.9) * 0.22;
   for (const b of boats) {
     b.z += b.dir * b.sp * dt;
-    if (Math.abs(b.z) > 34) b.dir *= -1;
+    if (Math.abs(b.z) > b.lim) { b.dir *= -1; b.z = Math.sign(b.z) * b.lim; }
     b.m.position.set(b.x + Math.sin(time * 0.3 + b.x) * 2, -0.45 + Math.sin(time * 1.4 + b.x) * 0.08, b.z);
     b.m.rotation.set(Math.sin(time * 1.2 + b.x) * 0.04, b.dir > 0 ? 0 : Math.PI, Math.cos(time * 1.1) * 0.05);
   }
