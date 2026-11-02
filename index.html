@@ -941,35 +941,84 @@ const flagSpots = []; // [x, y, z, size, yaw]: cloth banners animated in updateV
   scene.add(new THREE.Mesh(merge(P), matV));
 })();
 
-// fortress: one merged mesh
-const fortressMesh = (function makeFortress() {
-  const P = [], stone = 0xd8ccb4, stone2 = 0xc4b79c, roof = 0xb3261e, wood = 0x6e4a2a;
-  const X0 = 25, X1 = 37, Z0 = -8, Z1 = 8, H = 3.4, T = 1.2;
-  const wall = (x0, z0, x1, z1) => {
+// fortress: a limestone hisar on the strait (curtain walls with crenellations, round towers with slate cones, wooden
+// hoardings over the gate), one merged mesh with the stone texture
+const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
+(function makeFortress() {
+  const P = [], stone = 0xddd1b5, stone2 = 0xc4b597, slate = 0x5d6775, wood = 0x7a5232, dark = 0x2a1d12, iron = 0x3a3d42;
+  const X0 = 25, X1 = 37, Z0 = -8, Z1 = 8, H = 3.8, T = 1.3;
+  // a straight curtain wall with a battered plinth and merlons on its outer edge (nx, nz: outward normal)
+  const wall = (x0, z0, x1, z1, nx, nz) => {
     const l = Math.hypot(x1 - x0, z1 - z0), a = Math.atan2(x1 - x0, z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-    P.push(part(Box(T, H, l), stone, cx, H / 2, cz, 0, a, 0));
-    for (let s = 0.7; s < l - 0.3; s += 1.4) {
-      const k = s / l;
-      P.push(part(Box(T + 0.1, 0.6, 0.7), stone2, lerp(x0, x1, k), H + 0.3, lerp(z0, z1, k), 0, a, 0));
+    P.push(pS(Box(T + 0.7, 0.9, l), stone2, cx + nx * 0.2, 0.45, cz + nz * 0.2, 0, a, 0), pS(Box(T, H, l), stone, cx, H / 2, cz, 0, a, 0));
+    P.push(pS(Box(T + 0.16, 0.18, l), stone2, cx, H - 0.05, cz, 0, a, 0)); // string course under the parapet
+    for (let s = 0.55; s < l - 0.3; s += 1.25) {
+      const k = s / l, x = lerp(x0, x1, k) + nx * (T / 2 - 0.2), z = lerp(z0, z1, k) + nz * (T / 2 - 0.2);
+      P.push(pS(Box(0.42, 0.75, 0.75), stone, x, H + 0.37, z, 0, a, 0));
     }
   };
-  wall(X1, Z0, X1, Z1); wall(X0, Z1, X1, Z1); wall(X0, Z0, X1, Z0);
-  wall(X0, Z0, X0, -1.7); wall(X0, 1.7, X0, Z1);
-  P.push(part(Box(T, 1.2, 3.4), stone2, X0, H - 0.6 + 0.6, 0)); // lintel over the gate
-  P.push(part(Box(0.3, 2.3, 3.2), 0x3a2a1b, X0 - 0.2, 1.15, 0)); // gate doors
-  for (const [x, z] of [[X0, Z0], [X0, Z1], [X1, Z0], [X1, Z1]]) {
-    P.push(part(Cyl(1.9, 2.1, 5.2, 10), stone, x, 2.6, z), part(Cyl(2.15, 2.15, 0.5, 10), stone2, x, 5.4, z), part(Cone(2.3, 2.6, 10), roof, x, 6.95, z));
-    P.push(part(Cyl(0.05, 0.05, 1.6, 4), wood, x, 8.9, z), part(Box(0.04, 0.55, 0.9), roof, x, 9.4, z + 0.47));
+  wall(X1, Z0, X1, Z1, 1, 0); wall(X0, Z1, X1, Z1, 0, 1); wall(X0, Z0, X1, Z0, 0, -1);
+  wall(X0, Z0, X0, -2.2, -1, 0); wall(X0, 2.2, X0, Z1, -1, 0);
+  // round tower with a battered foot, a corbelled crown and either merlons, a wooden hoarding or a slate cone
+  const tower = (x, z, r, h, top) => {
+    P.push(pS(Cyl(r + 0.35, r + 0.7, 1.4, 14), stone2, x, 0.7, z), pS(Cyl(r, r + 0.12, h, 14), stone, x, h / 2, z));
+    P.push(pS(Cyl(r + 0.28, r, 0.45, 14), stone2, x, h + 0.2, z));
+    for (let i = 0; i < 3; i++) { const a = i * 2.1 + 0.6; P.push(part(Box(0.14, 0.55, 0.3), dark, x + Math.sin(a) * (r + 0.06), h * 0.6, z + Math.cos(a) * (r + 0.06), 0, a, 0)); }
+    if (top === 'cone') {
+      P.push(pR(Cone(r + 0.55, r * 1.9, 14), slate, x, h + 0.42 + r * 0.95, z), part(Cyl(0.05, 0.05, 1.2, 4), iron, x, h + 0.4 + r * 1.9 + 0.5, z));
+      flagSpots.push([x, h + 0.4 + r * 1.9 + 0.9, z, 0.85, 0]);
+    } else if (top === 'hoard') { // timber gallery overhanging the top, under a low slate cone
+      for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; P.push(pW(Box(0.16, 1.0, (r + 0.4) * 0.56), wood, x + Math.sin(a) * (r + 0.35), h + 0.9, z + Math.cos(a) * (r + 0.35), 0, a + Math.PI / 2, 0)); }
+      P.push(pW(Cyl(r + 0.45, r + 0.45, 0.14, 14), 0x5a3a20, x, h + 0.42, z), pR(Cone(r + 0.85, 1.5, 14), slate, x, h + 2.15, z));
+    } else for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; P.push(pS(Box(0.5, 0.7, 0.42), stone, x + Math.sin(a) * (r + 0.05), h + 0.75, z + Math.cos(a) * (r + 0.05), 0, a, 0)); }
+  };
+  tower(X0, Z0, 2.1, 5.6, 'hoard'); tower(X0, Z1, 2.1, 5.6, 'hoard');
+  tower(X1, Z0, 2.3, 6.4, 'cone'); tower(X1, Z1, 2.3, 6.4, 'crown');
+  // gatehouse: two slim cone towers, a dark arch with plank doors, a timber hoarding and a banner over the gate
+  tower(X0, -2.9, 1.35, 5.4, 'cone'); tower(X0, 2.9, 1.35, 5.4, 'cone');
+  P.push(pS(Box(1.9, 4.5, 3.4), stone, X0 + 0.1, 2.25, 0), pS(Box(2.1, 0.2, 3.6), stone2, X0 + 0.1, 4.45, 0));
+  P.push(part(Box(0.4, 2.7, 2.2), dark, X0 - 0.8, 1.35, 0), part(Cyl(1.1, 1.1, 0.4, 12, 1), dark, X0 - 0.8, 2.7, 0, 0, 0, Math.PI / 2, 1, 1, 1));
+  P.push(pW(Box(0.16, 2.5, 2.0), 0x6b4527, X0 - 0.92, 1.25, 0));
+  for (const y of [0.55, 1.25, 1.95]) P.push(part(Box(0.06, 0.1, 2.02), iron, X0 - 1.01, y, 0));
+  P.push(pW(Box(1.0, 1.1, 3.6), wood, X0 - 1.2, 5.1, 0), pR(Box(1.5, 0.12, 3.9), slate, X0 - 1.1, 5.82, 0, 0, 0, 0.42));
+  for (const z of [-1.4, -0.45, 0.45, 1.4]) P.push(part(Box(0.6, 0.18, 0.18), 0x5a3a20, X0 - 1.1, 4.5, z));
+  P.push(pW(Box(0.06, 1.5, 1.1), PAL.banner, X0 - 1.74, 3.75, 0), part(Box(0.07, 0.36, 0.36), 0xe6c35a, X0 - 1.76, 3.85, 0, Math.PI / 4, 0, 0));
+  // torches on iron brackets either side of the gate and at the corners
+  for (const [x, y, z] of [[X0 - 1.0, 2.9, -1.75], [X0 - 1.0, 2.9, 1.75], [X0 - 2.2, 3.5, Z0 - 1.6], [X0 - 2.2, 3.5, Z1 + 1.6], [X1 + 2.4, 3.6, Z0 - 1.4], [X1 + 2.4, 3.6, Z1 + 1.4]]) {
+    P.push(part(Box(0.4, 0.07, 0.07), iron, x + 0.18, y - 0.25, z), part(Cone(0.13, 0.32, 6), iron, x, y - 0.05, z, Math.PI, 0, 0));
+    torchSpots.push([x, y + 0.12, z]);
   }
-  for (const z of [-2.7, 2.7]) P.push(part(Cyl(1.3, 1.4, 4.6, 8), stone, X0, 2.3, z), part(Cone(1.6, 2, 8), roof, X0, 5.6, z));
-  P.push(part(Box(11.5, 0.15, 15.5), 0xd9c39a, 31, 0.07, 0)); // courtyard
-  P.push(part(Box(5, 6.4, 5), stone, 32, 3.2, 0), part(Box(5.4, 0.5, 5.4), stone2, 32, 6.6, 0), part(Cone(4, 3, 4), roof, 32, 8.35, 0, 0, Math.PI / 4, 0));
-  P.push(part(Cyl(0.06, 0.06, 2.6, 4), wood, 32, 11, 0), part(Box(0.05, 0.8, 1.4), ACCENT, 32, 11.8, 0.72));
-  for (let i = 0; i < 6; i++) P.push(part(Box(0.6, 0.9, 0.15), 0x2b2118, 32 + (i % 3 - 1) * 1.4, 2 + Math.floor(i / 3) * 2, 2.55)); // windows
-  const m = new THREE.Mesh(merge(P), matV);
+  // the courtyard: flagstones, the keep with its hoarding and slate cone, two barracks with tiled roofs, a small minaret
+  P.push(pS(Box(11.5, 0.15, 15.5), 0xd2c3a0, 31, 0.07, 0));
+  P.push(pS(Cyl(3.1, 3.4, 8.6, 16), stone, 32.4, 4.3, 0), pS(Cyl(3.4, 3.1, 0.5, 16), stone2, 32.4, 8.8, 0));
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; P.push(pW(Box(0.16, 1.1, 1.45), wood, 32.4 + Math.sin(a) * 3.45, 9.6, Math.cos(a) * 3.45, 0, a, 0)); }
+  P.push(pR(Cone(4.0, 4.6, 16), slate, 32.4, 12.45, 0), part(Cyl(0.06, 0.06, 1.6, 4), iron, 32.4, 15.4, 0));
+  flagSpots.push([32.4, 15.9, 0, 1.4, 0]);
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.5; P.push(part(Box(0.14, 0.55, 0.3), dark, 32.4 + Math.sin(a) * 3.15, 5.5, Math.cos(a) * 3.15, 0, a, 0)); }
+  for (const z of [-6.0, 6.0]) {
+    P.push(pS(Box(6, 2.2, 2.0), stone, 30.5, 1.1, z));
+    for (const s of [-1, 1]) P.push(pR(Box(6.4, 0.12, 1.45), 0xa4412f, 30.5, 2.55, z + s * 0.55, s * 0.62, 0, 0));
+  }
+  P.push(pS(Cyl(0.45, 0.55, 4.6, 10), stone, 27.6, 2.3, -3.9), pS(Cyl(0.65, 0.65, 0.25, 10), stone2, 27.6, 3.9, -3.9), pR(Cone(0.5, 1.6, 10), slate, 27.6, 5.4, -3.9));
+  const m = new THREE.Mesh(merge(P), matStone);
   m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
-  return m;
+})();
+// torches along the last stretch of road to the gate
+(function makeRoadTorches() {
+  const P = [], pt = {};
+  for (const [pi, back] of [[0, 4], [0, 11], [0, 21], [1, 21]]) {
+    samplePath(paths[pi], paths[pi].len - back, pt);
+    for (const s of [-1, 1]) {
+      const x = pt.x - pt.tz * s * 2.3, z = pt.z + pt.tx * s * 2.3, y = heightAt(x, z);
+      if (inFortress(x, z, -0.5) || pads.some(p => Math.hypot(p.x - x, p.z - z) < 2.3)) continue;
+      P.push(part(Cyl(0.07, 0.09, 2.2, 5), 0x4a3020, x, y + 1.1, z), part(Cone(0.16, 0.36, 6), 0x3a3d42, x, y + 2.3, z, Math.PI, 0, 0));
+      torchSpots.push([x, y + 2.5, z]);
+    }
+  }
+  const m = new THREE.Mesh(merge(P), matV);
+  m.castShadow = true;
+  scene.add(m);
 })();
 
 // boats on the sea
@@ -1020,14 +1069,10 @@ barBg.renderOrder = 10; barFg.renderOrder = 11;
 // Models from assets/models replace the procedural meshes once they have loaded. Every procedural builder stays as the
 // fallback: if a file is missing or cannot be fetched (from file:// the loader is skipped, since Chrome blocks fetch
 // there), the game keeps its original look. ?noassets forces the fallback.
-const MODEL_FILES = ['raider', 'rider', 'shield', 'ram', 'fortress', 'boat', 'tower-archer', 'tower-cannon', 'tower-tar', 'head-archer', 'head-cannon', 'head-tar'];
-const MODEL_YAW = { raider: -Math.PI / 2, rider: Math.PI, shield: -Math.PI / 2, fortress: Math.PI, 'head-archer': -Math.PI / 2, 'head-cannon': -Math.PI / 2 }; // turns each model to face +Z
-// towers: world height per level, footprint width, height of the top platform as a fraction of the model height
-const TOWER_FIT = {
-  archer: { h: [5, 5.8, 6.6], w: 3.0, floor: 0.49 },
-  cannon: { h: [1.7, 2.2, 2.7], w: 3.6, floor: 0.77 },
-  tar: { h: [2.4, 3.1, 3.8], w: 2.4, floor: 0.86 },
-};
+// The 2026-11 redesign builds the fortress and the tower bases in code (textured limestone in one style); the generated
+// fortress and tower-base files are no longer loaded.
+const MODEL_FILES = ['raider', 'rider', 'shield', 'ram', 'boat', 'head-archer', 'head-cannon', 'head-tar'];
+const MODEL_YAW = { raider: -Math.PI / 2, rider: Math.PI, shield: -Math.PI / 2, 'head-archer': -Math.PI / 2, 'head-cannon': -Math.PI / 2 }; // turns each model to face +Z
 const HEAD_SIZE = { archer: 1.3, cannon: 1.5, tar: 1.2 }; // largest dimension of the turret model at level 1
 const models = {}, loadedModels = {};
 const assetState = { done: false, loaded: 0, total: MODEL_FILES.length };
@@ -1036,23 +1081,6 @@ const assetState = { done: false, loaded: 0, total: MODEL_FILES.length };
 function sized(M, size) {
   const s = size / Math.max(M.size.x, M.size.y, M.size.z);
   return M.geo.clone().scale(s, s, s);
-}
-function modelTower(type, L, M) {
-  const F = TOWER_FIT[type], h = F.h[L], sxz = F.w * (1 + 0.06 * L) / Math.max(M.size.x, M.size.z);
-  const geo = M.geo.clone().scale(sxz, h / M.size.y, sxz);
-  const pos = geo.attributes.position, P = [], wood = 0x5a3d22;
-  // widest point of the model in a height band, to fit trims around it
-  const radiusAt = (y0, y1) => { let r = 0; for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y >= y0 && y <= y1) r = Math.max(r, Math.hypot(pos.getX(i), pos.getZ(i))); } return r; };
-  if (L >= 1) { // level 2: a pennant on top
-    const fx = type === 'archer' ? 0 : radiusAt(h * 0.8, h) * 0.62, top = type === 'archer' ? h - 0.15 : h;
-    P.push(part(Cyl(0.035, 0.035, 1.3, 4), wood, fx, top + 0.6, 0), part(Box(0.05, 0.42, 0.75), ACCENT, fx, top + 1.0, 0.4));
-  }
-  if (L >= 2) { // level 3: a gold band around the walls
-    const y = h * (type === 'cannon' ? 0.45 : 0.32), r = radiusAt(y - h * 0.06, y + h * 0.06);
-    if (type === 'tar') P.push(part(Box(r * 1.42 + 0.1, 0.16, r * 1.42 + 0.1), ACCENT, 0, y, 0));
-    else P.push(part(new THREE.TorusGeometry(r * 0.98, 0.1, 5, 20), ACCENT, 0, y, 0, Math.PI / 2, 0, 0));
-  }
-  return { geo, mat: M.mat, pivot: h * F.floor, trim: P.length ? merge(P) : null };
 }
 function loadAssets() {
   if (params.has('noassets') || location.protocol === 'file:') return Promise.resolve(); // file:// blocks fetch anyway
@@ -1103,63 +1131,61 @@ function applyAssets() {
     m.geometry = M.geo.clone().scale(s, s, s);
     m.material = M.mat;
   }
-  if (fresh.includes('fortress')) {
-    const M = models.fortress, s = 14;
-    const f = new THREE.Mesh(M.geo.clone().scale(s, s, s), M.mat);
-    f.position.set(25 + M.size.x * s / 2 - 0.3, 0, 0); // gate wall on x = 25, where the roads end
-    f.castShadow = true; f.receiveShadow = true;
-    scene.remove(fortressMesh); fortressMesh.geometry.dispose(); // the procedural fortress is not needed any more
-    scene.add(f);
-  }
   if (fresh.includes('boat')) {
     const M = models.boat, geo = sized(M, 3.6).translate(0, -0.3, 0);
     boats[0].m.geometry.dispose();
     for (const b of boats) { b.m.geometry = geo; b.m.material = M.mat; }
   }
-  if (fresh.some(k => k.startsWith('tower-') || k.startsWith('head-'))) {
-    const old = [...Object.values(towerGeoCache), ...Object.values(headGeoCache)];
-    for (const k in towerGeoCache) delete towerGeoCache[k];
+  if (fresh.some(k => k.startsWith('head-'))) {
+    const old = Object.values(headGeoCache);
     for (const k in headGeoCache) delete headGeoCache[k];
     for (const tw of G.towers) makeTowerMesh(tw);
-    for (const o of old) { o.geo.dispose(); o.trim?.dispose(); } // no tower uses the old geometry now
+    for (const o of old) o.geo.dispose(); // no tower uses the old geometry now
   }
   G.assets = Object.keys(models);
 }
 
 // ---------------------------------------------------------------- tower models
 const towerGeoCache = {};
+// limestone towers in the fortress style; level 2 adds a hoarding or buttresses and a banner, level 3 a brass band and a pennant
 function towerGeo(type, L) {
   const key = type + L;
   if (towerGeoCache[key]) return towerGeoCache[key];
-  if (models['tower-' + type]) return (towerGeoCache[key] = modelTower(type, L, models['tower-' + type]));
-  const P = [], stone = 0xcfc4ae, stone2 = 0xb3a78f, wood = 0x8b5e34, roof = 0xb3261e;
+  const P = [], stone = 0xd8ccb0, stone2 = 0xbfb193, wood = 0x7a5232, slate = 0x5d6775, dark = 0x2a1d12;
+  const pennant = (x, y) => P.push(part(Cyl(0.035, 0.035, 1.3, 4), 0x4a3020, x, y + 0.65, 0), pW(Box(0.05, 0.42, 0.8), PAL.banner, x, y + 1.05, 0.42));
   let pivot = 0;
   if (type === 'archer') {
-    const H = 2.2 + L * 0.8;
-    P.push(part(Cyl(1.25, 1.4, 0.7, 8), stone2, 0, 0.35, 0), part(Cyl(0.95, 1.1, H, 8), stone, 0, 0.7 + H / 2, 0), part(Cyl(1.35, 1.2, 0.3, 8), wood, 0, 0.85 + H, 0));
-    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; P.push(part(Box(0.14, 1.3, 0.14), 0x6e4a2a, Math.cos(a) * 1.1, 1.65 + H, Math.sin(a) * 1.1)); }
-    P.push(part(Cone(1.75, 1.3, 8), roof, 0, 2.95 + H, 0));
-    for (let i = 0; i < 3; i++) P.push(part(Box(0.12, 0.3, 0.4), 0x3a2a1b, Math.cos(i * 2.1) * 0.97, 0.9 + H * 0.55, Math.sin(i * 2.1) * 0.97, 0, -i * 2.1, 0));
-    if (L >= 1) P.push(part(Cyl(0.03, 0.03, 1.1, 4), 0x5a3d22, 0, 4.15 + H, 0), part(Box(0.04, 0.4, 0.7), ACCENT, 0, 4.5 + H, 0.36));
-    if (L >= 2) P.push(part(new THREE.TorusGeometry(1.02, 0.08, 5, 16), ACCENT, 0, 0.7 + H * 0.82, 0, Math.PI / 2, 0, 0));
-    pivot = 1.0 + H;
+    const H = 2.2 + L * 0.55, top = 0.5 + H;
+    P.push(pS(Cyl(1.45, 1.62, 0.5, 12), stone2, 0, 0.25, 0), pS(Cyl(1.0, 1.18, H, 12), stone, 0, 0.5 + H / 2, 0), pS(Cyl(1.4, 1.02, 0.38, 12), stone2, 0, top + 0.18, 0));
+    for (let i = 0; i < 3; i++) { const a = i * 2.1 + 0.3; P.push(part(Box(0.12, 0.42, 0.3), dark, Math.sin(a) * 1.07, 0.5 + H * 0.58, Math.cos(a) * 1.07, 0, a, 0)); }
+    pivot = top + 0.48;
+    P.push(pW(Cyl(1.42, 1.42, 0.14, 12), 0x5a3a20, 0, pivot - 0.07, 0));
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; P.push(pW(Box(0.13, 1.55, 0.13), wood, Math.cos(a) * 1.18, pivot + 0.77, Math.sin(a) * 1.18)); }
+    if (L >= 1) for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; if (i === 2) continue; P.push(pW(Box(0.1, 0.5, 0.8), wood, Math.sin(a) * 1.36, pivot + 0.25, Math.cos(a) * 1.36, 0, a + Math.PI / 2, 0)); }
+    else for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; P.push(pW(Box(0.08, 0.08, 1.6), wood, Math.sin(a) * 1.15, pivot + 0.45, Math.cos(a) * 1.15, 0, a + Math.PI / 2, 0)); }
+    P.push(pR(Cone(1.9, 1.25, 12), slate, 0, pivot + 2.15, 0));
+    if (L >= 1) P.push(pW(Box(0.62, 1.15, 0.05), PAL.banner, 0, 0.5 + H * 0.62, 1.14), part(Box(0.22, 0.22, 0.06), 0xe6c35a, 0, 0.5 + H * 0.66, 1.17, 0, 0, Math.PI / 4));
+    if (L >= 2) { P.push(part(new THREE.TorusGeometry(1.1, 0.07, 5, 20), 0xc9a227, 0, 0.5 + H * 0.3, 0, Math.PI / 2, 0, 0)); pennant(0, pivot + 2.7); }
   } else if (type === 'cannon') {
-    const H = 1.3 + L * 0.5;
-    P.push(part(Cyl(1.55, 1.75, H, 10), stone, 0, H / 2, 0), part(Cyl(1.62, 1.62, 0.18, 10), stone2, 0, H + 0.09, 0));
-    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; P.push(part(Box(0.45, 0.45, 0.35), stone2, Math.cos(a) * 1.45, H + 0.4, Math.sin(a) * 1.45, 0, -a, 0)); }
-    if (L >= 1) for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; P.push(part(Box(0.5, H * 0.9, 0.6), stone2, Math.cos(a) * 1.65, H * 0.45, Math.sin(a) * 1.65, 0, -a, 0)); }
-    if (L >= 2) P.push(part(new THREE.TorusGeometry(1.66, 0.09, 5, 20), ACCENT, 0, H * 0.7, 0, Math.PI / 2, 0, 0));
-    pivot = H + 0.18;
+    const H = 1.4 + L * 0.45;
+    P.push(pS(Cyl(1.62, 1.98, H, 14), stone, 0, H / 2, 0), pS(Cyl(1.7, 1.7, 0.16, 14), stone2, 0, H, 0), pS(Cyl(1.5, 1.5, 0.06, 14), 0xc8b996, 0, H + 0.03, 0));
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2; P.push(pS(Box(0.62, 0.52, 0.42), stone, Math.cos(a) * 1.5, H + 0.34, Math.sin(a) * 1.5, 0, -a, 0)); }
+    if (L >= 1) for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.6; P.push(pS(Box(0.55, H * 0.85, 0.75), stone2, Math.cos(a) * 1.85, H * 0.42, Math.sin(a) * 1.85, 0, -a)); }
+    if (L >= 1) for (const [x, z] of [[-0.95, 0.75], [-0.75, 1.05]]) P.push(pW(Cyl(0.17, 0.17, 0.36, 8), 0x6b4527, x, H + 0.21, z));
+    if (L >= 2) { P.push(part(new THREE.TorusGeometry(1.74, 0.08, 5, 24), 0xc9a227, 0, H * 0.62, 0, Math.PI / 2, 0, 0)); pennant(1.45, H + 0.55); }
+    pivot = H + 0.06;
   } else {
-    const H = 1.5 + L * 0.7;
-    P.push(part(Box(2.1, H, 2.1), 0xb0a58f, 0, H / 2, 0), part(Box(2.3, 0.2, 2.3), stone2, 0, H + 0.1, 0));
-    for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) P.push(part(Box(0.3, 0.6, 0.3), stone2, x, H + 0.5, z));
-    for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2; P.push(part(Box(0.1, 1.9, 0.1), 0x5a3d22, Math.cos(a) * 0.55, H + 1.05, Math.sin(a) * 0.55, Math.sin(a) * 0.3, 0, -Math.cos(a) * 0.3)); }
-    if (L >= 1) P.push(part(Box(0.05, 0.9, 0.6), roof, 1.16, H * 0.6, 0));
-    if (L >= 2) P.push(part(Box(2.16, 0.14, 2.16), ACCENT, 0, H * 0.75, 0));
-    pivot = H + 0.2;
+    const H = 1.9 + L * 0.6, top = 0.4 + H;
+    P.push(pS(Box(2.45, 0.4, 2.45), stone2, 0, 0.2, 0), pS(Box(2.0, H, 2.0), stone, 0, 0.4 + H / 2, 0));
+    for (const s of [-1, 1]) for (const k of [-0.75, -0.25, 0.25, 0.75]) P.push(pS(Box(0.24, 0.32, 0.3), stone2, k, top + 0.06, s * 1.08), pS(Box(0.3, 0.32, 0.24), stone2, s * 1.08, top + 0.06, k)); // machicolation corbels
+    P.push(pS(Box(2.5, 0.24, 2.5), stone2, 0, top + 0.34, 0));
+    for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) P.push(pS(Box(0.42, 0.6, 0.42), stone, x * 1.04, top + 0.76, z * 1.04));
+    for (const x of [-0.5, 0.45]) P.push(part(Box(0.26, H * 0.55, 0.04), dark, x, top - H * 0.28, 1.01)); // tar stains below the drop holes
+    if (L >= 1) P.push(pW(Box(0.05, 1.0, 0.65), PAL.banner, 1.02, 0.4 + H * 0.5, 0), part(Box(0.06, 0.2, 0.2), 0xe6c35a, 1.04, 0.4 + H * 0.55, 0, Math.PI / 4, 0, 0));
+    if (L >= 2) { P.push(part(Box(2.08, 0.14, 2.08), 0xc9a227, 0, 0.4 + H * 0.3, 0)); pennant(1.0, top + 1.0); }
+    pivot = top + 0.46;
   }
-  return (towerGeoCache[key] = { geo: merge(P), mat: matV, pivot, trim: null });
+  return (towerGeoCache[key] = { geo: merge(P), mat: matStone, pivot });
 }
 const headGeoCache = {};
 function headGeo(type, L) {
@@ -1347,9 +1373,8 @@ function placeTower(pad, type, level) {
 }
 function makeTowerMesh(tw) {
   if (tw.base) { scene.remove(tw.base); scene.remove(tw.head); }
-  const { geo, mat, pivot, trim } = towerGeo(tw.type, tw.level);
+  const { geo, mat, pivot } = towerGeo(tw.type, tw.level);
   tw.base = new THREE.Mesh(geo, mat);
-  if (trim) { const tm = new THREE.Mesh(trim, matV); tm.castShadow = true; tw.base.add(tm); } // flag / gold band on top of a generated model
   tw.base.position.set(tw.pad.x, 0.3, tw.pad.z);
   tw.base.castShadow = true; tw.base.receiveShadow = true;
   tw.base.userData.pad = tw.pad;
