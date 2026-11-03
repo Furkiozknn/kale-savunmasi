@@ -68,7 +68,7 @@
   .stat { display: flex; align-items: center; gap: 6px; padding: 3px 11px 2px; border-radius: 3px; background: rgba(255, 250, 232, 0.55); border: 1px solid var(--rule);
     font-family: var(--stencil); font-weight: 700; font-size: 19px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 -2px 0 rgba(91, 70, 48, 0.12); }
   .spacer { flex: 1; }
-  #top button { min-width: 40px; min-height: 36px; }
+  #top button { min-width: 44px; min-height: 44px; }
   #bSpeed { font-family: var(--stencil); font-size: 17px; }
 
   #wavebox { position: fixed; right: 10px; bottom: 10px; padding: 12px; z-index: 5; width: 262px; }
@@ -78,6 +78,7 @@
   #bWave { width: 100%; padding: 11px; font-size: 16px; }
   #bWave.pulse { animation: pulse 1.4s infinite; }
   @keyframes pulse { 50% { box-shadow: inset 0 2px 1px rgba(255, 205, 185, 0.35), inset 0 -3px 2px rgba(60, 0, 0, 0.35), 0 0 0 6px rgba(185, 28, 28, 0.22); } }
+  @media (prefers-reduced-motion: reduce) { #bWave.pulse, .ocard .newbest { animation: none; } }
 
   #panel { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 12px 14px; z-index: 6; width: min(580px, calc(100% - 300px)); }
   #panel.hidden { display: none; }
@@ -228,10 +229,10 @@
   <div class="stat" id="sLives" title=""><img class="ic" src="assets/ui/icons/lives.png" alt=""> <span>0</span></div>
   <div class="stat" id="sWave"><img class="ic" src="assets/ui/icons/wave.png" alt=""> <span>0</span></div>
   <div class="spacer"></div>
-  <button id="bSpeed">1×</button>
-  <button id="bPause"></button>
-  <button id="bSound"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
-  <button id="bLang">EN</button>
+  <button id="bSpeed" aria-label="Hız (F)">1×</button>
+  <button id="bPause" aria-label="Duraklat (P)"></button>
+  <button id="bSound" aria-label="Ses"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
+  <button id="bLang" aria-label="Dil (L)">EN</button>
 </div>
 <div id="boss" class="parch"><div id="bossName"></div><div class="bar"><i id="bossBar"></i></div></div>
 <div id="banner"></div>
@@ -244,7 +245,7 @@
 
 <div id="panel" class="parch hidden"></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<div id="overlay"><div class="ocard parch" id="ocard"></div></div>
+<div id="overlay"><div class="ocard parch" id="ocard" role="dialog" aria-modal="true"></div></div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -2102,7 +2103,17 @@ function toggleSfx() { initAudio(); settings.sfxOn = !settings.sfxOn; applyVolum
 // a mouse click on a HUD or panel button drops its focus again, so Space keeps calling waves instead of pressing it
 document.addEventListener('click', ev => { if (ev.detail > 0 && ev.target.closest?.('#top, #wavebox, #panel')) document.activeElement?.blur?.(); });
 window.addEventListener('keydown', ev => {
-  if (ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  if (ev.key === 'Tab' && screen) { // trap focus inside the open overlay card (.ocard)
+    const els = [...ocard.querySelectorAll('button:not(:disabled), input:not(:disabled), [href]')];
+    if (els.length) {
+      const i = els.indexOf(document.activeElement);
+      ev.preventDefault();
+      els[ev.shiftKey ? (i <= 0 ? els.length - 1 : i - 1) : (i < 0 || i >= els.length - 1 ? 0 : i + 1)].focus();
+    }
+    return;
+  }
+  if (ev.repeat) return;
   const k = ev.key.toLowerCase(), focused = document.activeElement?.tagName;
   if (focused === 'INPUT' && k !== 'escape') return; // sliders keep the arrow keys
   // Esc goes back one step: settings, then the pad panel, then pause; P always pauses or resumes
