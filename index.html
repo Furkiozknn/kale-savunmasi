@@ -12,201 +12,936 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="assets/ui/favicon.png">
 <link rel="preload" href="assets/fonts/stardos-stencil-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600;700;800;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <style>
-  /* 2026-11 redesign: a war table. Parchment panels with ruled ink borders, red wax-seal buttons, stencil numerals. */
+  /* 2026-11 radical UI rebirth: Ottoman Fortress & War-Table Command Post.
+     Heavy imperial stone, brass astrolabes, Seljuk geometric motifs, authentic red wax seals,
+     monumental Cinzel headings and archival EB Garamond manuscript typography. */
   @font-face { font-family: 'Hisar Stencil'; src: url(assets/fonts/stardos-stencil-700.woff2) format('woff2'); font-weight: 700; font-display: swap; }
   :root {
-    --parch: #f1e4c3;
-    --parch-2: #e2cd9c;
-    --edge: #a8854e;
-    --ink: #2e2216;
-    --ink-soft: #5b4630;
-    --rule: rgba(91, 70, 48, 0.38);
-    --seal: #b91c1c;
-    --seal-dark: #6e0f0f;
-    --brass: #c9a227;
-    --bosph: #1f5f8b;
-    --torch: #f59e0b;
-    --ok: #2f6b2a;
-    --bad: #9b1c1c;
-    --top-h: 60px;
-    --serif: 'Palatino Linotype', Palatino, 'Book Antiqua', 'URW Palladio L', Georgia, serif;
-    --stencil: 'Hisar Stencil', Stencil, Impact, var(--serif);
-    --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .36  0 0 0 0 .25  0 0 0 0 .1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.42'/></svg>");
-    --compass: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100' fill='none' stroke='%235b4630' stroke-opacity='.4' stroke-width='.7'><circle r='44'/><circle r='40' stroke-dasharray='1.5 2.5'/><circle r='13'/><path d='M0-46L6-6 46 0 6 6 0 46-6 6-46 0-6-6Z' fill='%235b4630' fill-opacity='.12'/><path d='M0-30L3-3 30 0 3 3 0 30-3 3-30 0-3-3Z' transform='rotate(45)'/></svg>");
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--serif); color: var(--ink);
-    background: linear-gradient(180deg, #6f9cc4 0%, #a9c4d8 30%, #d9dccf 55%, #dfe0d2 100%); user-select: none; -webkit-user-select: none; }
-  canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-  .parch { background: radial-gradient(ellipse at 50% 35%, rgba(255, 251, 236, 0.6), rgba(255, 251, 236, 0) 70%), var(--grain), linear-gradient(180deg, var(--parch), var(--parch-2));
-    border: 1px solid var(--edge); border-radius: 5px; color: var(--ink);
-    box-shadow: inset 0 0 0 3px rgba(241, 228, 195, 0.85), inset 0 0 0 4px var(--rule), inset 0 0 26px rgba(150, 105, 45, 0.32), 0 8px 22px rgba(35, 22, 8, 0.38); }
-  .num { font-family: var(--stencil); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
-  button { font-family: var(--serif); color: var(--ink); cursor: pointer; border: 1.5px solid #8a6a3e; border-radius: 5px; padding: 6px 11px; font-size: 15px; font-weight: 700;
-    background: linear-gradient(180deg, rgba(255, 252, 240, 0.85), rgba(233, 214, 168, 0.85));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 0 rgba(90, 60, 30, 0.35); transition: transform .08s, background .15s, filter .15s; }
-  button:hover:not(:disabled) { background: linear-gradient(180deg, #fffdf4, #efdcae); }
-  button:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 0 rgba(90, 60, 30, 0.35); }
-  button:disabled { opacity: .5; cursor: not-allowed; filter: grayscale(.6); }
-  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--bosph); outline-offset: 2px; }
-  /* red wax seal: uneven rim, a highlight where the wax pooled, pressed-in shadow below */
-  .primary { color: #fff4e2; border: 2px solid var(--seal-dark); text-shadow: 0 1px 0 rgba(60, 0, 0, 0.65); letter-spacing: 0.02em;
-    border-radius: 20px 16px 22px 15px / 16px 22px 15px 20px;
-    background: radial-gradient(120% 150% at 28% 18%, #e2594a 0%, var(--seal) 42%, #861313 100%);
-    box-shadow: inset 0 2px 1px rgba(255, 205, 185, 0.35), inset 0 -3px 2px rgba(60, 0, 0, 0.35), inset 0 0 0 3px rgba(110, 15, 15, 0.25), 0 3px 6px rgba(60, 10, 10, 0.4); }
-  .primary:hover:not(:disabled) { background: radial-gradient(120% 150% at 28% 18%, #ec6a5a 0%, #c52323 42%, #8f1616 100%); }
+    --bg-void: #12151b;
+    --stone-dark: #201a14;
+    --stone-panel: #2b221a;
+    --stone-rim: #44362a;
+    --stone-border: #634f3c;
 
-  #top { position: fixed; top: 10px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; z-index: 5; }
-  #top .logo { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 21px; letter-spacing: 1.5px; padding: 0 6px 0 2px; white-space: nowrap; font-variant: small-caps; }
-  #top .logo img { width: 32px; height: 32px; margin: -4px 0; }
-  #top .logo small { font-weight: 400; font-style: italic; font-size: 14px; letter-spacing: 0.3px; color: var(--ink-soft); margin-left: 2px; font-variant: normal; }
+    --parch: #f5ecd6;
+    --parch-2: #e2d1aa;
+    --parch-deep: #c9b48a;
+    --parch-light: #fdf9ee;
+
+    --ink: #1f1710;
+    --ink-soft: #483726;
+    --ink-faint: #735a41;
+    --rule: rgba(72, 55, 38, 0.32);
+
+    --seal: #b91c1c;
+    --seal-light: #ea4530;
+    --seal-dark: #6e0f0f;
+    --seal-glow: rgba(185, 28, 28, 0.45);
+
+    --brass: #d97706;
+    --brass-light: #f59e0b;
+    --brass-bright: #fde68a;
+    --brass-dark: #92400e;
+    --brass-bevel: #78350f;
+
+    --bosph: #0e7490;
+    --bosph-deep: #155e75;
+    --bosph-light: #38bdf8;
+
+    --ok: #15803d;
+    --ok-light: #22c55e;
+    --bad: #991b1b;
+
+    --top-h: 66px;
+
+    --serif: 'EB Garamond', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+    --display: 'Cinzel Decorative', 'Hisar Stencil', serif;
+    --title: 'Cinzel', 'Hisar Stencil', var(--serif);
+    --stencil: 'Cinzel', 'Hisar Stencil', Stencil, Impact, var(--serif);
+
+    --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .34 0 0 0 0 .25 0 0 0 0 .11 0 0 0 .42 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.35'/></svg>");
+    --compass: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-60 -60 120 120' fill='none' stroke='%23483726' stroke-opacity='.32' stroke-width='.8'><circle r='54'/><circle r='50' stroke-dasharray='2 3'/><circle r='16'/><circle r='3' fill='%23483726' fill-opacity='.35'/><path d='M0-56L7-7 56 0 7 7 0 56-7 7-56 0-7-7Z' fill='%23483726' fill-opacity='.1'/><path d='M0-38L4-4 38 0 4 4 0 38-4 4-38 0-4-4Z' transform='rotate(45)' fill='%23483726' fill-opacity='.05'/></svg>");
+    --topo: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' fill='none' stroke='%23483726' stroke-opacity='.08' stroke-width='.7'><path d='M-20 60 Q40 20 100 70 T220 50 M-20 110 Q50 80 120 120 T220 100 M-20 160 Q60 140 140 170 T220 150'/></svg>");
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  ::selection { background: var(--seal); color: #fff6eb; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--stone-dark); }
+  ::-webkit-scrollbar-thumb { background: #644f3c; border-radius: 4px; border: 1px solid var(--brass); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--brass); }
+
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    font-family: var(--serif); color: var(--ink);
+    background: linear-gradient(180deg, #1b2838 0%, #2a3d54 28%, #8ea7b8 65%, #c8c0a8 100%);
+    user-select: none; -webkit-user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; z-index: 1; }
+
+  /* Parchment War-Table Panel Base */
+  .parch {
+    background:
+      radial-gradient(ellipse at 50% 25%, rgba(255, 251, 240, 0.72), rgba(227, 210, 173, 0.35) 75%),
+      var(--grain),
+      linear-gradient(180deg, var(--parch) 0%, var(--parch-2) 100%);
+    border: 1.5px solid var(--stone-border);
+    border-radius: 6px;
+    color: var(--ink);
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 248, 230, 0.8),
+      inset 0 0 0 3px var(--rule),
+      inset 0 0 24px rgba(120, 80, 30, 0.25),
+      0 12px 32px rgba(15, 12, 8, 0.55),
+      0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+  .num { font-family: var(--title); font-weight: 700; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+
+  /* Tactical Buttons */
+  button {
+    font-family: var(--title);
+    color: var(--ink);
+    cursor: pointer;
+    border: 1.5px solid #8d6d45;
+    border-radius: 5px;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background: linear-gradient(180deg, #fffdf7 0%, #ecdcb4 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 0 #5a4026, 0 3px 6px rgba(20, 15, 8, 0.25);
+    transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.12s ease, filter 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  button:hover:not(:disabled) {
+    background: linear-gradient(180deg, #ffffff 0%, #f7e8c6 100%);
+    border-color: var(--brass);
+    box-shadow: inset 0 1px 0 #fff, 0 2px 0 #5a4026, 0 0 12px rgba(217, 119, 6, 0.35);
+  }
+  button:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 2px rgba(60, 40, 20, 0.4), 0 0 0 #5a4026;
+  }
+  button:disabled { opacity: 0.48; cursor: not-allowed; filter: grayscale(0.7); }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2.5px solid var(--bosph-light); outline-offset: 2px; }
+
+  /* Ottoman Red Wax Seal Button (.primary) */
+  .primary {
+    color: #fff6eb;
+    border: 2px solid var(--seal-dark);
+    font-family: var(--display);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-shadow: 0 1px 2px rgba(50, 0, 0, 0.85);
+    border-radius: 20px 16px 22px 15px / 16px 22px 15px 20px;
+    background: radial-gradient(120% 150% at 28% 18%, #ec513f 0%, var(--seal) 45%, #761212 100%);
+    box-shadow:
+      inset 0 2px 2px rgba(255, 215, 200, 0.45),
+      inset 0 -3px 3px rgba(60, 0, 0, 0.5),
+      inset 0 0 0 2px rgba(110, 15, 15, 0.35),
+      0 4px 10px rgba(50, 8, 8, 0.5);
+  }
+  .primary:hover:not(:disabled) {
+    background: radial-gradient(120% 150% at 28% 18%, #f66553 0%, #c82424 45%, #881515 100%);
+    box-shadow:
+      inset 0 2px 2px rgba(255, 220, 205, 0.5),
+      inset 0 -3px 3px rgba(60, 0, 0, 0.5),
+      inset 0 0 0 2px rgba(130, 20, 20, 0.4),
+      0 0 16px rgba(220, 38, 38, 0.45),
+      0 4px 12px rgba(50, 8, 8, 0.55);
+  }
+
+  /* Top Commander HUD */
+  #top {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 12px;
+    z-index: 5;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(255, 252, 242, 0.75), rgba(227, 210, 173, 0.35) 80%),
+      var(--grain),
+      linear-gradient(180deg, var(--parch) 0%, var(--parch-2) 100%);
+    border: 1.5px solid var(--stone-border);
+    border-radius: 8px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+      inset 0 0 0 2px var(--rule),
+      0 8px 24px rgba(15, 12, 8, 0.45);
+  }
+  #top .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+    color: var(--ink);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+  }
+  #top .logo img {
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+  }
+  #top .logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+  }
+  #top .logo small {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.2px;
+  }
+  .stat-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px 3px;
+    border-radius: 5px;
+    background: rgba(255, 252, 242, 0.65);
+    border: 1px solid var(--rule);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -2px 0 rgba(80, 60, 40, 0.12), 0 2px 5px rgba(20, 15, 8, 0.15);
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .stat:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  .stat.stat-gold {
+    border-color: rgba(217, 119, 6, 0.5);
+  }
+  .stat.stat-lives {
+    border-color: rgba(185, 28, 28, 0.4);
+  }
+  .stat.stat-wave {
+    border-color: rgba(14, 116, 144, 0.4);
+  }
+  .stat-tag {
+    font-family: var(--serif);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: 2px;
+  }
+  .spacer { flex: 1; }
+  .top-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #top button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+  }
+  #bSpeed {
+    font-family: var(--title);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--brass-bevel);
+  }
   .ic { width: 1.35em; height: 1.35em; vertical-align: -0.33em; object-fit: contain; }
   .ic.big { width: 36px; height: 36px; vertical-align: middle; }
   button .ic { pointer-events: none; }
-  .gl { width: 14px; height: 14px; vertical-align: -2px; fill: currentColor; }
-  .stat { display: flex; align-items: center; gap: 6px; padding: 3px 11px 2px; border-radius: 3px; background: rgba(255, 250, 232, 0.55); border: 1px solid var(--rule);
-    font-family: var(--stencil); font-weight: 700; font-size: 19px; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: inset 0 -2px 0 rgba(91, 70, 48, 0.12); }
-  .spacer { flex: 1; }
-  #top button { min-width: 44px; min-height: 44px; }
-  #bSpeed { font-family: var(--stencil); font-size: 17px; }
+  .gl { width: 15px; height: 15px; vertical-align: -2px; fill: currentColor; }
 
-  #wavebox { position: fixed; right: 10px; bottom: 10px; padding: 12px; z-index: 5; width: 262px; }
-  #wavebox .lbl { font-size: 14px; font-style: italic; color: var(--ink-soft); margin-bottom: 6px; border-bottom: 1px solid var(--rule); padding-bottom: 4px; }
-  #wavePreview { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; min-height: 28px; }
-  #wavePreview span { background: rgba(255, 250, 232, 0.6); border: 1px solid var(--rule); border-radius: 3px; padding: 2px 7px; font-family: var(--stencil); font-size: 16px; }
-  #bWave { width: 100%; padding: 11px; font-size: 16px; }
-  #bWave.pulse { animation: pulse 1.4s infinite; }
-  @keyframes pulse { 50% { box-shadow: inset 0 2px 1px rgba(255, 205, 185, 0.35), inset 0 -3px 2px rgba(60, 0, 0, 0.35), 0 0 0 6px rgba(185, 28, 28, 0.22); } }
+  /* War Dispatch Box (#wavebox) */
+  #wavebox {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    padding: 12px 14px;
+    z-index: 5;
+    width: 275px;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(255, 252, 242, 0.75), rgba(227, 210, 173, 0.35) 80%),
+      var(--grain),
+      linear-gradient(180deg, var(--parch) 0%, var(--parch-2) 100%);
+    border: 1.5px solid var(--stone-border);
+    border-radius: 8px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+      inset 0 0 0 2px var(--rule),
+      0 12px 28px rgba(15, 12, 8, 0.55);
+  }
+  #wavebox .lbl {
+    font-family: var(--title);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 7px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #wavePreview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    min-height: 32px;
+  }
+  #wavePreview span {
+    background: rgba(255, 252, 242, 0.75);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #bWave {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+  #bWave.pulse { animation: sealPulse 1.6s ease-in-out infinite; }
+  @keyframes sealPulse {
+    0%, 100% {
+      box-shadow:
+        inset 0 2px 2px rgba(255, 215, 200, 0.45),
+        inset 0 -3px 3px rgba(60, 0, 0, 0.5),
+        0 4px 10px rgba(50, 8, 8, 0.5);
+    }
+    50% {
+      box-shadow:
+        inset 0 2px 2px rgba(255, 215, 200, 0.45),
+        inset 0 -3px 3px rgba(60, 0, 0, 0.5),
+        0 0 0 6px rgba(185, 28, 28, 0.35),
+        0 6px 18px rgba(185, 28, 28, 0.6);
+    }
+  }
   @media (prefers-reduced-motion: reduce) { #bWave.pulse, .ocard .newbest { animation: none; } }
 
-  #panel { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 12px 14px; z-index: 6; width: min(580px, calc(100% - 300px)); }
+  /* Tactical Build & Tower Upgrade Panel (#panel) */
+  #panel {
+    position: fixed;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    padding: 14px 16px;
+    z-index: 6;
+    width: min(600px, calc(100% - 310px));
+    border-radius: 8px;
+  }
   #panel.hidden { display: none; }
-  .ph { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 17px; margin-bottom: 9px; padding-bottom: 5px; border-bottom: 1px solid var(--rule); font-variant: small-caps; letter-spacing: 0.5px; }
-  .ph .x { padding: 2px 9px; }
-  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .card { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; padding: 8px; position: relative; border-radius: 4px; }
-  .card .ico { display: block; height: 36px; }
-  .card small { font-weight: 400; font-size: 13px; color: var(--ink-soft); line-height: 1.3; }
-  .card .cost { margin-top: 2px; font-family: var(--stencil); font-size: 17px; }
-  .card kbd { position: absolute; top: 6px; right: 7px; font-size: 12px; color: var(--ink-soft); font-family: var(--stencil); border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
-  .tw { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
-  .tstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; font-size: 14px; }
-  .tstats div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted var(--rule); }
-  .tstats b { font-family: var(--stencil); font-size: 16px; font-variant-numeric: tabular-nums; }
-  .tstats .up { color: var(--ok); }
-  .tbtns { display: flex; flex-direction: column; gap: 6px; min-width: 160px; }
-  .lvl { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: 1px; }
-  .lvl i { width: 10px; height: 10px; border-radius: 50%; background: rgba(91, 70, 48, 0.2); display: inline-block; border: 1px solid var(--rule); }
-  .lvl i.on { background: radial-gradient(circle at 35% 30%, #e2594a, var(--seal) 60%, #861313); border-color: var(--seal-dark); }
+  .ph {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ph .x {
+    padding: 3px 10px;
+    font-family: var(--serif);
+    font-size: 16px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    text-align: left;
+    padding: 10px;
+    position: relative;
+    border-radius: 6px;
+    border: 1.5px solid #8d6d45;
+    background: linear-gradient(180deg, #fffdf8 0%, #ecdcb4 100%);
+  }
+  .card .ico { display: block; height: 38px; margin-bottom: 2px; }
+  .card b { font-family: var(--title); font-size: 15px; color: var(--ink); line-height: 1.2; }
+  .card small { font-family: var(--serif); font-size: 13px; color: var(--ink-soft); line-height: 1.35; flex: 1; }
+  .card .cost {
+    margin-top: 4px;
+    font-family: var(--title);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brass-bevel);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .card kbd {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    font-size: 12px;
+    font-family: var(--title);
+    font-weight: 700;
+    color: var(--ink-soft);
+    background: rgba(255, 252, 240, 0.85);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+  .tw { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: start; }
+  .tstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; font-size: 14px; }
+  .tstats div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted var(--rule); padding-bottom: 2px; }
+  .tstats span { color: var(--ink-soft); font-family: var(--serif); }
+  .tstats b { font-family: var(--title); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .tstats .up { color: var(--ok); font-weight: 800; }
+  .tbtns { display: flex; flex-direction: column; gap: 7px; min-width: 175px; }
+  .tbtns button { min-height: 40px; }
+  .lvl { display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle; }
+  .lvl i { width: 11px; height: 11px; border-radius: 50%; background: rgba(78, 61, 44, 0.2); display: inline-block; border: 1px solid var(--rule); }
+  .lvl i.on {
+    background: radial-gradient(circle at 35% 30%, #ea4f3d, var(--seal) 60%, #6e0f0f);
+    border-color: var(--seal-dark);
+    box-shadow: 0 0 6px rgba(185, 28, 28, 0.6);
+  }
 
-  #toast { position: fixed; top: calc(var(--top-h) + 16px); left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 6px; width: max-content; max-width: calc(100% - 32px); }
-  #toast div { background: var(--grain), linear-gradient(180deg, #f6ead0, #e8d5a8); color: var(--ink); padding: 7px 16px 7px 14px; border-radius: 2px; font-weight: 700; font-size: 15px; animation: tin .25s;
-    box-shadow: 0 5px 14px rgba(35, 22, 8, 0.35); border: 1px solid var(--edge); border-left: 5px solid var(--ink-soft); text-align: center; }
-  #toast div.good { border-left-color: var(--ok); }
-  #toast div.bad { border-left-color: var(--seal); color: #6e0f0f; }
-  #banner { position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; text-align: center; display: none; }
+  /* Royal Courier Toast Dispatches */
+  #toast {
+    position: fixed;
+    top: calc(var(--top-h) + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 7;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+  }
+  #toast div {
+    background:
+      var(--grain),
+      linear-gradient(180deg, #faf3e2 0%, #ecdcb4 100%);
+    color: var(--ink);
+    padding: 8px 18px 8px 16px;
+    border-radius: 4px;
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 15px;
+    animation: tin 0.25s ease-out;
+    box-shadow: 0 6px 18px rgba(25, 18, 10, 0.45), 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--stone-border);
+    border-left: 6px solid var(--ink-soft);
+    text-align: center;
+  }
+  #toast div.good { border-left-color: var(--ok); color: #115e2b; }
+  #toast div.bad { border-left-color: var(--seal); color: #7f1d1d; }
+  @keyframes tin { from { opacity: 0; transform: translateY(-8px); } }
+
+  /* Imperial War Banner */
+  #banner {
+    position: fixed;
+    left: 50%;
+    top: 44%;
+    transform: translate(-50%, -50%);
+    z-index: 6;
+    pointer-events: none;
+    text-align: center;
+    display: none;
+  }
   #banner.on { display: block; animation: bannerIn 1.8s ease both; }
-  #banner b { display: block; font-family: var(--stencil); font-size: 64px; letter-spacing: 3px; color: #f6ead0; text-shadow: 0 3px 0 #3a2a18, 0 0 2px #3a2a18, 0 0 22px rgba(0, 0, 0, .45); }
-  #banner.boss b { color: #ffd2c4; text-shadow: 0 3px 0 #5a0d0d, 0 0 2px #5a0d0d, 0 0 22px rgba(80, 0, 0, .5); }
-  #banner span { display: inline-flex; gap: 12px; margin-top: 6px; padding: 5px 14px; border-radius: 3px; color: var(--ink); font-family: var(--stencil); font-size: 18px;
-    background: var(--grain), linear-gradient(180deg, #f6ead0, #e2cd9c); border: 1px solid var(--edge); box-shadow: 0 4px 12px rgba(35, 22, 8, .35); }
+  #banner b {
+    display: block;
+    font-family: var(--display);
+    font-size: 60px;
+    letter-spacing: 4px;
+    color: #fbf5e8;
+    text-shadow: 0 3px 0 #281a0e, 0 0 4px #281a0e, 0 8px 24px rgba(0, 0, 0, 0.65);
+  }
+  #banner.boss b {
+    color: #ffddd4;
+    text-shadow: 0 3px 0 #520b0b, 0 0 4px #520b0b, 0 8px 24px rgba(80, 0, 0, 0.7);
+  }
+  #banner span {
+    display: inline-flex;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    color: var(--ink);
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 18px;
+    background: var(--grain), linear-gradient(180deg, #faf3e2 0%, #ecdcb4 100%);
+    border: 1.5px solid var(--stone-border);
+    box-shadow: 0 6px 18px rgba(20, 15, 8, 0.45);
+  }
   #banner .ic { width: 26px; height: 26px; }
-  @keyframes bannerIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.85); } 15%, 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
-  #boss { position: fixed; left: 50%; top: calc(var(--top-h) + 14px); transform: translateX(-50%); z-index: 5; width: min(380px, calc(100% - 32px)); padding: 7px 12px 9px; display: none; font-weight: 700; font-size: 15px; font-variant: small-caps; letter-spacing: .5px; }
+  @keyframes bannerIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+    15%, 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+  }
+
+  /* Boss Siege Bar */
+  #boss {
+    position: fixed;
+    left: 50%;
+    top: calc(var(--top-h) + 12px);
+    transform: translateX(-50%);
+    z-index: 5;
+    width: min(400px, calc(100% - 32px));
+    padding: 8px 14px 10px;
+    display: none;
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    border-radius: 6px;
+  }
   #boss.on { display: block; }
-  body.boss #toast { top: calc(var(--top-h) + 66px); }
-  #boss .bar { height: 10px; border-radius: 2px; background: rgba(46, 34, 22, .22); overflow: hidden; margin-top: 4px; border: 1px solid var(--rule); }
-  #boss .bar i { display: block; height: 100%; width: 100%; transform-origin: left; background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .14) 0 6px, rgba(0, 0, 0, 0) 6px 12px), linear-gradient(90deg, #861313, var(--seal) 60%, #d9481f); }
-  @keyframes tin { from { opacity: 0; transform: translateY(-6px); } }
-  #flash { position: fixed; inset: 0; pointer-events: none; z-index: 4; box-shadow: inset 0 0 160px rgba(185, 28, 28, .75); opacity: 0; transition: opacity .5s; }
+  body.boss #toast { top: calc(var(--top-h) + 68px); }
+  #boss .bar {
+    height: 12px;
+    border-radius: 3px;
+    background: rgba(35, 27, 20, 0.35);
+    overflow: hidden;
+    margin-top: 5px;
+    border: 1px solid var(--rule);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  #boss .bar i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform-origin: left;
+    background:
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px),
+      linear-gradient(90deg, #740f0f 0%, var(--seal) 50%, #ea580c 100%);
+    transition: transform 0.1s linear;
+  }
+
+  #flash { position: fixed; inset: 0; pointer-events: none; z-index: 4; box-shadow: inset 0 0 160px rgba(185, 28, 28, 0.75); opacity: 0; transition: opacity 0.5s; }
   #ftxt { position: fixed; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
-  #ftxt div { position: absolute; left: 0; top: 0; font-family: var(--stencil); font-size: 18px; color: #ffe08a; text-shadow: 0 1px 0 #4a2a06, 0 0 3px #4a2a06, 0 0 8px rgba(0,0,0,.35); will-change: transform; white-space: nowrap; }
+  #ftxt div {
+    position: absolute; left: 0; top: 0;
+    font-family: var(--title); font-weight: 800; font-size: 19px;
+    color: #fde68a;
+    text-shadow: 0 2px 0 #3b2207, 0 0 3px #3b2207, 0 4px 10px rgba(0, 0, 0, 0.5);
+    will-change: transform; white-space: nowrap;
+  }
 
-  /* the war table: the scene dims behind a sheet of parchment with a faint compass rose */
-  #overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(25, 15, 5, .12), rgba(25, 15, 5, .55)); }
+  /* The War Council & Imperial Decree Scroll Overlays */
+  #overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(18, 21, 27, 0.4), rgba(18, 21, 27, 0.82));
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: opacity 0.2s ease;
+  }
   #overlay.hidden { display: none; }
-  #overlay.dim { background: radial-gradient(ellipse at center, rgba(25, 15, 5, .35), rgba(25, 15, 5, .7)); }
-  .ocard { position: relative; width: min(540px, calc(100% - 32px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 26px 28px 22px; text-align: center; animation: cardIn .22s ease-out;
-    background: var(--compass) right -56px bottom -56px / 220px no-repeat, radial-gradient(ellipse at 50% 30%, rgba(255, 251, 236, 0.65), rgba(255, 251, 236, 0) 70%), var(--grain), linear-gradient(180deg, var(--parch), var(--parch-2)); }
-  @keyframes cardIn { from { opacity: 0; transform: scale(.96); } }
-  .ocard .col { display: flex; flex-direction: column; gap: 9px; width: min(290px, 100%); margin: 16px auto 0; }
-  .ocard .col button { padding: 11px; font-size: 17px; }
-  .ocard .foot { display: block; margin-top: 14px; font-size: 13px; font-style: italic; color: var(--ink-soft); text-decoration: none; }
-  .ocard .foot:hover { color: var(--ink); text-decoration: underline; }
-  .ocard .newbest { display: inline-block; margin-top: 4px; font-weight: 700; font-size: 20px; color: var(--seal); animation: nb 1s ease-in-out infinite; font-variant: small-caps; letter-spacing: 1px; }
-  @keyframes nb { 50% { transform: scale(1.08); } }
-  .set { display: grid; grid-template-columns: auto 1fr auto; gap: 10px 12px; align-items: center; text-align: left; margin-top: 14px; }
-  .set label { font-weight: 700; font-size: 15px; }
-  .set input[type=range] { width: 100%; accent-color: var(--seal); height: 28px; }
-  .set output { font-family: var(--stencil); font-size: 16px; min-width: 44px; text-align: right; }
-  .set .opts { grid-column: 2 / 4; display: flex; gap: 6px; }
-  .set .opts button { flex: 1; }
-  .set .opts button.on { color: #fff4e2; border-color: var(--seal-dark); text-shadow: 0 1px 0 rgba(60, 0, 0, 0.65); background: radial-gradient(120% 150% at 28% 18%, #e2594a 0%, var(--seal) 42%, #861313 100%); }
-  .ocard .crest { display: block; width: 128px; height: 128px; margin: -6px auto 0; filter: drop-shadow(0 6px 8px rgba(50, 30, 10, .4)); }
-  .ocard h1 { margin: 0; font-size: 50px; font-weight: 700; letter-spacing: 4px; font-variant: small-caps; line-height: 1.05; }
+  #overlay.dim {
+    background: radial-gradient(ellipse at center, rgba(18, 21, 27, 0.6), rgba(18, 21, 27, 0.92));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .ocard {
+    position: relative;
+    width: min(580px, calc(100% - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    padding: 28px 32px 24px;
+    text-align: center;
+    border-radius: 10px;
+    border: 2px solid var(--stone-border);
+    animation: cardIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    background:
+      var(--compass) right -50px bottom -50px / 240px no-repeat,
+      radial-gradient(ellipse at 50% 25%, rgba(255, 252, 242, 0.78), rgba(227, 210, 173, 0.35) 75%),
+      var(--grain),
+      linear-gradient(180deg, var(--parch) 0%, var(--parch-2) 100%);
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 250, 235, 0.85),
+      inset 0 0 0 4px var(--rule),
+      inset 0 0 32px rgba(120, 80, 30, 0.28),
+      0 20px 48px rgba(10, 8, 6, 0.75),
+      0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: scale(0.94) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .ocard .crest {
+    display: block;
+    width: 110px;
+    height: 110px;
+    margin: -4px auto 8px;
+    filter: drop-shadow(0 6px 12px rgba(40, 25, 10, 0.45));
+  }
+  .ocard h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    line-height: 1.1;
+    color: var(--ink);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+  }
   .ocard h1.end { font-size: 40px; letter-spacing: 2px; }
-  .ocard h2 { margin: 0 0 4px; font-size: 32px; font-weight: 700; font-variant: small-caps; letter-spacing: 2px; }
-  .ocard h1 small { display: block; font-size: 16px; font-weight: 400; font-style: italic; color: var(--ink-soft); letter-spacing: 2px; font-variant: normal; margin-top: 2px; }
-  .ocard h1::after, .ocard h2::after { content: ''; display: block; width: 150px; height: 9px; margin: 8px auto 0;
-    background: radial-gradient(circle, var(--seal) 0 3.5px, transparent 4px) center / 9px 9px no-repeat, linear-gradient(var(--ink-soft), var(--ink-soft)) left center / 62px 1px no-repeat, linear-gradient(var(--ink-soft), var(--ink-soft)) right center / 62px 1px no-repeat; }
-  .ocard p { line-height: 1.5; margin: 14px 0; font-size: 16px; }
-  .ocard .ctl { font-size: 14px; color: var(--ink-soft); line-height: 1.7; }
-  .ocard .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
-  .ocard .big { font-size: 19px; padding: 12px 28px; }
-  .ocard .big.primary { padding: 13px 36px; font-size: 21px; }
-  .ocard .best { font-size: 15px; color: var(--ink-soft); margin-top: 10px; }
-  .estats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
-  .estats div { background: rgba(255, 250, 232, .5); border: 1px solid var(--rule); border-radius: 3px; padding: 8px 4px; }
-  .estats b { display: block; font-family: var(--stencil); font-size: 28px; font-weight: 700; }
-  .estats small { color: var(--ink-soft); font-size: 13px; }
+  .ocard h2 {
+    margin: 0 0 6px;
+    font-family: var(--display);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--ink);
+  }
+  .ocard h1 small {
+    display: block;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ink-soft);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+  .ocard h1::after, .ocard h2::after {
+    content: '';
+    display: block;
+    width: 160px;
+    height: 10px;
+    margin: 10px auto 14px;
+    background:
+      radial-gradient(circle, var(--seal) 0 3.5px, transparent 4px) center / 10px 10px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) left center / 65px 1.5px no-repeat,
+      linear-gradient(var(--ink-soft), var(--ink-soft)) right center / 65px 1.5px no-repeat;
+  }
+  .ocard p {
+    line-height: 1.6;
+    margin: 12px 0;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .ocard .ctl {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    margin-top: 14px;
+    border-top: 1px dotted var(--rule);
+    padding-top: 10px;
+  }
+  .ocard .ctl b {
+    font-family: var(--title);
+    color: var(--ink);
+    background: rgba(255, 252, 240, 0.75);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 12px;
+  }
+  .ocard .row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .ocard .col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(300px, 100%);
+    margin: 18px auto 0;
+  }
+  .ocard .col button {
+    padding: 12px 18px;
+    font-size: 16px;
+    min-height: 46px;
+  }
+  .ocard .big {
+    font-size: 18px;
+    padding: 12px 28px;
+    min-height: 48px;
+  }
+  .ocard .big.primary {
+    padding: 14px 38px;
+    font-size: 20px;
+    min-height: 52px;
+  }
+  .ocard .foot {
+    display: block;
+    margin-top: 16px;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .ocard .foot:hover { color: var(--ink); text-decoration: underline; }
+  .ocard .newbest {
+    display: inline-block;
+    margin: 8px 0;
+    font-family: var(--title);
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--seal);
+    letter-spacing: 1px;
+    animation: nb 1s ease-in-out infinite;
+  }
+  @keyframes nb { 50% { transform: scale(1.08); } }
+  .ocard .best {
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--brass-bevel);
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .estats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .estats div {
+    background: rgba(255, 252, 240, 0.65);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 10px 6px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .estats b {
+    display: block;
+    font-family: var(--title);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .estats small {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-top: 2px;
+  }
 
+  /* Master Architect (Mimar) Callouts & Ferman Ornaments */
+  .mimar-callout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 252, 242, 0.72);
+    border: 1.5px solid var(--stone-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 12px 0 14px;
+    text-align: left;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  .mimar-avatar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mimar-speech b {
+    display: block;
+    font-family: var(--display);
+    font-size: 14px;
+    color: var(--brass-bevel);
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+  .mimar-speech p {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .tactical-pills {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 14px;
+  }
+  .tactical-pills span {
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 13px;
+    background: rgba(255, 252, 242, 0.75);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 3px 9px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  .ferman-ornament {
+    color: var(--brass-dark);
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    opacity: 0.85;
+  }
+  .top-ornament { margin-bottom: 6px; }
+  .bottom-ornament { margin-top: 14px; }
+
+  /* Astrolabe Settings Drawer */
+  .set {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px 14px;
+    align-items: center;
+    text-align: left;
+    margin-top: 16px;
+  }
+  .set label {
+    font-family: var(--title);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .set input[type=range] {
+    width: 100%;
+    accent-color: var(--seal);
+    height: 32px;
+    cursor: pointer;
+  }
+  .set output {
+    font-family: var(--title);
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 48px;
+    text-align: right;
+    color: var(--ink);
+  }
+  .set .opts {
+    grid-column: 2 / 4;
+    display: flex;
+    gap: 6px;
+  }
+  .set .opts button {
+    flex: 1;
+    min-height: 40px;
+    font-size: 14px;
+  }
+  .set .opts button.on {
+    color: #fff6eb;
+    border-color: var(--seal-dark);
+    text-shadow: 0 1px 0 rgba(60, 0, 0, 0.65);
+    background: radial-gradient(120% 150% at 28% 18%, #ea4f3d 0%, var(--seal) 45%, #761212 100%);
+  }
+
+  /* Responsive Design & Touch Targets */
   @media (max-width: 1080px) and (min-width: 761px) {
-    #panel { left: 10px; transform: none; width: calc(100% - 300px); }
+    #panel { left: 12px; transform: none; width: calc(100% - 310px); }
   }
   @media (max-width: 760px) {
-    #top { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
-    #top .logo { font-size: 18px; }
+    #top {
+      gap: 6px;
+      padding: 6px 8px;
+    }
+    #top .logo { font-size: 17px; }
     #top .logo small { display: none; }
-    .stat { padding: 2px 8px 1px; font-size: 17px; }
-    #wavebox { left: 10px; right: 10px; width: auto; bottom: 10px; display: flex; gap: 8px; align-items: center; padding: 8px; }
+    .stat { padding: 3px 8px; font-size: 15px; gap: 4px; }
+    .stat-tag { display: none; }
+    #wavebox {
+      left: 10px; right: 10px; width: auto; bottom: 10px;
+      display: flex; gap: 8px; align-items: center; padding: 8px 10px;
+    }
     #wavebox .lbl { display: none; }
     #wavePreview { margin: 0; flex: 1; }
-    #bWave { width: auto; }
-    #panel { left: 10px; right: 10px; transform: none; width: auto; bottom: 74px; }
-    .cards { grid-template-columns: 1fr; }
+    #bWave { width: auto; min-width: 130px; }
+    #panel {
+      left: 10px; right: 10px; transform: none; width: auto; bottom: 74px;
+    }
+    .cards { grid-template-columns: 1fr; gap: 6px; }
     .card { flex-direction: row; align-items: center; flex-wrap: wrap; }
     .card small { flex-basis: 100%; }
     .tw { grid-template-columns: 1fr; }
     .tbtns { flex-direction: row; flex-wrap: wrap; }
-    .ocard { padding: 20px 18px 18px; }
-    .ocard h1 { font-size: 40px; }
-    .ocard h1.end { font-size: 32px; }
-    .ocard .crest { width: 92px; height: 92px; }
-    .estats { grid-template-columns: repeat(2, 1fr); }
-    #banner b { font-size: 46px; }
+    .ocard { padding: 22px 18px 18px; }
+    .ocard h1 { font-size: 36px; }
+    .ocard h1.end { font-size: 30px; }
+    .ocard .crest { width: 84px; height: 84px; }
+    .estats { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    #banner b { font-size: 44px; }
   }
-  @media (max-height: 500px) {
+  @media (max-height: 520px) {
     .ocard { padding: 14px 18px; }
-    .ocard .crest { width: 58px; height: 58px; margin: -4px auto 0; }
-    .ocard h1, .ocard h1.end { font-size: 30px; }
-    .ocard h1::after, .ocard h2::after { margin-top: 4px; }
-    .ocard h1 small { font-size: 14px; }
-    .ocard p { margin: 8px 0; line-height: 1.35; }
-    .ocard .row { margin-top: 8px; }
-    .ocard .big, .ocard .big.primary { padding: 9px 24px; font-size: 18px; }
+    .ocard .crest { width: 54px; height: 54px; margin: 0 auto; }
+    .ocard h1, .ocard h1.end { font-size: 26px; }
+    .ocard h1::after, .ocard h2::after { margin: 6px auto; }
+    .ocard h1 small { font-size: 13px; }
+    .ocard p { margin: 6px 0; line-height: 1.35; font-size: 14px; }
+    .ocard .row { margin-top: 8px; gap: 6px; }
+    .ocard .big, .ocard .big.primary { padding: 8px 20px; font-size: 16px; min-height: 40px; }
     .ocard .col { margin-top: 8px; gap: 6px; }
-    .ocard .col button { padding: 8px; }
-    .estats { margin: 8px 0; }
-    .set { margin-top: 8px; gap: 6px 10px; }
+    .ocard .col button { padding: 8px; min-height: 40px; }
+    .estats { margin: 6px 0; gap: 4px; }
+    .estats b { font-size: 22px; }
+    .set { margin-top: 8px; gap: 6px 8px; }
     #banner { top: 56%; }
-    #banner b { font-size: 38px; }
+    #banner b { font-size: 34px; }
     #banner .ic { width: 22px; height: 22px; }
   }
   @media (pointer: coarse) {
     button { min-height: 44px; min-width: 44px; }
-    #top button { min-height: 44px; }
-    .ph .x { padding: 10px 14px; }
+    #top button { min-height: 44px; min-width: 44px; }
+    .ph .x { padding: 10px 14px; min-height: 44px; min-width: 44px; }
     .set input[type=range] { height: 44px; }
   }
 </style>
@@ -224,15 +959,37 @@
 <div id="flash"></div>
 
 <div id="top" class="parch">
-  <div class="logo"><img src="assets/ui/logo.png" alt="">Hisar<small id="tSub"></small></div>
-  <div class="stat" id="sGold" title=""><img class="ic" src="assets/ui/icons/gold.png" alt=""> <span>0</span></div>
-  <div class="stat" id="sLives" title=""><img class="ic" src="assets/ui/icons/lives.png" alt=""> <span>0</span></div>
-  <div class="stat" id="sWave"><img class="ic" src="assets/ui/icons/wave.png" alt=""> <span>0</span></div>
+  <div class="logo">
+    <img src="assets/ui/logo.png" alt="" width="32" height="32">
+    <div class="logo-text">
+      <span>Hisar</span>
+      <small id="tSub"></small>
+    </div>
+  </div>
+  <div class="stat-group">
+    <div class="stat stat-gold" id="sGold" title="">
+      <img class="ic" src="assets/ui/icons/gold.png" alt="">
+      <small class="stat-tag">AKÇE</small>
+      <span>0</span>
+    </div>
+    <div class="stat stat-lives" id="sLives" title="">
+      <img class="ic" src="assets/ui/icons/lives.png" alt="">
+      <small class="stat-tag">HİSAR</small>
+      <span>0</span>
+    </div>
+    <div class="stat stat-wave" id="sWave" title="">
+      <img class="ic" src="assets/ui/icons/wave.png" alt="">
+      <small class="stat-tag">SEFER</small>
+      <span>0</span>
+    </div>
+  </div>
   <div class="spacer"></div>
-  <button id="bSpeed" aria-label="Hız (F)">1×</button>
-  <button id="bPause" aria-label="Duraklat (P)"></button>
-  <button id="bSound" aria-label="Ses"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
-  <button id="bLang" aria-label="Dil (L)">EN</button>
+  <div class="top-controls">
+    <button id="bSpeed" aria-label="Hız (F)" title="Hız (F)">1×</button>
+    <button id="bPause" aria-label="Duraklat (P)" title="Duraklat (P)"></button>
+    <button id="bSound" aria-label="Ses" title="Ses"><img class="ic" src="assets/ui/icons/sound-on.png" alt=""></button>
+    <button id="bLang" aria-label="Dil (L)" title="Dil (L)">EN</button>
+  </div>
 </div>
 <div id="boss" class="parch"><div id="bossName"></div><div class="bar"><i id="bossBar"></i></div></div>
 <div id="banner"></div>
@@ -307,6 +1064,11 @@ const STR = {
     fullscreen: 'Tam ekran', on: 'Açık', off: 'Kapalı', speed: 'Hız', pause: 'Duraklat', sound: 'Ses',
     musicOn: 'Müzik açık (M)', musicOff: 'Müzik kapalı (M)', sfxOn: 'Ses efektleri açık (X)', sfxOff: 'Ses efektleri kapalı (X)',
     footer: 'Claude Game Arena · Claude Opus 5.5 yaptı · varlıklar yenilendi',
+    mimarTitle: 'Hassa Mimarı',
+    mimarIntro: 'Düşman ordusu Boğaz vadisine dayandı! İki koldan hisara ilerliyorlar. Kaidelere okçu, top ve katran kur, hisarı 15 dalga boyunca ayakta tut!',
+    mimarHint: 'Top tabyalarını dar boğazlara, katran kazanlarını ise düşmanı yavaşlatmak için yol kavşaklarına kur!',
+    mimarWin: 'Tebrikler Kumandan! Boğaz surları sayende fethedilemedi. Zaferin fermanı mühürlendi!',
+    mimarLost: 'Surlar aşıldı fakat mücadele bitmedi! Koçbaşlarına ve zırhlılara karşı top tabyalarının alan hasarını kullanmayı unutma.',
   },
   en: {
     sub: 'Fortress Defense',
@@ -335,6 +1097,11 @@ const STR = {
     fullscreen: 'Fullscreen', on: 'On', off: 'Off', speed: 'Speed', pause: 'Pause', sound: 'Sound',
     musicOn: 'Music on (M)', musicOff: 'Music off (M)', sfxOn: 'Sound effects on (X)', sfxOff: 'Sound effects off (X)',
     footer: 'Claude Game Arena · built by Claude Opus 5.5 · assets remastered',
+    mimarTitle: 'Chief Architect',
+    mimarIntro: 'An enemy army is marching on the seaside fortress along two roads. Construct archers, cannons, and tar cauldrons on the stone pads and hold the walls for 15 waves!',
+    mimarHint: 'Place cannon bastions near bottlenecks and cauldrons where enemy columns gather!',
+    mimarWin: 'Glorious victory, Commander! The fortress walls held against all odds. The imperial decree is sealed!',
+    mimarLost: 'The fortress has fallen, but our resolve remains! Remember that siege rams and shieldbearers succumb to cannon splash and sticky tar.',
   },
 };
 const ARENA_URL = 'https://furkiozknn.github.io/';
@@ -383,6 +1150,8 @@ const GLYPH = {
   pause: '<svg class="gl" viewBox="0 0 16 16"><rect x="3" y="2" width="3.6" height="12" rx="1"/><rect x="9.4" y="2" width="3.6" height="12" rx="1"/></svg>',
   play: '<svg class="gl" viewBox="0 0 16 16"><path d="M4 2.2v11.6c0 .8.9 1.3 1.6.8l8.6-5.8c.6-.4.6-1.2 0-1.6L5.6 1.4C4.9.9 4 1.4 4 2.2z"/></svg>',
   gear: '<svg class="gl" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6.9 1h2.2l.4 1.9 1.2.5 1.6-1.1 1.5 1.5-1.1 1.6.5 1.2 1.9.4v2.2l-1.9.4-.5 1.2 1.1 1.6-1.5 1.5-1.6-1.1-1.2.5-.4 1.9H6.9l-.4-1.9-1.2-.5-1.6 1.1-1.5-1.5 1.1-1.6-.5-1.2L1 9.1V6.9l1.9-.4.5-1.2-1.1-1.6 1.5-1.5 1.6 1.1 1.2-.5zM8 5.6a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 1 0 0-4.8z"/></svg>',
+  seljukDivider: '<svg class="seljuk-divider" viewBox="0 0 200 16" width="180" height="14"><line x1="8" y1="8" x2="80" y2="8" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/><g transform="translate(100, 8) scale(0.6)"><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" transform="rotate(45)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="0" cy="0" r="2.2" fill="currentColor"/></g><line x1="120" y1="8" x2="192" y2="8" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/></svg>',
+  mimar: '<svg class="mimar-svg" viewBox="0 0 80 80" width="56" height="56"><circle cx="40" cy="40" r="38" fill="#f4ebd4" stroke="#8d6d45" stroke-width="2"/><circle cx="40" cy="40" r="35" fill="none" stroke="#d97706" stroke-width="1" stroke-dasharray="2 2"/><path d="M40 16 C32 16 27 21 27 28 C27 34 31 38 33 40 C28 43 22 47 20 56 C26 60 32 62 40 62 C48 62 54 60 60 56 C58 47 52 43 47 40 C49 38 53 34 53 28 C53 21 48 16 40 16 Z" fill="#2b231d"/><path d="M30 26 C33 24 47 24 50 26 M29 30 C33 28 47 28 51 30 M30 34 C35 33 45 33 50 34" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" fill="none"/><path d="M36 39 L40 44 L44 39 Z" fill="#d97706"/><path d="M54 50 L48 64 M54 50 L60 64 M52 59 L56 59" stroke="#b45309" stroke-width="1.6" stroke-linecap="round"/></svg>',
 };
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -2063,6 +2832,10 @@ function applyLang() {
   const tip = (id, k, key) => { const s = key ? `${t(k)} (${key})` : t(k); $(id).title = s; $(id).setAttribute('aria-label', s); };
   tip('sGold', 'gold'); tip('sLives', 'lives'); tip('sWave', 'wave');
   tip('bSpeed', 'speed', 'F'); tip('bPause', 'pause', 'P'); tip('bSound', 'sound'); tip('bLang', 'language', 'L');
+  const tagG = $('sGold').querySelector('.stat-tag'), tagL = $('sLives').querySelector('.stat-tag'), tagW = $('sWave').querySelector('.stat-tag');
+  if (tagG) tagG.textContent = lang === 'tr' ? 'AKÇE' : 'GOLD';
+  if (tagL) tagL.textContent = lang === 'tr' ? 'HİSAR' : 'WALLS';
+  if (tagW) tagW.textContent = lang === 'tr' ? 'SEFER' : 'WAVE';
   $('bossName').textContent = t('ram');
   $('tNext').textContent = t('next');
   previewKey = '';
@@ -2185,22 +2958,57 @@ function showScreen(name) {
 function hideScreen() { screen = null; overlay.classList.add('hidden'); document.activeElement?.blur?.(); }
 function fillTitle() {
   const best = loadBest(), run = loadRun();
-  ocard.innerHTML = `<img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
-    <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
-    <div class="row"><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
-    <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}
-    <a class="foot" href="${ARENA_URL}" target="_blank" rel="noopener">${t('footer')}</a>`;
+  ocard.innerHTML = `
+    <div class="ferman-ornament top-ornament">${GLYPH.seljukDivider}</div>
+    <img class="crest" src="assets/ui/logo.png" alt="">
+    <h1>Hisar<small>${t('sub')}</small></h1>
+    <div class="mimar-callout">
+      <div class="mimar-avatar">${GLYPH.mimar}</div>
+      <div class="mimar-speech">
+        <b>${t('mimarTitle')}</b>
+        <p>${t('mimarIntro')}</p>
+      </div>
+    </div>
+    <div class="tactical-pills">
+      <span>${ico('archer')} ${t('archerName')} (60g)</span>
+      <span>${ico('cannon')} ${t('cannonName')} (110g)</span>
+      <span>${ico('tar')} ${t('tarName')} (80g)</span>
+    </div>
+    <div class="row">
+      <button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>
+      ${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}
+    </div>
+    <div class="row">
+      <button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button>
+      <button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button>
+    </div>
+    <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>
+    ${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}
+    <a class="foot" href="${ARENA_URL}" target="_blank" rel="noopener">${t('footer')}</a>
+    <div class="ferman-ornament bottom-ornament">${GLYPH.seljukDivider}</div>`;
   $('bPlay').onclick = () => startGame(null);
   if (run) $('bCont').onclick = () => startGame(loadRun());
   $('bSet').onclick = () => openSettings('title');
   $('bLang2').onclick = toggleLang;
 }
 function fillPause() {
-  ocard.innerHTML = `<h2>${t('paused')}</h2><div class="col">
-    <button class="primary" id="bResume" data-key="resume" data-focus>${GLYPH.play} ${t('resume')}</button>
-    <button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button>
-    <button id="bRestart" data-key="restart">${t('restart')}</button>
-    <button id="bMenu" data-key="menu">${t('mainMenu')}</button></div>`;
+  ocard.innerHTML = `
+    <div class="ferman-ornament top-ornament">${GLYPH.seljukDivider}</div>
+    <h2>${t('paused')}</h2>
+    <div class="mimar-callout">
+      <div class="mimar-avatar">${GLYPH.mimar}</div>
+      <div class="mimar-speech">
+        <b>${t('mimarTitle')}</b>
+        <p>${t('mimarHint')}</p>
+      </div>
+    </div>
+    <div class="col">
+      <button class="primary" id="bResume" data-key="resume" data-focus>${GLYPH.play} ${t('resume')}</button>
+      <button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button>
+      <button id="bRestart" data-key="restart">${t('restart')}</button>
+      <button id="bMenu" data-key="menu">${t('mainMenu')}</button>
+    </div>
+    <div class="ferman-ornament bottom-ornament">${GLYPH.seljukDivider}</div>`;
   $('bResume').onclick = () => setPaused(false);
   $('bSet').onclick = () => openSettings('pause');
   $('bRestart').onclick = () => startGame(null);
@@ -2250,10 +3058,31 @@ function openSettings(from) { settingsFrom = from; showScreen('settings'); }
 function settingsBack() { saveSettings(); showScreen(settingsFrom === 'pause' && G.running && !G.over ? 'pause' : 'title'); }
 function fillOver() {
   const win = endWin;
-  ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+  ocard.innerHTML = `
+    <div class="ferman-ornament top-ornament">${GLYPH.seljukDivider}</div>
+    <img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt="">
+    <h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1>
+    <p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+    <div class="mimar-callout">
+      <div class="mimar-avatar">${GLYPH.mimar}</div>
+      <div class="mimar-speech">
+        <b>${t('mimarTitle')}</b>
+        <p>${win ? t('mimarWin') : t('mimarLost')}</p>
+      </div>
+    </div>
     ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
-    <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
-    <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>`;
+    <div class="estats">
+      <div><b>${G.wave}</b><small>${t('statWave')}</small></div>
+      <div><b>${G.kills}</b><small>${t('statKills')}</small></div>
+      <div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div>
+      <div><b>${G.built}</b><small>${t('statTowers')}</small></div>
+    </div>
+    <div class="row">
+      <button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>
+      ${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}
+      <button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button>
+    </div>
+    <div class="ferman-ornament bottom-ornament">${GLYPH.seljukDivider}</div>`;
   $('bAgain').onclick = () => startGame(null);
   $('bMenu').onclick = toMainMenu;
   if (win) $('bEndless').onclick = () => { G.over = false; G.endless = true; hideScreen(); toast(t('endlessOn')); previewKey = ''; updateHUD(); saveRun(); };
