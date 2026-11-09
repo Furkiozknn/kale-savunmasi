@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hisar · Kale Savunması</title>
+<meta name="arena-game" content="kale-savunmasi">
 <meta name="description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves. Single HTML file, Three.js.">
 <meta property="og:title" content="Hisar · Fortress Defense">
 <meta property="og:description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves.">
@@ -343,6 +344,8 @@
     }
   }
   @media (prefers-reduced-motion: reduce) { #bWave.pulse, .ocard .newbest { animation: none; } }
+  html[data-arena-reduced-motion] :is(#bWave.pulse, .ocard .newbest) { animation: none; } /* the same from the Arena panel */
+  .card .closed { flex-basis: 100%; font-size: 12px; font-weight: 700; color: #991b1b; }
 
   /* Architect's Workshop / Build & Upgrade Panel */
   #panel {
@@ -1247,6 +1250,12 @@ const STR = {
     wallBtn: 'Barikat', wallHint: 'Yol Mühendisi: yola ya da çayıra tıkla, barikat kur ({n} altın). Barikata tıkla: yık. B / Esc: çık.',
     wallBuilt: 'Barikat kuruldu', wallBuiltLonger: 'Barikat kuruldu · yol {n} m uzadı', wallRemoved: 'Barikat yıkıldı +{n} altın',
     wallBlocks: 'Yol kapanır: düşmanın hisara bir yolu kalmalı.', wallEnemy: 'Orada düşman var.', wallNoGround: 'Buraya barikat kurulamaz.', wallMax: 'En fazla {n} barikat.',
+    // Arena (ortak katman)
+    daily: 'Günün Meydan Okuması', dailyInfo: 'seri {s} · en iyi {b}', dailyDone: 'bugün tamam', dailyBan: 'Bugün {name} kapalı',
+    dailyStart: 'Günün Meydan Okuması: bugünün düşman dizilişi, {name} kapalı. Kayıtlı oyunun ve rekorun etkilenmez.',
+    dailyClosed: 'Bugün kapalı', dailyOver: 'Günün Meydan Okuması · seri {s} gün (en iyi {b})', share: 'Paylaş', another: 'Başka bir oyun dene', a11y: 'Erişilebilirlik',
+    shareLine: '{w}/{m} dalga · {l} can · {k} düşman', shareWin: 'Hisar dayandı', shareLost: 'Hisar düştü', shareDaily: 'Günün Meydan Okuması {d} · seri {s}',
+    badgeWin: 'Hisar dayandı', badgeFlawless: 'Kusursuz savunma',
   },
   en: {
     sub: 'Fortress Defense',
@@ -1286,9 +1295,18 @@ const STR = {
     wallBtn: 'Barricade', wallHint: 'Path Engineer: click the road or the meadow to raise a barricade ({n} gold). Click a barricade to tear it down. B / Esc: done.',
     wallBuilt: 'Barricade raised', wallBuiltLonger: 'Barricade raised · the road is {n} m longer', wallRemoved: 'Barricade torn down +{n} gold',
     wallBlocks: 'That seals the way: the enemy must keep a path to the fortress.', wallEnemy: 'An enemy is standing there.', wallNoGround: 'No barricade can go here.', wallMax: 'At most {n} barricades.',
+    // Arena (shared layer)
+    daily: 'Daily challenge', dailyInfo: 'streak {s} · best {b}', dailyDone: 'done today', dailyBan: '{name} closed today',
+    dailyStart: 'Daily challenge: today\'s enemy order, {name} closed. Your saved run and your best are untouched.',
+    dailyClosed: 'Closed today', dailyOver: 'Daily challenge · streak {s} days (best {b})', share: 'Share', another: 'Try another game', a11y: 'Accessibility',
+    shareLine: '{w}/{m} waves · {l} lives · {k} enemies', shareWin: 'The fortress held', shareLost: 'The fortress fell', shareDaily: 'Daily challenge {d} · streak {s}',
+    badgeWin: 'The fortress held', badgeFlawless: 'Flawless defence',
   },
 };
 const ARENA_URL = 'https://github.com/Furkiozknn';
+// Arena shared layer (inline classic script above the import map); every use below is optional
+const ARENA = window.Arena && window.Arena.version ? window.Arena : null;
+const GAME_URL = 'https://furkiozknn.github.io/kale-savunmasi/';
 
 // ---------------------------------------------------------------- settings and save (localStorage, every access guarded)
 const store = {
@@ -1393,6 +1411,12 @@ const Sph = (r, w = 8, h = 6) => new THREE.SphereGeometry(r, w, h);
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1 : 1.5));
+// Arena: dynamic pixel ratio for weak GPUs under the quality tier's cap (re-attached in applyQuality, which resets the ratio)
+let arenaPerf = null;
+function arenaPerfAttach() {
+  if (!ARENA) return; if (arenaPerf) arenaPerf.stop();
+  arenaPerf = ARENA.perf.attach(renderer, { max: Math.min(window.devicePixelRatio || 1, low ? 1 : 1.5) });
+}
 renderer.setSize(innerWidth, innerHeight);
 renderer.setClearColor(0x000000, 0);
 renderer.shadowMap.enabled = !low;
@@ -2731,6 +2755,8 @@ const G = {
   running: false, over: false, paused: false, speed: 1, gold: START_GOLD, lives: START_LIVES, wave: 0,
   phase: 'build', queue: [], waveTime: 0, pendingBonus: 0, endless: false,
   enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, errors: [], best0: 0,
+  daily: null, dailyBan: null, dailyRec: null, // Arena.daily() of the running daily challenge, the tower type it closes, its streak record
+  reduced: false, // Arena "Reduce motion": no camera shake, no red flash when the gate is hit
 };
 window.hisar = G;
 window.game = G;
@@ -2811,8 +2837,10 @@ function reachEnd(e) {
   G.lives = Math.max(0, G.lives - e.lives);
   bump('sLives');
   const f = document.getElementById('flash');
-  f.style.transition = 'none'; f.style.opacity = '1';
-  requestAnimationFrame(() => { f.style.transition = 'opacity .7s'; f.style.opacity = '0'; });
+  if (!G.reduced) {
+    f.style.transition = 'none'; f.style.opacity = '1';
+    requestAnimationFrame(() => { f.style.transition = 'opacity .7s'; f.style.opacity = '0'; });
+  }
   emit(25, 1.5, e.z * 0.3, 18, 0xb91c1c, 3, 0.6);
   sfx('hurt');
   updateHUD();
@@ -2823,6 +2851,7 @@ function reachEnd(e) {
 function stat(tw, k) { const v = TOWERS[tw.type][k]; return v ? v[tw.level] : 0; }
 function buildTower(pad, type) {
   if (pad.tower || G.over || G.paused) return false;
+  if (G.dailyBan === type) { toast(t('dailyBan', { name: t(type + 'Name') }), 'bad'); sfx('deny'); return false; }
   const cost = TOWERS[type].cost[0];
   if (G.gold < cost) { toast(t('noGold'), 'bad'); sfx('deny'); return false; }
   G.gold -= cost;
@@ -2978,7 +3007,7 @@ function update(dt) {
             e.slowT = 2.6; e.slowF = Math.min(e.slowF, stat(tw, 'slow'));
           }
         }
-        if (list === balls) { emit(b.x1, 0.4, b.z1, 22, 0x9b8a6e, 5, 0.6); emit(b.x1, 0.4, b.z1, 8, 0xffb347, 3, 0.35); FX.blast(b.x1, b.z1); shake = Math.max(shake, 0.18); sfx('impact'); }
+        if (list === balls) { emit(b.x1, 0.4, b.z1, 22, 0x9b8a6e, 5, 0.6); emit(b.x1, 0.4, b.z1, 8, 0xffb347, 3, 0.35); FX.blast(b.x1, b.z1); if (!G.reduced) shake = Math.max(shake, 0.18); sfx('impact'); }
         else {
           emit(b.x1, 0.3, b.z1, 14, 0x2a1a0e, 3, 0.5);
           FX.tar(b.x1, b.z1);
@@ -3003,8 +3032,10 @@ function update(dt) {
     addGold(b);
     toast(t('cleared', { n: b }), 'good');
     // the record counts as soon as the wave is cleared, even if the run is never finished
-    if (G.best0 > 0 && G.wave === G.best0 + 1) toast(t('newBest'), 'good');
-    saveBest(G.wave);
+    if (!G.daily) { // a daily challenge (one tower type closed) does not count towards the best
+      if (G.best0 > 0 && G.wave === G.best0 + 1) toast(t('newBest'), 'good');
+      saveBest(G.wave);
+    }
     sfx('clear');
     setBattleMusic(false);
     if (G.wave >= MAX_WAVES && !G.endless) endGame(true);
@@ -3167,7 +3198,8 @@ function showBuild(pad) {
   panel.innerHTML = `<div class="ph"><span>${t('build')}</span>${closeBtn()}</div><div class="cards">` +
     TOWER_KEYS.map((k, i) => {
       const c = TOWERS[k].cost[0];
-      return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${ico(k, 'big')}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">${ico('gold')} ${c}</span></button>`;
+      const shut = G.dailyBan === k; // the daily challenge closes one tower type
+      return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c || shut ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${ico(k, 'big')}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">${ico('gold')} ${c}</span>${shut ? `<span class="closed">${t('dailyClosed')}</span>` : ''}</button>`;
     }).join('') + '</div>';
   panel.classList.remove('hidden');
   hideRing();
@@ -3342,7 +3374,7 @@ function updateFloatText(dt) {
 }
 function clearFloatText() { for (const f of ftxt) f.el.remove(); ftxt.length = 0; }
 function applyLang() {
-  document.documentElement.lang = lang;
+  document.documentElement.lang = lang; if (ARENA) ARENA.lang(lang);
   $('tSub').textContent = t('sub');
   $('bLang').textContent = lang === 'tr' ? 'EN' : 'TR';
   document.title = 'Hisar · ' + t('sub');
@@ -3439,7 +3471,7 @@ window.addEventListener('keydown', ev => {
 
 // ---------------------------------------------------------------- run save (Continue), written after every cleared wave
 function saveRun() {
-  if (G.over || !G.running) return;
+  if (G.over || !G.running || G.daily) return; // a daily challenge never takes the place of the saved run
   store.set('arena.hisar.save', JSON.stringify({
     version: 1, wave: G.wave, gold: G.gold, lives: G.lives, endless: G.endless, kills: G.kills, gold_earned: G.goldEarned, built: G.built,
     towers: G.towers.map(tw => ({ pad: tw.pad.i, type: tw.type, level: tw.level, mode: tw.mode, spent: tw.spent, kills: tw.kills, yaw: tw.yaw })),
@@ -3482,11 +3514,13 @@ function fillTitle() {
   const best = loadBest(), run = loadRun();
   ocard.innerHTML = `<img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
     <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
+    ${ARENA ? `<div class="row"><button id="bDaily" data-key="daily" ${assetState.done ? '' : 'disabled'}>${ico('wave')} ${t('daily')} <small>(${dailyInfo()})</small></button></div>` : ''}
     <div class="row"><button id="bGuide" data-key="guide">${ico('target')} ${t('guide')}</button><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
     <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}
     <a class="foot" href="${ARENA_URL}" target="_blank" rel="noopener">${t('footer')}</a>`;
   $('bPlay').onclick = () => startGame(null);
   if (run) $('bCont').onclick = () => startGame(loadRun());
+  if (ARENA) $('bDaily').onclick = startDaily;
   $('bGuide').onclick = () => openGuide('title');
   $('bSet').onclick = () => openSettings('title');
   $('bLang2').onclick = toggleLang;
@@ -3501,7 +3535,7 @@ function fillPause() {
   $('bResume').onclick = () => setPaused(false);
   $('bGuide').onclick = () => openGuide('pause');
   $('bSet').onclick = () => openSettings('pause');
-  $('bRestart').onclick = () => startGame(null);
+  $('bRestart').onclick = () => (G.daily ? startDaily() : startGame(null)); // a daily restarts the daily and keeps the saved run
   $('bMenu').onclick = toMainMenu;
 }
 function fillGuide() {
@@ -3544,7 +3578,8 @@ function fillSettings() {
     ${opts('language', [['tr', 'Türkçe'], ['en', 'English']], lang)}
     ${opts('quality', [['low', t('qLow')], ['high', t('qHigh')]], low ? 'low' : 'high')}
     ${FULLSCREEN ? opts('fullscreen', [['off', t('off')], ['on', t('on')]], document.fullscreenElement ? 'on' : 'off') : ''}</div>
-    <div class="col"><button class="primary" id="bBack" data-key="back" data-focus>${t('back')}</button></div>`;
+    <div class="col">${ARENA ? `<button id="bA11y" data-key="a11y">${t('a11y')}</button>` : ''}<button class="primary" id="bBack" data-key="back" data-focus>${t('back')}</button></div>`;
+  if (ARENA) $('bA11y').onclick = () => { sfx('click'); ARENA.openSettings(); };
   ocard.querySelectorAll('[data-vol]').forEach(s => {
     const k = s.dataset.vol;
     s.oninput = () => { settings[k] = +s.value; $('o_' + k).textContent = Math.round(settings[k] * 100) + '%'; initAudio(); applyVolumes(); refreshSoundBtn(); };
@@ -3582,8 +3617,11 @@ function fillOver() {
   ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
     ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
     <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
-    <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>`;
-  $('bAgain').onclick = () => startGame(null);
+    ${G.dailyRec ? `<p class="ctl">${t('dailyOver', { s: G.dailyRec.streak, b: G.dailyRec.best })}</p>` : ''}
+    <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}${ARENA ? `<button class="big" id="bShare" data-key="share">${t('share')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>
+    ${ARENA ? `<a class="foot" id="aOther" href="https://furkiozknn.github.io/${otherGame()}/" target="_blank" rel="noopener">${t('another')}</a>` : ''}`;
+  $('bAgain').onclick = () => (G.daily ? startDaily() : startGame(null));
+  if (ARENA) $('bShare').onclick = () => { sfx('click'); ARENA.share(shareData(win)); };
   $('bMenu').onclick = toMainMenu;
   if (win) $('bEndless').onclick = () => { G.over = false; G.endless = true; hideScreen(); toast(t('endlessOn')); previewKey = ''; updateHUD(); saveRun(); };
 }
@@ -3602,25 +3640,44 @@ function resetGame() {
   clearFloatText();
   $('toast').innerHTML = '';
   Object.assign(G, { running: false, over: false, paused: false, gold: START_GOLD, lives: START_LIVES, wave: 0, phase: 'build', queue: [], waveTime: 0,
-    pendingBonus: 0, endless: false, enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0 });
+    pendingBonus: 0, endless: false, enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, daily: null, dailyBan: null, dailyRec: null });
   $('bPause').innerHTML = GLYPH.pause;
   shake = 0;
   lastGold = -1; previewKey = '';
   setBattleMusic(false);
 }
-function startGame(run) {
+function startGame(run, daily) {
   initAudio();
   resetGame();
   G.running = true; // (a restored run places its barricades through the same checks as play)
-  if (run) restoreRun(run); else clearRun(); // a fresh game drops the abandoned run, so Continue cannot bring it back
+  if (daily) { // Daily challenge: today's seed drives the enemy stream (lanes, speeds) and closes one tower type
+    G.daily = daily; seed = daily.seed % 2147483646 + 1; G.dailyBan = TOWER_KEYS[Math.floor(daily.rng() * TOWER_KEYS.length)];
+  } else if (run) restoreRun(run); else clearRun(); // a fresh game drops the abandoned run, so Continue cannot bring it back
   G.best0 = loadBest();
   hideScreen();
   G.running = true;
   setSpeed(AUTO ? 3 : 1);
   cameraHome();
   sfx('horn');
-  toast(run ? t('continued', { n: G.wave + 1 }) : t('hint'));
+  toast(daily ? t('dailyStart', { name: t(G.dailyBan + 'Name') }) : run ? t('continued', { n: G.wave + 1 }) : t('hint'));
   updateHUD();
+}
+// ---------------------------------------------------------------- Arena shared layer: daily challenge, share, pause, motion
+function startDaily() { if (ARENA) startGame(null, ARENA.daily('kale-savunmasi')); }
+function dailyInfo() { const d = ARENA.daily('kale-savunmasi'); return (d.done ? t('dailyDone') + ' · ' : '') + t('dailyInfo', { s: d.streak, b: d.best }); }
+function dayText(k) { return `${k % 100}.${Math.floor(k / 100) % 100}.${Math.floor(k / 10000)}`; }
+function otherGame() { const o = ARENA.games.filter(g => g !== 'kale-savunmasi'); return o[Math.floor(Date.now() / 86400000) % o.length]; }
+function shareData(win) {
+  const lines = [win ? t('shareWin') : t('shareLost'), t('shareLine', { w: win ? G.wave : G.wave - 1, m: MAX_WAVES, l: G.lives, k: G.kills })];
+  if (G.dailyRec) lines.unshift(t('shareDaily', { d: dayText(G.dailyRec.last), s: G.dailyRec.streak }));
+  return { title: 'Hisar · ' + t('sub'), lines, url: GAME_URL };
+}
+if (ARENA) {
+  // The ♿ corner button would sit on the wave button (bottom right), so the panel opens from Settings > Accessibility.
+  // A hidden tab already stops the loop and the audio; in a battle it now also opens the game's own pause card.
+  ARENA.on('pause', () => { if (!AUTO && G.running && !G.over && !G.paused && !screen) setPaused(true); });
+  ARENA.on('settings', s => { G.reduced = !!s.reducedMotion; if (G.reduced) shake = 0; });
+  G.reduced = !!ARENA.settings.reducedMotion;
 }
 function toMainMenu() {
   resetGame();
@@ -3630,9 +3687,15 @@ function toMainMenu() {
 function endGame(win) {
   G.over = true;
   const reached = win ? G.wave : G.wave - 1;
-  endRecord = reached > G.best0;
-  saveBest(reached);
-  clearRun();
+  if (G.daily) { // the daily run keeps the saved run and the best: its score is the waves held and the lives left
+    endRecord = false;
+    G.dailyRec = G.daily.complete(reached * 100 + G.lives);
+  } else {
+    endRecord = reached > G.best0;
+    saveBest(reached);
+    clearRun();
+  }
+  if (win && !AUTO && ARENA) { ARENA.award('hisar-win', t('badgeWin')); if (G.lives >= START_LIVES) ARENA.award('hisar-flawless', t('badgeFlawless')); }
   endWin = win;
   closePanel();
   setBattleMusic(false);
@@ -3644,6 +3707,7 @@ function endGame(win) {
 function applyQuality() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1 : 1.5));
   renderer.setSize(innerWidth, innerHeight);
+  arenaPerfAttach();
   if (renderer.shadowMap.enabled === low) {
     renderer.shadowMap.enabled = sun.castShadow = !low;
     scene.traverse(o => { if (o.material) for (const m of [].concat(o.material)) m.needsUpdate = true; }); // recompile with / without shadows
