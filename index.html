@@ -17,6 +17,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <link rel="preload" href="assets/fonts/stardos-stencil-700.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  #ftxt div.dmg-num { font-family: var(--font-num); font-size: 16px; font-weight: 700; color: #fef08a; text-shadow: 0 1px 0 #451a03, 0 0 4px #451a03; will-change: transform; white-space: nowrap; pointer-events: none; position: absolute; }
+  #ftxt div.hp-dom { position: absolute; width: 36px; height: 6px; background: rgba(36,26,18,0.7); border: 1px solid #450a0a; border-radius: 2px; pointer-events: none; will-change: transform; }
+  #ftxt div.hp-dom i { display: block; height: 100%; background: #22c55e; width: 100%; transform-origin: left; }
   /* 2026-11 Radical UI Rebirth: Ottoman Baroque · Fortress Bastion · Cartographic War Council */
   @font-face { font-family: 'Hisar Stencil'; src: url(assets/fonts/stardos-stencil-700.woff2) format('woff2'); font-weight: 700; font-display: swap; }
   :root {
@@ -2821,6 +2824,7 @@ function damage(e, amount, tower, kind) {
   if (kind === 'arrow') a *= 1 - e.armor; else if (kind === 'ball') a *= 1 - e.armor * 0.5;
   e.hp -= a;
   if (kind !== 'dot') e.flash = 0.12;
+  floatText(Math.round(a), e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
   if (e.hp <= 0) kill(e, tower);
 }
 function kill(e, tower) {
@@ -3081,6 +3085,23 @@ function updateVisuals(dt, time) {
     }
   }
   for (const k of ENEMY_KEYS) { const m = enemyMeshes[k]; m.count = Math.min(counts[k], MAX_ENEMIES); m.instanceMatrix.needsUpdate = true; m.instanceColor.needsUpdate = true; }
+  
+  for (const l of labelPool) if (l.active && l.type === 'hp') l.active = false;
+  for (const e of G.enemies) {
+    if (e.hp < e.maxHp) {
+      let item = labelPool.find(l => !l.active);
+      if (item) {
+        item.active = true; item.type = 'hp';
+        const s = ENEMY_SCALE[e.type];
+        item.x = e.x; item.y = ENEMIES[e.type].h * s + 0.35 + e.gy; item.z = e.z;
+        item.val = Math.max(0, e.hp / e.maxHp);
+        item.el.className = 'hp-dom';
+        item.el.innerHTML = `<i style="transform:scaleX(${item.val})"></i>`;
+        item.el.style.display = 'block';
+      }
+    }
+  }
+
   barBg.count = barFg.count = bars;
   barBg.instanceMatrix.needsUpdate = barFg.instanceMatrix.needsUpdate = true;
   barFg.instanceColor.needsUpdate = true;
@@ -3354,25 +3375,37 @@ function updateBossBar(hp, max) {
   const f = Math.round(clamp(hp / max, 0, 1) * 200) / 200;
   if (f !== bossFrac) { bossFrac = f; $('bossBar').style.transform = `scaleX(${f})`; }
 }
-const ftxt = [], ftxtLayer = $('ftxt');
-function floatText(s, x, y, z) {
-  if (ftxt.length > 24) return;
+const LABEL_POOL_SIZE = 45;
+const labelPool = [];
+const ftxtLayer = $('ftxt');
+for (let i = 0; i < LABEL_POOL_SIZE; i++) {
   const el = document.createElement('div');
-  el.textContent = s;
+  el.style.display = 'none';
   ftxtLayer.appendChild(el);
-  ftxt.push({ el, x, y, z, life: 1 });
+  labelPool.push({ el, active: false, life: 0, x: 0, y: 0, z: 0, type: '', val: 0 });
+}
+function floatText(s, x, y, z) {
+  const item = labelPool.find(l => !l.active);
+  if (!item) return;
+  item.active = true; item.type = 'dmg'; item.text = String(s);
+  item.x = x; item.y = y; item.z = z; item.life = 0.8;
+  item.el.className = 'dmg-num';
+  item.el.textContent = item.text;
+  item.el.style.display = 'block';
 }
 function updateFloatText(dt) {
-  for (const f of ftxt) {
-    f.life -= dt; f.y += dt * 1.6;
+  for (const f of labelPool) {
+    if (!f.active) { f.el.style.display = 'none'; continue; }
+    if (f.type === 'dmg') {
+      f.life -= dt; f.y += dt * 1.6;
+      if (f.life <= 0) { f.active = false; f.el.style.display = 'none'; continue; }
+      f.el.style.opacity = Math.min(1, f.life * 2);
+    }
     _v.set(f.x, f.y, f.z).project(camera);
     f.el.style.transform = `translate(${(_v.x * 0.5 + 0.5) * innerWidth - 12}px, ${(-_v.y * 0.5 + 0.5) * innerHeight - 10}px)`;
-    f.el.style.opacity = Math.min(1, f.life * 2);
-    if (f.life <= 0) f.el.remove();
   }
-  for (let i = ftxt.length - 1; i >= 0; i--) if (ftxt[i].life <= 0) ftxt.splice(i, 1);
 }
-function clearFloatText() { for (const f of ftxt) f.el.remove(); ftxt.length = 0; }
+function clearFloatText() { for (const f of labelPool) { f.active = false; f.el.style.display = 'none'; } }
 function applyLang() {
   document.documentElement.lang = lang; if (ARENA) ARENA.lang(lang);
   $('tSub').textContent = t('sub');
