@@ -1234,6 +1234,7 @@ const STR = {
     raider: 'Yağmacı', rider: 'Atlı', shield: 'Kalkanlı', ram: 'Koçbaşı',
     early: 'Erken çağrı bonusu +{n} altın', cleared: 'Dalga temizlendi! +{n} altın', ramComing: 'Koçbaşı geliyor! Topları hazırla.',
     noGold: 'Yeterli altın yok', hint: 'Bir taş kaideye tıkla ve ilk kuleni kur.', built: '{name} kuruldu', sold: 'Kule satıldı +{n} altın',
+    arrowShieldHint: 'Oklar zırhlı kalkanlardan sekip geçiyor! Top tabyası veya katran kazanı kullanın.',
     lostTitle: 'Hisar düştü', lostText: '{n}. dalgada surlar aşıldı.', winTitle: 'Zafer!', winText: '15 dalga boyunca hisarı korudun. Hisar ayakta!',
     statKills: 'Avlanan düşman', statGold: 'Kazanılan altın', statTowers: 'Kurulan kule', statWave: 'Ulaşılan dalga', newBest: 'Yeni rekor!',
     again: 'Tekrar oyna', endless: 'Sonsuz moda devam', paused: 'Duraklatıldı', endlessOn: 'Sonsuz mod: dalgalar güçlenmeye devam ediyor.',
@@ -1279,6 +1280,7 @@ const STR = {
     raider: 'Raider', rider: 'Rider', shield: 'Shieldbearer', ram: 'Battering ram',
     early: 'Early call bonus +{n} gold', cleared: 'Wave cleared! +{n} gold', ramComing: 'Battering ram incoming! Ready the cannons.',
     noGold: 'Not enough gold', hint: 'Click a stone pad to build your first tower.', built: '{name} built', sold: 'Tower sold +{n} gold',
+    arrowShieldHint: 'Arrows glance off armored shields! Deploy cannons or tar.',
     lostTitle: 'The fortress fell', lostText: 'The walls were breached on wave {n}.', winTitle: 'Victory!', winText: 'You held the fortress for 15 waves. It still stands!',
     statKills: 'Enemies defeated', statGold: 'Gold earned', statTowers: 'Towers built', statWave: 'Wave reached', newBest: 'New best!',
     again: 'Play again', endless: 'Continue in endless mode', paused: 'Paused', endlessOn: 'Endless mode: the waves keep getting stronger.',
@@ -2828,10 +2830,20 @@ function addGold(n) { G.gold += n; G.goldEarned += n; bump('sGold'); updateHUD()
 function damage(e, amount, tower, kind) {
   if (!e.alive) return;
   let a = amount;
-  if (kind === 'arrow') a *= 1 - e.armor; else if (kind === 'ball') a *= 1 - e.armor * 0.5;
+  if (kind === 'arrow') {
+    if (e.type === 'shield' || e.armor > 0) {
+      floatText('Blocked', e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.8, e.z, 'bad');
+      if (ARENA) ARENA.hint('arrow_shield', t('arrowShieldHint') || 'Arrows glance off armored shields! Use cannons or tar.');
+      a = 0;
+    } else {
+      a *= 1 - e.armor;
+    }
+  } else if (kind === 'ball') {
+    a *= 1 - e.armor * 0.5;
+  }
   e.hp -= a;
   if (kind !== 'dot') e.flash = 0.12;
-  floatText(Math.round(a), e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
+  if (a > 0 || kind !== 'arrow') floatText(Math.round(a), e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
   if (e.hp <= 0) kill(e, tower);
 }
 function kill(e, tower) {
@@ -3417,12 +3429,12 @@ for (let i = 0; i < LABEL_POOL_SIZE; i++) {
   ftxtLayer.appendChild(el);
   labelPool.push({ el, active: false, life: 0, x: 0, y: 0, z: 0, type: '', val: 0 });
 }
-function floatText(s, x, y, z) {
+function floatText(s, x, y, z, kind = 'dmg') {
   const item = labelPool.find(l => !l.active);
   if (!item) return;
-  item.active = true; item.type = 'dmg'; item.text = String(s);
+  item.active = true; item.type = kind; item.text = String(s);
   item.x = x; item.y = y; item.z = z; item.life = 0.8;
-  item.el.className = 'dmg-num';
+  item.el.className = kind === 'bad' ? 'dmg-num bad' : 'dmg-num';
   item.el.textContent = item.text;
   item.el.style.display = 'block';
 }
