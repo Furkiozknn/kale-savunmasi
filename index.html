@@ -261,6 +261,7 @@
   }
   #top button { min-width: 44px; min-height: 44px; padding: 6px 10px; }
   #bSpeed { font-family: var(--font-num); font-size: 16px; min-width: 46px; }
+  #bWall.on { background: linear-gradient(180deg, #fde68a, #f59e0b); box-shadow: inset 0 2px 4px rgba(84, 63, 44, 0.45); }
 
   /* War Council Decree / Next Wave Panel */
   #wavebox {
@@ -801,6 +802,7 @@
     <div class="stat" id="sWave" title=""><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M4 18l5-9 3 4 5-8 3 13H4z" fill="#c2410c" stroke="#7c2d12" stroke-width="1.2"/><path d="M3 19h18" stroke="#fef08a" stroke-width="1.5" stroke-linecap="round"/><circle cx="17" cy="5" r="2" fill="#f59e0b"/></svg> <span>0</span></div>
   </div>
   <div class="hud-controls parch" id="topControls">
+    <button id="bWall" aria-label="Barikat (B)" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M3 20V11h3V8h3v3h2V8h2v3h2V8h3v3h3v9H3z" fill="#cfc3a6" stroke="#543f2c" stroke-width="1.2" stroke-linejoin="round"/><path d="M3 15.5h18M8 11v4.5m8-4.5v4.5M12 15.5V20" stroke="#8f7a58" stroke-width="1"/><path d="M1.5 21.5l4-5m17 5l-4-5" stroke="#6b4527" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button id="bSpeed" aria-label="Hız (F)">1×</button>
     <button id="bPause" aria-label="Duraklat (P)"></button>
     <button id="bSound" aria-label="Ses"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M4 9h4l5-4v14l-5-4H4V9z" fill="#b45309" stroke="#78350f" stroke-width="1.2"/><path d="M16 8.5c1.5 1 2.5 2.2 2.5 3.5s-1 2.5-2.5 3.5m2-9c2.5 1.8 4 3.5 4 5.5s-1.5 3.7-4 5.5" stroke="#78350f" stroke-width="1.4" stroke-linecap="round"/></svg></button>
@@ -856,7 +858,7 @@ const STR = {
   tr: {
     sub: 'Kale Savunması',
     intro: 'Düşman ordusu iki yoldan hisara yürüyor. Yol kenarındaki taş kaidelere kule kur, kuleleri geliştir ve 15 dalga boyunca hisarı ayakta tut.',
-    controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>U</b> geliştir · <b>S</b> sat · <b>T</b> hedef · <b>F</b> hız<br><b>P</b> / <b>Esc</b> duraklat · <b>M</b> müzik · <b>X</b> ses · <b>L</b> dil',
+    controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>B</b> barikat · <b>U</b> geliştir · <b>S</b> sat · <b>T</b> hedef · <b>F</b> hız<br><b>P</b> / <b>Esc</b> duraklat · <b>M</b> müzik · <b>X</b> ses · <b>L</b> dil',
     controlsTouch: '<b>Dokun</b> seç / kur · <b>Tek parmak</b> kaydır · <b>İki parmak</b> yakınlaş ve döndür',
     play: 'Başla', loading: 'Yükleniyor… {n}/{m}', startIdle: 'Başlat', best: 'En iyi rekor: {n}. dalga',
     continue: 'Devam et · Dalga {n}', continued: 'Dalga {n} seni bekliyor · oyun geri yüklendi',
@@ -887,11 +889,15 @@ const STR = {
     guideRule1: '<b>Kalkanlı Birlikler (Dalga 5+):</b> Ağır zırh taşır, oklar işlemez! Top tabyası ve katran kazanı kurun.',
     guideRule2: '<b>Koçbaşı Kuşatması (Dalga 5, 10, 15):</b> Surları aşarsa 6 can götürür! Top atışlarını koçbaşına yoğunlaştırın.',
     guideRule3: '<b>Erken Çağrı Bonusu:</b> Mevcut dalga bitmeden sonrakini çağırarak hazineye ekstra altın kazandırın.',
+    guideRule4: '<b>Yol Mühendisi (B):</b> Yola ve çayıra barikat kurun (20 altın), düşmanı kulelerin önünde dolaştırın. Yolu tamamen kapatan barikat kurulamaz.',
+    wallBtn: 'Barikat', wallHint: 'Yol Mühendisi: yola ya da çayıra tıkla, barikat kur ({n} altın). Barikata tıkla: yık. B / Esc: çık.',
+    wallBuilt: 'Barikat kuruldu', wallBuiltLonger: 'Barikat kuruldu · yol {n} m uzadı', wallRemoved: 'Barikat yıkıldı +{n} altın',
+    wallBlocks: 'Yol kapanır: düşmanın hisara bir yolu kalmalı.', wallEnemy: 'Orada düşman var.', wallNoGround: 'Buraya barikat kurulamaz.', wallMax: 'En fazla {n} barikat.',
   },
   en: {
     sub: 'Fortress Defense',
     intro: 'An enemy army is marching on the fortress along two roads. Build towers on the stone pads by the road, upgrade them and hold the fortress for 15 waves.',
-    controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>U</b> upgrade · <b>S</b> sell · <b>T</b> target · <b>F</b> speed<br><b>P</b> / <b>Esc</b> pause · <b>M</b> music · <b>X</b> sound · <b>L</b> language',
+    controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>B</b> barricade · <b>U</b> upgrade · <b>S</b> sell · <b>T</b> target · <b>F</b> speed<br><b>P</b> / <b>Esc</b> pause · <b>M</b> music · <b>X</b> sound · <b>L</b> language',
     controlsTouch: '<b>Tap</b> select / build · <b>One finger</b> pan · <b>Two fingers</b> zoom and rotate',
     play: 'Play', loading: 'Loading… {n}/{m}', startIdle: 'Start', best: 'Best: wave {n}',
     continue: 'Continue · Wave {n}', continued: 'Wave {n} ahead · run restored',
@@ -922,6 +928,10 @@ const STR = {
     guideRule1: '<b>Shieldbearers (Wave 5+):</b> Heavy armour negates arrows! Deploy cannon bastions and tar cauldrons.',
     guideRule2: '<b>Battering Rams (Waves 5, 10, 15):</b> Breaching costs 6 lives! Focus heavy artillery on the ram.',
     guideRule3: '<b>Early Call Bonus:</b> Calling the next wave before the road clears awards substantial bonus gold.',
+    guideRule4: '<b>Path Engineer (B):</b> Raise barricades (20 gold) on the road and the meadow to march the enemy past your towers. A barricade that seals the way is refused.',
+    wallBtn: 'Barricade', wallHint: 'Path Engineer: click the road or the meadow to raise a barricade ({n} gold). Click a barricade to tear it down. B / Esc: done.',
+    wallBuilt: 'Barricade raised', wallBuiltLonger: 'Barricade raised · the road is {n} m longer', wallRemoved: 'Barricade torn down +{n} gold',
+    wallBlocks: 'That seals the way: the enemy must keep a path to the fortress.', wallEnemy: 'An enemy is standing there.', wallNoGround: 'No barricade can go here.', wallMax: 'At most {n} barricades.',
   },
 };
 const ARENA_URL = 'https://github.com/Furkiozknn';
@@ -1453,8 +1463,10 @@ const TREE_GEO = {
   cypress: merge([part(Cyl(0.08, 0.12, 0.5, 5), 0x4a3320, 0, 0.25, 0),
     shade(merge([part(Cyl(0.32, 0.42, 1.6, 7), 0xffffff, 0, 1.1, 0), part(Cone(0.36, 1.9, 7), 0xffffff, 0, 2.85, 0)]), 0x1f3d22, 0x55804a, 0.3, 3.6)]),
 };
+const blockSpots = []; // tree and rock positions: the barricade grid keeps marching enemies out of them
 (function makeTrees() {
   const spots = scatter(280, (x, z) => clearOfPlay(x, z) && !(x < -40 && Math.abs(Math.abs(z) - 21) < 7) && baseHeight(x, z) < 7.5);
+  blockSpots.push(...spots);
   const kind = (x, z) => { const h = hash(x * 1.7, z * 2.3); return x > 18 ? (h < 0.45 ? 'pine' : h < 0.75 ? 'cypress' : 'fir') : (h < 0.58 ? 'fir' : h < 0.8 ? 'pine' : 'cypress'); };
   const lists = { fir: [], pine: [], cypress: [] };
   spots.forEach(([x, z]) => {
@@ -1474,6 +1486,7 @@ const TREE_GEO = {
 })();
 (function makeRocks() {
   const spots = scatter(70, (x, z) => clearOfPlay(x, z) && (Math.abs(z) > 20 || rand() < 0.25));
+  blockSpots.push(...spots);
   const m = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.8, 0), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
   const tints = [0xcfc3a6, 0xbdb193, 0xa79b86, 0xd9cfb6];
   spots.forEach(([x, z], i) => {
@@ -2055,6 +2068,310 @@ ring.renderOrder = disc.renderOrder = 3;
 ring.visible = disc.visible = false;
 scene.add(ring, disc);
 
+// ---------------------------------------------------------------- Yol Mühendisi (path engineer): barricades that reroute the march
+// The two roads stay the fixed Catmull-Rom splines above. Over the meadow between the camps and the gate lies a grid of
+// 2 m cells; a barricade fills one cell. A road with no barricade on it keeps its own spline, so a game without
+// barricades (and the ?auto bot, which builds none) plays exactly as before. A blocked road is replaced by a route that
+// follows the road up to a few metres before the first barricade, then goes cell by cell along a Dijkstra field computed
+// from the gate (road cells cost 1, meadow 2.2, trees, rocks, pads and slopes closed), and takes the road again once it
+// is back on it past the last barricade. The joined points become a new spline built by buildPath, so samplePath,
+// targeting and the ballistic lead work on it unchanged. A barricade that would leave a camp, or any marching enemy,
+// with no way to the gate is refused. Enemies already on the road re-route from where they stand.
+const WALL_COST = 20, WALL_REFUND = 10, MAX_WALLS = 60;
+const CELL = 2, GX0 = -48, GZ0 = -30, GNX = 35, GNZ = 30, NC = GNX * GNZ; // x -48..22, z -30..30
+const cellOf = (x, z) => { const i = Math.floor((x - GX0) / CELL), j = Math.floor((z - GZ0) / CELL); return i >= 0 && i < GNX && j >= 0 && j < GNZ ? j * GNX + i : -1; };
+const cellX = c => GX0 + (c % GNX + 0.5) * CELL, cellZ = c => GZ0 + (Math.floor(c / GNX) + 0.5) * CELL;
+const cellRoad = new Uint8Array(NC), cellOpen = new Uint8Array(NC), cellBuild = new Uint8Array(NC), cellWall = new Uint8Array(NC), cellAng = new Float32Array(NC);
+const GOAL = cellOf(21, 0.5);
+const _gp = {};
+// ground height on a 1 m lattice (bilinear), for enemies that leave the flat road
+const HX0 = -48, HZ0 = -30, HNX = 71, HNZ = 61, groundH = new Float32Array(HNX * HNZ);
+for (let j = 0; j < HNZ; j++) for (let i = 0; i < HNX; i++) groundH[j * HNX + i] = heightAt(HX0 + i, HZ0 + j);
+function groundAt(x, z) {
+  const fx = clamp(x - HX0, 0, HNX - 1.001), fz = clamp(z - HZ0, 0, HNZ - 1.001), i = Math.floor(fx), j = Math.floor(fz), a = fx - i, b = fz - j, k = j * HNX + i;
+  return lerp(lerp(groundH[k], groundH[k + 1], a), lerp(groundH[k + HNX], groundH[k + HNX + 1], a), b);
+}
+(function makeGrid() {
+  const pt = {};
+  for (let c = 0; c < NC; c++) {
+    const x = cellX(c), z = cellZ(c), road = distToPath(x, z) < 2.4, field = x > -34 && x < 14;
+    let open = road;
+    if (!road && field) {
+      let hi = -1e9, lo = 1e9;
+      for (const [dx, dz] of [[0, 0], [-0.9, -0.9], [0.9, -0.9], [-0.9, 0.9], [0.9, 0.9]]) { const h = groundAt(x + dx, z + dz); hi = Math.max(hi, h); lo = Math.min(lo, h); }
+      open = hi < 1.4 && lo > -1.0 && hi - lo < 1.2 && !blockSpots.some(([bx, bz]) => Math.abs(bx - x) < 1.5 && Math.abs(bz - z) < 1.5);
+    }
+    const nearPad = pads.some(p => Math.hypot(p.x - x, p.z - z) < 2.7);
+    if (!road && pads.some(p => Math.hypot(p.x - x, p.z - z) < 2.3)) open = false;
+    cellRoad[c] = road; cellOpen[c] = open; cellBuild[c] = open && field && !nearPad;
+    // a lone barricade stands across the nearest road
+    let best = 1e9;
+    for (const p of paths) for (let d = 0; d <= p.len; d += 1) {
+      samplePath(p, d, pt);
+      const dd = (pt.x - x) ** 2 + (pt.z - z) ** 2;
+      if (dd < best) { best = dd; cellAng[c] = Math.atan2(pt.tx, pt.tz); } // the model's length (local x) then runs across the road
+    }
+  }
+})();
+const NB = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2]];
+const passable = (c, walls) => c >= 0 && cellOpen[c] === 1 && !walls[c];
+function heapPush(h, d, c) { h.push([d, c]); let i = h.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (h[p][0] <= h[i][0]) break; [h[p], h[i]] = [h[i], h[p]]; i = p; } }
+function heapPop(h) {
+  const top = h[0], last = h.pop();
+  if (h.length) { h[0] = last; let i = 0; for (;;) { const l = i * 2 + 1, r = l + 1; let m = i; if (l < h.length && h[l][0] < h[m][0]) m = l; if (r < h.length && h[r][0] < h[m][0]) m = r; if (m === i) break; [h[m], h[i]] = [h[i], h[m]]; i = m; } }
+  return top;
+}
+// Dijkstra from the gate: dist[c] to the gate and the next cell on the way
+function flowField(walls) {
+  const dist = new Float64Array(NC).fill(Infinity), next = new Int32Array(NC).fill(-1), h = [];
+  dist[GOAL] = 0; heapPush(h, 0, GOAL);
+  while (h.length) {
+    const [d, c] = heapPop(h);
+    if (d > dist[c]) continue;
+    const i = c % GNX, j = (c - i) / GNX;
+    for (const [di, dj, w] of NB) {
+      const ni = i + di, nj = j + dj;
+      if (ni < 0 || nj < 0 || ni >= GNX || nj >= GNZ) continue;
+      const n = nj * GNX + ni;
+      if (!passable(n, walls)) continue;
+      const a = j * GNX + ni, b = nj * GNX + i; // diagonal step: never between two barricades or past one, never through two closed cells
+      if (di && dj && (walls[a] || walls[b] || (!cellOpen[a] && !cellOpen[b]))) continue;
+      const nd = d + w * (cellRoad[n] && cellRoad[c] ? 1 : 2.2);
+      if (nd < dist[n]) { dist[n] = nd; next[n] = c; heapPush(h, nd, n); }
+    }
+  }
+  return { dist, next };
+}
+// the cells each road's centre line enters, with the distance along the road where it first enters them
+const roadCore = paths.map(p => { const m = new Map(); for (let d = 0; d <= p.len; d += 0.5) { samplePath(p, d, _gp); const c = cellOf(_gp.x, _gp.z); if (c >= 0 && !m.has(c)) m.set(c, d); } return m; });
+const LANE_W = 1.1; // half-width of the marching column checked against barricades (lanes are ±0.7)
+function hitAt(path, d, walls) {
+  samplePath(path, d, _gp);
+  for (const s of [-LANE_W, 0, LANE_W]) { const c = cellOf(_gp.x - _gp.tz * s, _gp.z + _gp.tx * s); if (c >= 0 && walls[c]) return true; }
+  return false;
+}
+function lineClear(ax, az, bx, bz, walls) {
+  const n = Math.ceil(Math.hypot(bx - ax, bz - az) / 0.4);
+  for (let s = 0; s <= n; s++) {
+    const x = lerp(ax, bx, s / n), z = lerp(az, bz, s / n);
+    for (const [ox, oz] of [[0, 0], [0.7, 0], [-0.7, 0], [0, 0.7], [0, -0.7]]) if (!passable(cellOf(x + ox, z + oz), walls)) return false;
+  }
+  return true;
+}
+// A new route for something on `path` at distance d0 (spawn index si), or null when no barricade lies ahead of it.
+function routeFrom(path, d0, si, walls, F) {
+  let dHit = -1;
+  for (let d = d0; d <= path.len; d += 0.5) if (hitAt(path, d, walls)) { dHit = d; break; }
+  if (dHit < 0) return null;
+  const orig = paths[si];
+  let dLast = 0;
+  for (let d = orig.len; d >= 0; d -= 0.5) if (hitAt(orig, d, walls)) { dLast = d; break; }
+  const pts = [], add = (x, z) => { const l = pts[pts.length - 1]; if (!l || Math.hypot(l[0] - x, l[1] - z) > 0.6) pts.push([x, z]); };
+  const dS = Math.max(d0, dHit - 6);
+  for (let d = d0; d < dS; d += 1.5) { samplePath(path, d, _gp); add(_gp.x, _gp.z); }
+  samplePath(path, dS, _gp); add(_gp.x, _gp.z);
+  let c = cellOf(_gp.x, _gp.z);
+  if (c < 0 || !isFinite(F.dist[c])) return null;
+  const cells = [];
+  let rejoin = -1;
+  for (let k = 0; c !== GOAL && k < NC; k++) {
+    c = F.next[c];
+    if (c < 0) break;
+    const dk = roadCore[si].get(c);
+    if (dk !== undefined && dk > dLast + 3) { rejoin = dk; break; }
+    cells.push(c);
+  }
+  // pull the cell chain taut: skip up to three cells when the straight line between keeps clear of closed cells
+  let ax = pts[pts.length - 1][0], az = pts[pts.length - 1][1];
+  for (let i = 0; i < cells.length;) {
+    let j = i;
+    for (let k = Math.min(cells.length - 1, i + 3); k > i; k--) if (lineClear(ax, az, cellX(cells[k]), cellZ(cells[k]), walls)) { j = k; break; }
+    ax = cellX(cells[j]); az = cellZ(cells[j]); add(ax, az);
+    i = j + 1;
+  }
+  if (rejoin >= 0) { for (let d = rejoin; d < orig.len; d += 1.5) { samplePath(orig, d, _gp); add(_gp.x, _gp.z); } }
+  else add(23, 0);
+  samplePath(orig, orig.len, _gp); add(_gp.x, _gp.z);
+  if (pts.length < 2) return null;
+  const r = buildPath(pts);
+  r.routed = true;
+  return r;
+}
+let routes = paths.slice(), wallCount = 0;
+const progress = e => (e.p0 || 0) + (1 - (e.p0 || 0)) * e.d / e.path.len; // share of the march done, kept across a re-route
+function planRoutes(walls) { const F = flowField(walls); return { F, routes: paths.map((p, i) => routeFrom(p, 0, i, walls, F) || p) }; }
+function applyRoutes() {
+  const plan = planRoutes(cellWall);
+  routes = plan.routes;
+  for (const e of G.enemies) {
+    if (!e.alive || ENEMIES[e.type].fly) continue; // a flying unit (none yet) would keep its road over the barricades
+    const r = routeFrom(e.path, e.d, e.si, cellWall, plan.F);
+    if (r) { e.p0 = progress(e); e.path = r; e.d = 0; }
+  }
+  refreshRouteLines();
+}
+// '' when a barricade may go on cell c, else the string key of the reason
+function wallProblem(c) {
+  if (c < 0 || !cellBuild[c] || cellWall[c]) return 'wallNoGround';
+  if (wallCount >= MAX_WALLS) return 'wallMax';
+  const occupied = [];
+  for (const e of G.enemies) {
+    if (!e.alive || ENEMIES[e.type].fly) continue;
+    samplePath(e.path, e.d, _gp);
+    const a = cellOf(e.x, e.z), b = cellOf(_gp.x, _gp.z);
+    if (a === c || b === c) return 'wallEnemy';
+    if (b >= 0) occupied.push(b);
+  }
+  cellWall[c] = 1;
+  const F = flowField(cellWall);
+  cellWall[c] = 0;
+  for (const p of paths) { samplePath(p, 0, _gp); if (!isFinite(F.dist[cellOf(_gp.x, _gp.z)])) return 'wallBlocks'; }
+  for (const b of occupied) if (!isFinite(F.dist[b])) return 'wallBlocks';
+  return '';
+}
+const routeLen = () => routes.reduce((s, r) => s + r.len, 0);
+function placeWall(c, free = false) {
+  if (!G.running || G.over || G.paused) return 'over';
+  const why = wallProblem(c);
+  if (why) { if (!free) { toast(t(why, { n: MAX_WALLS }), 'bad'); sfx('deny'); } return why; }
+  if (!free && G.gold < WALL_COST) { toast(t('noGold'), 'bad'); sfx('deny'); return 'noGold'; }
+  const before = routeLen();
+  if (!free) { G.gold -= WALL_COST; G.wallsBuilt = (G.wallsBuilt || 0) + 1; }
+  cellWall[c] = 1; wallCount++;
+  applyRoutes();
+  drawWalls();
+  if (!free) {
+    const x = cellX(c), z = cellZ(c), gain = Math.round((routeLen() - before) / 2);
+    emit(x, 0.6, z, 16, 0xcbbd9f, 3.5, 0.6);
+    FX.dust(x, z, 8);
+    sfx('build');
+    toast(gain > 0 ? t('wallBuiltLonger', { n: gain }) : t('wallBuilt'), 'good');
+    updateHUD();
+  }
+  return '';
+}
+function removeWall(c) {
+  if (G.over || G.paused || c < 0 || !cellWall[c]) return false;
+  cellWall[c] = 0; wallCount--;
+  addGold(WALL_REFUND);
+  G.goldEarned -= WALL_REFUND; // a refund is not income
+  applyRoutes();
+  drawWalls();
+  emit(cellX(c), 0.8, cellZ(c), 14, 0xcbbd9f, 3, 0.6);
+  sfx('coin');
+  toast(t('wallRemoved', { n: WALL_REFUND }), 'good');
+  return true;
+}
+function clearWalls() { cellWall.fill(0); wallCount = 0; routes = paths.slice(); drawWalls(); refreshRouteLines(); }
+
+// barricade model: a limestone breastwork with pointed merlons, a timber rail and sharpened stakes on both faces
+const WALL_GEO = (() => {
+  const stone = 0xd8ccb0, stone2 = 0xbcae8e, wood = 0x6b4527, dark = 0x5a3a20, P = [];
+  P.push(pS(Box(2.02, 0.32, 1.25), stone2, 0, 0.16, 0), pS(Box(1.98, 0.62, 0.95), stone, 0, 0.62, 0));
+  P.push(pS(Box(2.02, 0.1, 1.02), stone2, 0, 0.97, 0));
+  for (const x of [-0.66, 0, 0.66]) P.push(pS(Box(0.42, 0.36, 0.8), stone, x, 1.2, 0), pR(Cone(0.3, 0.26, 4), stone2, x, 1.51, 0, 0, Math.PI / 4, 0));
+  P.push(pW(Box(2.04, 0.1, 0.12), wood, 0, 0.82, 0.52), pW(Box(2.04, 0.1, 0.12), wood, 0, 0.82, -0.52));
+  for (const s of [-1, 1]) for (const x of [-0.7, 0, 0.7]) {
+    P.push(pW(Cyl(0.05, 0.07, 1.15, 5), dark, x, 0.42, s * 0.78, s * 0.75, 0, 0));
+    P.push(part(Cone(0.05, 0.16, 5), 0x9b7448, x, 0.42 + Math.cos(0.75) * 0.65, s * (0.78 + Math.sin(0.75) * 0.65), s * 0.75, 0, 0));
+  }
+  return merge(P);
+})();
+const wallMesh = new THREE.InstancedMesh(WALL_GEO, matStone, MAX_WALLS);
+wallMesh.count = 0; wallMesh.castShadow = true; wallMesh.receiveShadow = true;
+scene.add(wallMesh);
+function drawWalls() {
+  let n = 0;
+  for (let c = 0; c < NC; c++) {
+    if (!cellWall[c]) continue;
+    const i = c % GNX, j = (c - i) / GNX, w = k => k >= 0 && cellWall[k] === 1;
+    const h = (i > 0 && w(c - 1)) + (i < GNX - 1 && w(c + 1)), v = (j > 0 && w(c - GNX)) + (j < GNZ - 1 && w(c + GNX));
+    const ang = h > v ? 0 : v > h ? Math.PI / 2 : cellAng[c]; // joined along a line of barricades, else across the road
+    const x = cellX(c), z = cellZ(c);
+    _m4.compose(_v.set(x, groundAt(x, z) - 0.04, z), _q.setFromEuler(_e.set(0, ang, 0)), _s.set(1, 1, 1));
+    wallMesh.setMatrixAt(n++, _m4);
+  }
+  wallMesh.count = n;
+  wallMesh.instanceMatrix.needsUpdate = true;
+}
+const ghostMat = new THREE.MeshBasicMaterial({ color: 0x86efac, transparent: true, opacity: 0.5, depthWrite: false });
+const ghost = new THREE.Mesh(WALL_GEO, ghostMat);
+ghost.visible = false; ghost.renderOrder = 4;
+scene.add(ghost);
+// route preview: chevron ribbons along each road's current (or proposed) route
+const chevronTex = canvasTex(64, 64, (g, W, H) => {
+  g.fillStyle = 'rgba(46, 34, 22, 0.42)'; g.fillRect(4, 0, W - 8, H); // ink band so the chevrons read on the earth road
+  g.strokeStyle = '#ffe9a8'; g.lineWidth = 10; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(12, 48); g.lineTo(32, 22); g.lineTo(52, 48); g.stroke();
+});
+const routeMat = new THREE.MeshBasicMaterial({ map: chevronTex, color: 0xffc23d, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide });
+const routeLines = [new THREE.Mesh(new THREE.BufferGeometry(), routeMat), new THREE.Mesh(new THREE.BufferGeometry(), routeMat)];
+for (const m of routeLines) { m.visible = false; m.renderOrder = 3; m.frustumCulled = false; scene.add(m); }
+function ribbon(mesh, path) {
+  const v = [], uv = [], idx = [], w = 0.55, pt = {};
+  let n = 0;
+  for (let d = 0; d <= path.len; d += 0.5) {
+    samplePath(path, d, pt);
+    const nx = -pt.tz, nz = pt.tx, y = Math.max(0.12, groundAt(pt.x, pt.z) + 0.14);
+    v.push(pt.x + nx * w, y, pt.z + nz * w, pt.x - nx * w, y, pt.z - nz * w);
+    uv.push(0, d / 1.6, 1, d / 1.6);
+    if (n > 0) { const a = (n - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+    n++;
+  }
+  mesh.geometry.dispose();
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  mesh.geometry = g;
+}
+let wallMode = false, hoverCell = -2, shownRoutes = null;
+function showRouteLines(list, ok = true) {
+  if (list !== shownRoutes) { list.forEach((r, i) => ribbon(routeLines[i], r)); shownRoutes = list; }
+  routeMat.color.set(ok ? 0xffc23d : 0xef4444);
+}
+function refreshRouteLines() { hoverCell = -2; shownRoutes = null; if (wallMode) showRouteLines(routes); }
+// the cell under the pointer: the ray meets the ground plane, then once more at the ground height found there
+const _gplane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), _gh = new THREE.Vector3();
+function groundCell(cx, cy) {
+  ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  if (!raycaster.ray.intersectPlane(_gplane.set(_gplane.normal, 0), _gh)) return -1;
+  const y = groundAt(_gh.x, _gh.z);
+  if (!raycaster.ray.intersectPlane(_gplane.set(_gplane.normal, -y), _gh)) return -1;
+  return cellOf(_gh.x, _gh.z);
+}
+// hovering a cell in barricade mode shows the barricade and the routes it would make (red when it is refused)
+function hoverWall(c) {
+  if (c === hoverCell) return;
+  hoverCell = c;
+  if (c < 0 || (!cellBuild[c] && !cellWall[c])) { ghost.visible = false; showRouteLines(routes); return; }
+  const x = cellX(c), z = cellZ(c);
+  ghost.position.set(x, groundAt(x, z) - 0.02, z);
+  ghost.rotation.y = cellAng[c];
+  ghost.visible = true;
+  if (cellWall[c]) { ghostMat.color.set(0xfbbf24); ghost.scale.set(1.06, 1.06, 1.06); showRouteLines(routes); return; } // a click tears it down
+  ghost.scale.set(1, 1, 1);
+  const why = wallProblem(c), ok = !why && G.gold >= WALL_COST;
+  ghostMat.color.set(ok ? 0x86efac : 0xf87171);
+  if (why) { showRouteLines(routes, why !== 'wallBlocks'); return; }
+  cellWall[c] = 1;
+  const plan = planRoutes(cellWall);
+  cellWall[c] = 0;
+  showRouteLines(plan.routes);
+}
+function setWallMode(on) {
+  on = !!on && G.running && !G.over;
+  if (on === wallMode) return;
+  wallMode = on;
+  $('bWall').classList.toggle('on', on);
+  $('bWall').setAttribute('aria-pressed', on);
+  ghost.visible = false;
+  for (const m of routeLines) m.visible = on;
+  hoverCell = -2;
+  if (on) { closePanel(); showRouteLines(routes); toast(t('wallHint', { n: WALL_COST })); }
+}
+
 // ---------------------------------------------------------------- game state
 const G = {
   running: false, over: false, paused: false, speed: 1, gold: START_GOLD, lives: START_LIVES, wave: 0,
@@ -2088,13 +2405,14 @@ const _pt = {};
 function spawn(type, pathIdx) {
   const E = ENEMIES[type], hp = E.hp * hpMul(G.wave);
   G.enemies.push({
-    type, path: paths[pathIdx], d: 0, lane: (rand() - 0.5) * 1.4, hp, maxHp: hp, speed: E.speed * (0.92 + rand() * 0.16),
+    type, path: ENEMIES[type].fly ? paths[pathIdx] : routes[pathIdx], si: pathIdx, p0: 0, gy: 0, d: 0, lane: (rand() - 0.5) * 1.4, hp, maxHp: hp, speed: E.speed * (0.92 + rand() * 0.16),
     armor: E.armor, gold: E.gold + Math.floor(G.wave / 5), lives: E.lives, alive: true, x: 0, z: 0, yaw: 0, slowT: 0, slowF: 1, dotT: 0, dotDps: 0, flash: 0, bob: rand() * 6,
   });
 }
 function placeEnemy(e) {
   samplePath(e.path, e.d, _pt);
   e.x = _pt.x - _pt.tz * e.lane; e.z = _pt.z + _pt.tx * e.lane; e.yaw = Math.atan2(_pt.tx, _pt.tz);
+  e.gy = e.path.routed ? groundAt(e.x, e.z) : 0; // off the road the ground is not flat
 }
 
 function canCallWave() { return G.running && !G.over && !G.paused && !G.queue.length && (G.endless || G.wave < MAX_WAVES); }
@@ -2223,7 +2541,7 @@ function findTarget(tw) {
     if (d2 > r2) continue;
     // "first" compares the fraction of each road walked (as in the Godot version); the remaining-distance version was
     // tried in the overnight pass and dropped: it changes the balance (the self-test bot then falls on wave 10, not 15)
-    const v = tw.mode === 'first' ? e.d / e.path.len : tw.mode === 'strong' ? e.hp : -d2;
+    const v = tw.mode === 'first' ? progress(e) : tw.mode === 'strong' ? e.hp : -d2;
     if (v > bv) { bv = v; best = e; }
   }
   return best;
@@ -2360,13 +2678,13 @@ function updateVisuals(dt, time) {
     if (e.type === 'rider') { y = Math.abs(Math.sin(ph * 0.8)) * 0.24; pitch = Math.sin(ph * 1.6) * 0.09; roll = 0; } // gallop: rocking fore and aft
     else if (e.type === 'ram') { y = Math.abs(Math.sin(ph * 2.2)) * 0.035; pitch = 0; roll = Math.sin(ph * 1.1) * 0.03; } // wheels on a rough road
     else { y = Math.abs(Math.sin(ph)) * (e.type === 'shield' ? 0.13 : 0.19); pitch = 0.06 + Math.sin(ph * 2) * 0.035; roll = Math.sin(ph) * 0.075; } // march: step, lean, sway
-    _m4.compose(_v.set(e.x, y, e.z), _q.setFromEuler(_eY.set(pitch, e.yaw, roll)), _s.set(s, s, s));
+    _m4.compose(_v.set(e.x, y + e.gy, e.z), _q.setFromEuler(_eY.set(pitch, e.yaw, roll)), _s.set(s, s, s));
     if (e.dotT > 0 && frand() < dt * 6) { puff(glow, e.x + rnd2(0.3), 1.0 + frand() * 0.6, e.z + rnd2(0.3), 0xff7a1a, 0.9, 0.3, 0.45, 0.85, 0, 1.6, 0); puff(smoke, e.x, 1.6, e.z, 0x3a302a, 0.5, 1.6, 1.0, 0.4, 0, 1, 0, 0.4); }
     m.setMatrixAt(i, _m4);
     if (e.flash > 0) _c.setRGB(1.6, 0.7, 0.6); else if (e.slowT > 0) _c.setRGB(0.55, 0.62, 0.8); else _c.setRGB(1, 1, 1);
     m.setColorAt(i, _c);
     if (e.hp < e.maxHp && bars < MAX_ENEMIES) {
-      const frac = clamp(e.hp / e.maxHp, 0, 1), w = e.type === 'ram' ? 2.2 : 1.1, y = ENEMIES[e.type].h * s + 0.35;
+      const frac = clamp(e.hp / e.maxHp, 0, 1), w = e.type === 'ram' ? 2.2 : 1.1, y = ENEMIES[e.type].h * s + 0.35 + e.gy;
       _v.set(e.x, y, e.z);
       _m4.compose(_v, camera.quaternion, _s.set(w, 1, 1));
       barBg.setMatrixAt(bars, _m4);
@@ -2455,6 +2773,7 @@ function updateVisuals(dt, time) {
   }
   stepPuffs(dt);
   updateAmbientFx(dt, time);
+  if (wallMode) chevronTex.offset.y -= dt * 1.2; // the route preview flows towards the gate
   // selection ring pulse
   if (ring.visible) { const k = 1 + Math.sin(time * 4) * 0.012; ring.scale.set(ringR * k, 1, ringR * k); disc.scale.set(ringR, 1, ringR); }
 }
@@ -2587,7 +2906,10 @@ canvas.addEventListener('pointerup', ev => {
   down = null;
   if (moved > 6 || ev.button !== 0) return;
   initAudio();
-  selectPad(pick(ev.clientX, ev.clientY));
+  const p = pick(ev.clientX, ev.clientY);
+  if (wallMode && !p) { const c = groundCell(ev.clientX, ev.clientY); if (cellWall[c]) removeWall(c); else placeWall(c); hoverCell = -2; return; }
+  if (wallMode) setWallMode(false);
+  selectPad(p);
 });
 let lastMove = null;
 canvas.addEventListener('pointermove', ev => { lastMove = { x: ev.clientX, y: ev.clientY }; });
@@ -2672,7 +2994,7 @@ function applyLang() {
   document.title = 'Hisar · ' + t('sub');
   const tip = (id, k, key) => { const s = key ? `${t(k)} (${key})` : t(k); $(id).title = s; $(id).setAttribute('aria-label', s); };
   tip('sGold', 'gold'); tip('sLives', 'lives'); tip('sWave', 'wave');
-  tip('bSpeed', 'speed', 'F'); tip('bPause', 'pause', 'P'); tip('bSound', 'sound'); tip('bLang', 'language', 'L');
+  tip('bWall', 'wallBtn', 'B'); tip('bSpeed', 'speed', 'F'); tip('bPause', 'pause', 'P'); tip('bSound', 'sound'); tip('bLang', 'language', 'L');
   $('bossName').textContent = t('ram');
   $('tNext').textContent = t('next');
   previewKey = '';
@@ -2689,11 +3011,13 @@ function setLang(l) {
 const toggleLang = () => setLang(lang === 'tr' ? 'en' : 'tr');
 $('bLang').onclick = toggleLang;
 $('bWave').onclick = () => { initAudio(); startWave(); };
+$('bWall').onclick = () => { initAudio(); if (!G.paused) setWallMode(!wallMode); };
 const setSpeed = s => { G.speed = s; $('bSpeed').textContent = s + '×'; };
 $('bSpeed').onclick = () => setSpeed(G.speed === 3 ? 1 : G.speed + 1);
 function setPaused(on) {
   if (!G.running || G.over || G.paused === on) return;
   G.paused = on;
+  if (on) setWallMode(false);
   $('bPause').innerHTML = on ? GLYPH.play : GLYPH.pause;
   if (on) showScreen('pause'); else hideScreen();
   updateHUD();
@@ -2732,6 +3056,7 @@ window.addEventListener('keydown', ev => {
   if (k === 'escape') {
     if (screen === 'guide') showScreen(guideFrom === 'pause' && G.running && !G.over ? 'pause' : 'title');
     else if (screen === 'settings') settingsBack();
+    else if (wallMode && !G.paused) setWallMode(false);
     else if (sel && !G.paused) closePanel();
     else if (G.running && !G.over) setPaused(!G.paused);
     return;
@@ -2751,6 +3076,7 @@ window.addEventListener('keydown', ev => {
     ev.preventDefault(); initAudio(); startWave();
   }
   else if (k === 'f') $('bSpeed').click();
+  else if (k === 'b') { initAudio(); if (!G.paused) setWallMode(!wallMode); }
   else if (sel && !sel.tower && ['1', '2', '3'].includes(k)) { if (buildTower(sel.pad, TOWER_KEYS[+k - 1])) showTower(sel.pad.tower); }
   else if (sel?.tower && k === 'u') upgradeTower(sel.tower);
   else if (sel?.tower && k === 's') sellTower(sel.tower);
@@ -2763,6 +3089,7 @@ function saveRun() {
   store.set('arena.hisar.save', JSON.stringify({
     version: 1, wave: G.wave, gold: G.gold, lives: G.lives, endless: G.endless, kills: G.kills, gold_earned: G.goldEarned, built: G.built,
     towers: G.towers.map(tw => ({ pad: tw.pad.i, type: tw.type, level: tw.level, mode: tw.mode, spent: tw.spent, kills: tw.kills, yaw: tw.yaw })),
+    walls: [...cellWall.keys()].filter(c => cellWall[c]),
   }));
 }
 function loadRun() {
@@ -2779,6 +3106,7 @@ function restoreRun(s) {
     tw.mode = ['first', 'strong', 'near'].includes(d.mode) ? d.mode : 'first';
     tw.spent = d.spent | 0; tw.kills = d.kills | 0; tw.yaw = +d.yaw || 0;
   }
+  for (const c of Array.isArray(s.walls) ? s.walls : []) if (Number.isInteger(c)) placeWall(c, true); // each one is checked again
 }
 
 // ---------------------------------------------------------------- screens
@@ -2847,6 +3175,7 @@ function fillGuide() {
         <li>${t('guideRule1')}</li>
         <li>${t('guideRule2')}</li>
         <li>${t('guideRule3')}</li>
+        <li>${t('guideRule4')}</li>
       </ul>
     </div>
     <div class="col"><button class="primary" id="bGuideBack" data-key="back" data-focus>${t('back')}</button></div>`;
@@ -2910,6 +3239,8 @@ function resetGame() {
   closePanel();
   for (const tw of G.towers) { scene.remove(tw.base, tw.head); tw.pad.tower = null; }
   for (const p of pads) p.tower = null;
+  setWallMode(false);
+  clearWalls();
   for (const list of [arrows, balls, tars, puddles]) list.items = [];
   pl.fill(0);
   for (let i = 0; i < PMAX; i++) pPos[i * 3 + 1] = -999;
@@ -2926,6 +3257,7 @@ function resetGame() {
 function startGame(run) {
   initAudio();
   resetGame();
+  G.running = true; // (a restored run places its barricades through the same checks as play)
   if (run) restoreRun(run); else clearRun(); // a fresh game drops the abandoned run, so Continue cannot bring it back
   G.best0 = loadBest();
   hideScreen();
@@ -3203,7 +3535,8 @@ function frame() {
   if (lastMove && hoverT <= 0 && G.running && !screen) {
     hoverT = 0.06;
     const p = pick(lastMove.x, lastMove.y), h = p ? p.i : -1;
-    canvas.style.cursor = p ? 'pointer' : '';
+    canvas.style.cursor = p || wallMode ? 'pointer' : '';
+    if (wallMode) hoverWall(p ? -1 : groundCell(lastMove.x, lastMove.y));
     if (h !== hoverPad) { hoverPad = h; refreshPadColors(); }
   }
   // title screen: slow cinematic orbit (not when ?cam fixes the view)
@@ -3234,6 +3567,12 @@ if (DEBUG) window.hisarSim = (seconds, withBot = true) => {
 };
 // ?debug: select a pad by index (screenshots and UI tests); the renderer for checks from the console
 if (DEBUG) window.hisarRenderer = renderer;
+// ?debug: barricade hooks for the in-page path tests
+if (DEBUG) window.hisarWalls = { cellOf, cellX, cellZ, place: c => placeWall(c), remove: c => removeWall(c), problem: c => wallProblem(c), mode: on => setWallMode(on),
+  lens: () => routes.map(r => +r.len.toFixed(2)), routed: () => routes.map(r => !!r.routed), buildable: () => [...cellBuild.keys()].filter(c => cellBuild[c] && !cellWall[c]),
+  roadCells: i => [...roadCore[i].entries()], count: () => wallCount,
+  grid: () => { const F = flowField(cellWall); return { GNX, GNZ, GOAL, open: [...cellOpen], road: [...cellRoad], build: [...cellBuild], wall: [...cellWall], dist: [...F.dist].map(d => isFinite(d) ? Math.round(d) : -1) }; }, hover: c => { hoverCell = -2; hoverWall(c); }, routes: () => routes,
+  project: c => { const v = new THREE.Vector3(cellX(c), groundAt(cellX(c), cellZ(c)), cellZ(c)).project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; } };
 if (DEBUG) window.hisarSelect = i => { selectPad(pads[i]); return sel ? (sel.tower ? 'tower' : 'build') : 'none'; };
 
 applyQuality();
