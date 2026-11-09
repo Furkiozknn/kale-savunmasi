@@ -1234,6 +1234,7 @@ const STR = {
     raider: 'Yağmacı', rider: 'Atlı', shield: 'Kalkanlı', ram: 'Koçbaşı',
     early: 'Erken çağrı bonusu +{n} altın', cleared: 'Dalga temizlendi! +{n} altın', ramComing: 'Koçbaşı geliyor! Topları hazırla.',
     noGold: 'Yeterli altın yok', hint: 'Bir taş kaideye tıkla ve ilk kuleni kur.', built: '{name} kuruldu', sold: 'Kule satıldı +{n} altın',
+    arrowShieldHint: 'Oklar zırhlı kalkanlardan sekip geçiyor! Top tabyası veya katran kazanı kullanın.',
     lostTitle: 'Hisar düştü', lostText: '{n}. dalgada surlar aşıldı.', winTitle: 'Zafer!', winText: '15 dalga boyunca hisarı korudun. Hisar ayakta!',
     statKills: 'Avlanan düşman', statGold: 'Kazanılan altın', statTowers: 'Kurulan kule', statWave: 'Ulaşılan dalga', newBest: 'Yeni rekor!',
     again: 'Tekrar oyna', endless: 'Sonsuz moda devam', paused: 'Duraklatıldı', endlessOn: 'Sonsuz mod: dalgalar güçlenmeye devam ediyor.',
@@ -1279,6 +1280,7 @@ const STR = {
     raider: 'Raider', rider: 'Rider', shield: 'Shieldbearer', ram: 'Battering ram',
     early: 'Early call bonus +{n} gold', cleared: 'Wave cleared! +{n} gold', ramComing: 'Battering ram incoming! Ready the cannons.',
     noGold: 'Not enough gold', hint: 'Click a stone pad to build your first tower.', built: '{name} built', sold: 'Tower sold +{n} gold',
+    arrowShieldHint: 'Arrows glance off armored shields! Deploy cannons or tar.',
     lostTitle: 'The fortress fell', lostText: 'The walls were breached on wave {n}.', winTitle: 'Victory!', winText: 'You held the fortress for 15 waves. It still stands!',
     statKills: 'Enemies defeated', statGold: 'Gold earned', statTowers: 'Towers built', statWave: 'Wave reached', newBest: 'New best!',
     again: 'Play again', endless: 'Continue in endless mode', paused: 'Paused', endlessOn: 'Endless mode: the waves keep getting stronger.',
@@ -2449,6 +2451,13 @@ ring.renderOrder = disc.renderOrder = 3;
 ring.visible = disc.visible = false;
 scene.add(ring, disc);
 
+// Bottom-sheet UI for coarse pointers (touch devices)
+const sheet = document.createElement('div');
+sheet.id = 'bottomSheet';
+sheet.className = 'parch';
+sheet.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:7;padding:16px;display:none;flex-direction:column;gap:12px;box-shadow:0 -6px 24px rgba(18,21,27,0.45);border-radius:10px;';
+document.body.appendChild(sheet);
+
 // ---------------------------------------------------------------- Yol Mühendisi (path engineer): barricades that reroute the march
 // The two roads stay the fixed Catmull-Rom splines above. Over the meadow between the camps and the gate lies a grid of
 // 2 m cells; a barricade fills one cell. A road with no barricade on it keeps its own spline, so a game without
@@ -2821,10 +2830,20 @@ function addGold(n) { G.gold += n; G.goldEarned += n; bump('sGold'); updateHUD()
 function damage(e, amount, tower, kind) {
   if (!e.alive) return;
   let a = amount;
-  if (kind === 'arrow') a *= 1 - e.armor; else if (kind === 'ball') a *= 1 - e.armor * 0.5;
+  if (kind === 'arrow') {
+    if (e.type === 'shield' || e.armor > 0) {
+      floatText('Blocked', e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.8, e.z, 'bad');
+      if (ARENA) ARENA.hint('arrow_shield', t('arrowShieldHint') || 'Arrows glance off armored shields! Use cannons or tar.');
+      a = 0;
+    } else {
+      a *= 1 - e.armor;
+    }
+  } else if (kind === 'ball') {
+    a *= 1 - e.armor * 0.5;
+  }
   e.hp -= a;
   if (kind !== 'dot') e.flash = 0.12;
-  floatText(Math.round(a), e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
+  if (a > 0 || kind !== 'arrow') floatText(Math.round(a), e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
   if (e.hp <= 0) kill(e, tower);
 }
 function kill(e, tower) {
@@ -3206,7 +3225,14 @@ function hideRing() { ring.visible = disc.visible = false; }
 
 const panel = document.getElementById('panel');
 let panelKey = '';
-function closePanel() { sel = null; panelKey = ''; panel.classList.add('hidden'); hideRing(); refreshPadColors(); }
+function closePanel() { 
+  sel = null; 
+  panelKey = ''; 
+  panel.classList.add('hidden'); 
+  sheet.style.display = 'none';
+  hideRing(); 
+  refreshPadColors(); 
+}
 function selectPad(pad) {
   if (!pad) { closePanel(); return; }
   if (pad.tower) showTower(pad.tower); else showBuild(pad);
@@ -3216,13 +3242,21 @@ const closeBtn = () => `<button class="x" data-act="close" aria-label="${t('clos
 function showBuild(pad) {
   sel = { pad };
   panelKey = '';
-  panel.innerHTML = `<div class="ph"><span>${t('build')}</span>${closeBtn()}</div><div class="cards">` +
+  const html = `<div class="ph"><span>${t('build')}</span>${closeBtn()}</div><div class="cards">` +
     TOWER_KEYS.map((k, i) => {
       const c = TOWERS[k].cost[0];
       const shut = G.dailyBan === k; // the daily challenge closes one tower type
       return `<button class="card" data-act="build" data-type="${k}" ${G.gold < c || shut ? 'disabled' : ''}><kbd>${i + 1}</kbd><span class="ico">${ico(k, 'big')}</span><b>${t(k + 'Name')}</b><small>${t(k + 'Desc')}</small><span class="cost">${ico('gold')} ${c}</span>${shut ? `<span class="closed">${t('dailyClosed')}</span>` : ''}</button>`;
     }).join('') + '</div>';
-  panel.classList.remove('hidden');
+  if (COARSE) {
+    sheet.innerHTML = html;
+    sheet.style.display = 'flex';
+    panel.classList.add('hidden');
+  } else {
+    panel.innerHTML = html;
+    panel.classList.remove('hidden');
+    sheet.style.display = 'none';
+  }
   hideRing();
   refreshPadColors();
 }
@@ -3231,8 +3265,8 @@ function fmt(v) { return typeof v === 'number' && !Number.isInteger(v) ? v.toFix
 // changes update the few live values in place, so a click that lands mid-wave is never lost to a rebuild.
 function showTower(tw) {
   sel = { pad: tw.pad, tower: tw };
-  const key = [tw.pad.i, tw.type, tw.level, tw.mode, lang].join('|');
-  if (key !== panelKey || panel.classList.contains('hidden')) {
+  const key = [tw.pad.i, tw.type, tw.level, tw.mode, lang, COARSE ? 'sheet' : 'panel'].join('|');
+  if (key !== panelKey || (COARSE ? sheet.style.display === 'none' : panel.classList.contains('hidden'))) {
     panelKey = key;
     const T = TOWERS[tw.type], L = tw.level, nx = L < 2 ? L + 1 : null;
     const row = (label, k, f = v => v) => {
@@ -3247,21 +3281,30 @@ function showTower(tw) {
     rows += `<div><span>${t('kills')}</span><b data-live="kills"></b></div>`;
     const up = nx !== null ? T.cost[nx] : 0;
     const modeName = { first: t('mFirst'), strong: t('mStrong'), near: t('mNear') }[tw.mode];
-    panel.innerHTML = `<div class="ph"><span>${ico(tw.type)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span>${closeBtn()}</div>
+    const html = `<div class="ph"><span>${ico(tw.type)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span>${closeBtn()}</div>
       <div class="tw"><div class="tstats">${rows}</div><div class="tbtns">
-        <button class="primary" data-act="upgrade" data-cost="${nx === null ? '' : up}">${nx === null ? t('maxed') : `${ico('upgrade')} ${t('upgrade')} · ${ico('gold')} ${up}`}</button>
-        <button data-act="mode">${ico('target')} ${t('target')}: ${modeName}</button>
-        <button data-act="sell">${t('sell')} · +<span data-live="refund"></span></button></div></div>`;
+        <button class="primary" data-act="upgrade" data-cost="${nx === null ? '' : up}" style="${COARSE ? 'min-height:52px;font-size:16px;' : ''}">${nx === null ? t('maxed') : `${ico('upgrade')} ${t('upgrade')} · ${ico('gold')} ${up}`}</button>
+        <button data-act="mode" style="${COARSE ? 'min-height:52px;font-size:16px;' : ''}">${ico('target')} ${t('target')}: ${modeName}</button>
+        <button data-act="sell" style="${COARSE ? 'min-height:52px;font-size:16px;' : ''}">${t('sell')} · +<span data-live="refund"></span></button></div></div>`;
+    if (COARSE) {
+      sheet.innerHTML = html;
+      sheet.style.display = 'flex';
+      panel.classList.add('hidden');
+    } else {
+      panel.innerHTML = html;
+      panel.classList.remove('hidden');
+      sheet.style.display = 'none';
+    }
   }
   updatePanelLive();
-  panel.classList.remove('hidden');
   showRing(tw.pad.x, tw.pad.z, stat(tw, 'range'));
   refreshPadColors();
 }
 function updatePanelLive() {
   if (!sel) return;
-  if (!sel.tower) { panel.querySelectorAll('[data-act="build"]').forEach(b => { b.disabled = G.gold < TOWERS[b.dataset.type].cost[0]; }); return; }
-  const tw = sel.tower, kills = panel.querySelector('[data-live="kills"]'), refund = panel.querySelector('[data-live="refund"]'), up = panel.querySelector('[data-act="upgrade"]');
+  const targetContainer = COARSE && sheet.style.display !== 'none' ? sheet : panel;
+  if (!sel.tower) { targetContainer.querySelectorAll('[data-act="build"]').forEach(b => { b.disabled = G.gold < TOWERS[b.dataset.type].cost[0]; }); return; }
+  const tw = sel.tower, kills = targetContainer.querySelector('[data-live="kills"]'), refund = targetContainer.querySelector('[data-live="refund"]'), up = targetContainer.querySelector('[data-act="upgrade"]');
   if (kills) kills.textContent = tw.kills;
   if (refund) refund.textContent = Math.floor(tw.spent * 0.7);
   if (up) up.disabled = up.dataset.cost === '' || G.gold < +up.dataset.cost;
@@ -3279,7 +3322,7 @@ function cycleMode(tw) {
   showTower(tw);
   sfx('click');
 }
-panel.addEventListener('click', ev => {
+const handlePanelAction = (ev) => {
   const b = ev.target.closest('button');
   if (!b || b.disabled) return;
   initAudio();
@@ -3289,7 +3332,9 @@ panel.addEventListener('click', ev => {
   else if (act === 'upgrade' && sel?.tower) upgradeTower(sel.tower);
   else if (act === 'sell' && sel?.tower) sellTower(sel.tower);
   else if (act === 'mode' && sel?.tower) cycleMode(sel.tower);
-});
+};
+panel.addEventListener('click', handlePanelAction);
+sheet.addEventListener('click', handlePanelAction);
 panel.addEventListener('mouseover', ev => {
   const b = ev.target.closest('[data-act="build"]');
   if (b && sel && !sel.tower) showRing(sel.pad.x, sel.pad.z, TOWERS[b.dataset.type].range[0]);
@@ -3384,12 +3429,12 @@ for (let i = 0; i < LABEL_POOL_SIZE; i++) {
   ftxtLayer.appendChild(el);
   labelPool.push({ el, active: false, life: 0, x: 0, y: 0, z: 0, type: '', val: 0 });
 }
-function floatText(s, x, y, z) {
+function floatText(s, x, y, z, kind = 'dmg') {
   const item = labelPool.find(l => !l.active);
   if (!item) return;
-  item.active = true; item.type = 'dmg'; item.text = String(s);
+  item.active = true; item.type = kind; item.text = String(s);
   item.x = x; item.y = y; item.z = z; item.life = 0.8;
-  item.el.className = 'dmg-num';
+  item.el.className = kind === 'bad' ? 'dmg-num bad' : 'dmg-num';
   item.el.textContent = item.text;
   item.el.style.display = 'block';
 }
