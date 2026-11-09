@@ -1,0 +1,15 @@
+{
+  "game": "kale-savunmasi",
+  "recorded": "2026-11-09T21:37:41.968Z",
+  "commit": "3c4715c",
+  "entrySha": "bcaaa6cfe7bb",
+  "run": "() => window.hisarSim(1260)",
+  "metrics": {
+    "wave": 15,
+    "kills": 522,
+    "gold": 218,
+    "lives": 0,
+    "over": true,
+    "gameErrors": 0
+  }
+}
