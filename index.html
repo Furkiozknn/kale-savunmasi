@@ -730,8 +730,12 @@
     .stat { padding: 3px 6px; font-size: 15px; gap: 4px; }
     .stat small.unit { display: none; }
     .hud-controls { gap: 4px; }
-    #top button { min-width: 42px; min-height: 42px; padding: 4px 6px; }
-    #bSpeed { font-size: 14px; min-width: 42px; }
+    #top button { min-width: 44px; min-height: 44px; padding: 4px 6px; }
+    #bSpeed { font-size: 14px; min-width: 44px; }
+    /* phones: brand + resources and the five controls do not fit one row (651c5b4); the controls wrap to a second
+       row on the right, and --top-h (ResizeObserver) moves #boss and #toast below it */
+    #top { flex-wrap: wrap; row-gap: 6px; }
+    .hud-controls { margin-left: auto; }
     #wavebox {
       left: 8px;
       right: 8px;
@@ -758,6 +762,8 @@
     .estats { grid-template-columns: repeat(2, 1fr); }
     #banner b { font-size: 42px; }
   }
+  /* narrowest phones: the logo would push the controls onto a third row */
+  @media (max-width: 380px) { .hud-brand { display: none; } }
   @media (max-height: 500px) {
     .ocard { padding: 14px 18px; }
     .ocard .crest { width: 54px; height: 54px; margin: -4px auto 0; }

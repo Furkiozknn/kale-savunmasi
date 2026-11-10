@@ -39,12 +39,13 @@ Timeouts are generous and print as `infra: … timed out` (still a FAIL, never a
 15 min. CI runs it as the `gate` job in `.github/workflows/smoke.yml` (PR: base = `HEAD^1`, the base
 branch; manual run: `--baseline`).
 
-## Known layout issue (kale-savunmasi)
+## Known layout issues (kale-savunmasi)
 
-`#bWall #bSpeed #bPause #bSound #bLang` are off-screen on phones: `#topControls` starts at x 375 and has no
-`flex-wrap` (651c5b4, UI rebirth). They are listed in `GAME.layout.known` with that reason and print as `KNOWN` on
-every run, so the gate can merge while the fix is done separately. Any other offender fails. When the fix lands the
-gate prints `note known layout offender … now passes`; then delete the ids. `--strict-layout` shows the issue as FAIL.
+None. Until the phone HUD fix, `#bWall #bSpeed #bPause #bSound #bLang` were listed here: `#topControls` started at
+x 375 with no `flex-wrap` (651c5b4, UI rebirth), so the top-bar buttons sat off-screen on phones. Since the fix the
+top bar wraps on screens up to 760 px and the ids are gone from `GAME.layout.known`. The mechanism stays: a known
+offender prints as `KNOWN` on every run with its reason, any other offender fails, a known one that passes again
+prints `note known layout offender … now passes`, and `--strict-layout` fails on known ones too.
 `GAME.layout.mode = 'report'` turns all layout offenders into printed `REPORT` lines; use it only with a written
 reason in the config.
 
