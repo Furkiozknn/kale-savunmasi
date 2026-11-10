@@ -43,10 +43,7 @@ const GAME = {
     query: '?auto', // game screen with the HUD up, no title overlay
     viewports: [[390, 844], [360, 740], [412, 915]],
     selectors: ['#top button', '#top [role=button]', '#wavebox button', '#panel button'],
-    known: {
-      ids: ['#bWall', '#bSpeed', '#bPause', '#bSound', '#bLang'],
-      reason: '651c5b4 (UI rebirth): #topControls has no flex-wrap, so the top-bar buttons sit off-screen on phones; fix tracked separately, remove these ids when it lands',
-    },
+    known: { ids: [], reason: '' }, // was #bWall #bSpeed #bPause #bSound #bLang (651c5b4, #topControls off-screen on phones)
     mode: 'enforce', // 'report' = print offenders, never fail (use only with a written reason)
     timeoutMs: 180000,
   },
