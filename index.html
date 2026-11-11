@@ -1670,7 +1670,16 @@ function part(geo, color, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, s
   geo.setAttribute('color', new THREE.BufferAttribute(arr, 3));
   return geo;
 }
-const merge = parts => mergeGeometries(parts, false);
+// Robust merge helper: normalises mixed indexed/non-indexed geometry arrays and guarantees a valid BufferGeometry fallback
+const merge = parts => {
+  if (!parts || !parts.length) return new THREE.BufferGeometry();
+  const valid = parts.filter(Boolean);
+  if (!valid.length) return new THREE.BufferGeometry();
+  const hasIdx = valid.some(p => p.index !== null && p.index !== undefined);
+  const hasNoIdx = valid.some(p => !p.index);
+  const list = (hasIdx && hasNoIdx) ? valid.map(p => (p.index ? p.toNonIndexed() : p)) : valid;
+  return mergeGeometries(list, false) || new THREE.BufferGeometry();
+};
 const Box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
 const Cyl = (rt, rb, h, s = 8) => new THREE.CylinderGeometry(rt, rb, h, s);
 const Cone = (r, h, s = 8) => new THREE.ConeGeometry(r, h, s);
@@ -2065,7 +2074,7 @@ function instGeo(templateGeo, matrix, color, multiplyColor = false) {
     g.computeVertexNormals();
     roadGeos.push(g);
   });
-  const roadMesh = new THREE.Mesh(mergeGeometries(roadGeos), mat);
+  const roadMesh = new THREE.Mesh(mergeGeometries(roadGeos) || new THREE.BufferGeometry(), mat);
   roadMesh.receiveShadow = true;
   scene.add(roadMesh);
 
@@ -2493,7 +2502,7 @@ function loadAssets() {
       parts.push(g.index ? g.toNonIndexed() : g);
       map = map || o.material.map;
     });
-    const geo = parts.length > 1 ? mergeGeometries(parts) : parts[0];
+    const geo = (parts.length > 1 ? mergeGeometries(parts) : parts[0]) || new THREE.BufferGeometry();
     geo.rotateY(MODEL_YAW[name] || 0);
     geo.computeBoundingBox();
     const b = geo.boundingBox;
