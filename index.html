@@ -343,8 +343,8 @@
         0 6px 20px rgba(185, 28, 28, 0.55);
     }
   }
-  @media (prefers-reduced-motion: reduce) { #bWave.pulse, .ocard .newbest { animation: none; } }
-  html[data-arena-reduced-motion] :is(#bWave.pulse, .ocard .newbest) { animation: none; } /* the same from the Arena panel */
+  @media (prefers-reduced-motion: reduce) { #bWave.pulse, .ocard .newbest, #panel { animation: none; } }
+  html[data-arena-reduced-motion] :is(#bWave.pulse, .ocard .newbest, #panel) { animation: none; } /* the same from the Arena panel */
   .card .closed { flex-basis: 100%; font-size: 12px; font-weight: 700; color: #991b1b; }
 
   /* Architect's Workshop / Build & Upgrade Panel */
@@ -420,6 +420,8 @@
   .tstats b { font-family: var(--font-num); font-size: 16px; font-variant-numeric: tabular-nums; }
   .tstats .up { color: var(--ok); font-weight: 700; }
   .tbtns { display: flex; flex-direction: column; gap: 7px; min-width: 170px; }
+  .tbtns-sub { display: flex; flex-direction: column; gap: 7px; }
+  .sheet-handle { display: none; }
   .lvl { display: inline-flex; gap: 4px; margin-left: 9px; vertical-align: 1px; }
   .lvl i { width: 11px; height: 11px; border-radius: 50%; background: rgba(84, 63, 44, 0.22); display: inline-block; border: 1px solid var(--rule); }
   .lvl i.on {
@@ -773,12 +775,90 @@
     #wavebox .lbl { display: none; }
     #wavePreview { margin: 0; flex: 1; min-height: auto; }
     #bWave { width: auto; min-width: 140px; padding: 8px 14px; font-size: 14px; }
-    #panel { left: 8px; right: 8px; transform: none; width: auto; bottom: 76px; padding: 10px 12px; }
-    .cards { grid-template-columns: 1fr; }
-    .card { flex-direction: row; align-items: center; flex-wrap: wrap; }
+    #panel {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: none;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 8px 16px max(14px, env(safe-area-inset-bottom, 14px));
+      border-radius: 16px 16px 0 0;
+      border-bottom: none;
+      z-index: 20;
+      box-shadow:
+        0 -8px 30px rgba(18, 21, 27, 0.65),
+        inset 0 0 0 2px rgba(245, 236, 214, 0.9),
+        inset 0 0 0 3px var(--rule),
+        inset 0 0 24px rgba(120, 80, 30, 0.2);
+      animation: sheetSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      touch-action: pan-y;
+    }
+    @keyframes sheetSlideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .sheet-handle {
+      display: block;
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--ink-soft);
+      opacity: 0.35;
+      margin: 0 auto 8px;
+      cursor: pointer;
+    }
+    .ph {
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      font-size: 16px;
+    }
+    .ph .x {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 6px 12px;
+      font-size: 16px;
+    }
+    .cards { grid-template-columns: 1fr; gap: 8px; max-height: 46dvh; overflow-y: auto; }
+    .card { flex-direction: row; align-items: center; flex-wrap: wrap; min-height: 48px; padding: 8px 12px; }
     .card small { flex-basis: 100%; }
-    .tw { grid-template-columns: 1fr; }
-    .tbtns { flex-direction: row; flex-wrap: wrap; }
+    .tw { display: flex; flex-direction: column; gap: 10px; }
+    .tstats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px 14px;
+      font-size: 13.5px;
+      background: rgba(255, 252, 242, 0.55);
+      border: 1px solid var(--rule);
+      border-radius: 5px;
+      padding: 6px 10px;
+    }
+    .tbtns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+    }
+    .tbtns-sub {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+    .tbtns button {
+      min-height: 48px;
+      font-size: 14.5px;
+      letter-spacing: 0.03em;
+      border-radius: 6px;
+      justify-content: center;
+    }
+    .tbtns button.primary {
+      min-height: 52px;
+      font-size: 16px;
+      width: 100%;
+    }
     .ocard { padding: 22px 18px 18px; }
     .ocard h1 { font-size: 36px; }
     .ocard h1.end { font-size: 30px; }
@@ -808,8 +888,27 @@
   @media (pointer: coarse) {
     button { min-height: 44px; min-width: 44px; }
     #top button { min-height: 44px; min-width: 44px; }
-    .ph .x { padding: 8px 14px; }
+    .ph .x { padding: 8px 14px; min-height: 44px; min-width: 44px; }
     .set input[type=range] { height: 44px; }
+    #panel {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: none;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 8px 16px max(14px, env(safe-area-inset-bottom, 14px));
+      border-radius: 16px 16px 0 0;
+      border-bottom: none;
+      z-index: 20;
+    }
+    .sheet-handle { display: block; }
+    .tw { display: flex; flex-direction: column; gap: 10px; }
+    .tbtns { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; }
+    .tbtns-sub { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+    .tbtns button { min-height: 48px; font-size: 14.5px; }
+    .tbtns button.primary { min-height: 52px; font-size: 16px; width: 100%; }
   }
 </style>
 <script>/*ARENA-KIT:BEGIN v1.1.0 sha256:3bea83137e26*/
@@ -3373,8 +3472,12 @@ function showRing(x, z, r) { ring.position.set(x, 0.36, z); disc.position.set(x,
 function hideRing() { ring.visible = disc.visible = false; }
 
 const panel = document.getElementById('panel');
-let panelKey = '';
-function closePanel() { sel = null; panelKey = ''; panel.classList.add('hidden'); hideRing(); refreshPadColors(); }
+let panelKey = '', tapTowerPad = null;
+const restoreControls = () => {
+  controls.enableRotate = true;
+  tapTowerPad = null;
+};
+function closePanel() { sel = null; panelKey = ''; panel.classList.add('hidden'); hideRing(); refreshPadColors(); restoreControls(); }
 function selectPad(pad) {
   if (!pad) { closePanel(); return; }
   if (pad.tower) showTower(pad.tower); else showBuild(pad);
@@ -3384,7 +3487,7 @@ const closeBtn = () => `<button class="x" data-act="close" aria-label="${t('clos
 function showBuild(pad) {
   sel = { pad };
   panelKey = '';
-  panel.innerHTML = `<div class="ph"><span>${t('build')}</span>${closeBtn()}</div><div class="cards">` +
+  panel.innerHTML = `<div class="sheet-handle" data-act="close" aria-label="${t('close')}"></div><div class="ph"><span>${t('build')}</span>${closeBtn()}</div><div class="cards">` +
     TOWER_KEYS.map((k, i) => {
       const c = TOWERS[k].cost[0];
       const shut = G.dailyBan === k; // the daily challenge closes one tower type
@@ -3415,11 +3518,13 @@ function showTower(tw) {
     rows += `<div><span>${t('kills')}</span><b data-live="kills"></b></div>`;
     const up = nx !== null ? T.cost[nx] : 0;
     const modeName = { first: t('mFirst'), strong: t('mStrong'), near: t('mNear') }[tw.mode];
-    panel.innerHTML = `<div class="ph"><span>${ico(tw.type)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span>${closeBtn()}</div>
+    panel.innerHTML = `<div class="sheet-handle" data-act="close" aria-label="${t('close')}"></div><div class="ph"><span>${ico(tw.type)} ${t(tw.type + 'Name')}<span class="lvl">${[0, 1, 2].map(i => `<i class="${i <= L ? 'on' : ''}"></i>`).join('')}</span></span>${closeBtn()}</div>
       <div class="tw"><div class="tstats">${rows}</div><div class="tbtns">
         <button class="primary" data-act="upgrade" data-cost="${nx === null ? '' : up}">${nx === null ? t('maxed') : `${ico('upgrade')} ${t('upgrade')} · ${ico('gold')} ${up}`}</button>
-        <button data-act="mode">${ico('target')} ${t('target')}: ${modeName}</button>
-        <button data-act="sell">${t('sell')} · +<span data-live="refund"></span></button></div></div>`;
+        <div class="tbtns-sub">
+          <button data-act="mode">${ico('target')} ${t('target')}: ${modeName}</button>
+          <button data-act="sell">${ico('sell')} ${t('sell')} · +<span data-live="refund"></span></button>
+        </div></div></div>`;
   }
   updatePanelLive();
   panel.classList.remove('hidden');
@@ -3448,7 +3553,7 @@ function cycleMode(tw) {
   sfx('click');
 }
 panel.addEventListener('click', ev => {
-  const b = ev.target.closest('button');
+  const b = ev.target.closest('button, [data-act]');
   if (!b || b.disabled) return;
   initAudio();
   const act = b.dataset.act;
@@ -3464,24 +3569,83 @@ panel.addEventListener('mouseover', ev => {
 });
 panel.addEventListener('mouseleave', () => { if (sel && !sel.tower) hideRing(); });
 
+// Prevent bottom-sheet interactions from leaking into OrbitControls or map drag
+['pointerdown', 'pointermove', 'pointerup'].forEach(evt => {
+  panel.addEventListener(evt, ev => ev.stopPropagation());
+});
+let sheetTouchStartY = 0;
+panel.addEventListener('touchstart', ev => {
+  ev.stopPropagation();
+  if (ev.touches.length === 1) sheetTouchStartY = ev.touches[0].clientY;
+}, { passive: true });
+panel.addEventListener('touchmove', ev => {
+  ev.stopPropagation();
+  if (ev.touches.length === 1 && sheetTouchStartY > 0) {
+    const diff = ev.touches[0].clientY - sheetTouchStartY;
+    if (diff > 45 && panel.scrollTop <= 0) {
+      sheetTouchStartY = 0;
+      closePanel();
+    }
+  }
+}, { passive: true });
+panel.addEventListener('touchend', ev => {
+  ev.stopPropagation();
+  sheetTouchStartY = 0;
+}, { passive: true });
+
 // a tap selects a pad; a drag, or any gesture that had two fingers down at some point, does not
 const pointers = new Map();
 let down = null, multi = false;
+const isCoarse = () => COARSE || matchMedia('(pointer: coarse)').matches || matchMedia('(max-width: 760px)').matches;
+
 canvas.addEventListener('pointerdown', ev => {
   pointers.set(ev.pointerId, true);
-  if (pointers.size === 1) { down = { x: ev.clientX, y: ev.clientY }; multi = false; } else multi = true;
+  if (pointers.size === 1) {
+    down = { x: ev.clientX, y: ev.clientY };
+    multi = false;
+    tapTowerPad = pick(ev.clientX, ev.clientY);
+    if (tapTowerPad) {
+      // Tap started on a tower or pad: temporarily suppress OrbitControls rotation/panning
+      controls.enableRotate = false;
+    }
+  } else {
+    multi = true;
+    restoreControls();
+  }
 });
 const pointerGone = ev => { pointers.delete(ev.pointerId); };
-canvas.addEventListener('pointercancel', pointerGone);
+canvas.addEventListener('pointercancel', ev => {
+  pointerGone(ev);
+  restoreControls();
+});
+canvas.addEventListener('pointermove', ev => {
+  lastMove = { x: ev.clientX, y: ev.clientY };
+  if (down && tapTowerPad) {
+    const moved = Math.hypot(ev.clientX - down.x, ev.clientY - down.y);
+    const slop = isCoarse() ? 14 : 6;
+    if (moved > slop) {
+      // Intentional map pan/drag: release the lock
+      restoreControls();
+    }
+  }
+});
 canvas.addEventListener('pointerup', ev => {
   pointerGone(ev);
+  const wasTapPad = tapTowerPad;
+  restoreControls();
   if (!down || !G.running || G.paused) return;
   if (multi) { if (!pointers.size) down = null; return; }
   const moved = Math.hypot(ev.clientX - down.x, ev.clientY - down.y);
+  const slop = isCoarse() ? 14 : 6;
   down = null;
-  if (moved > 6 || ev.button !== 0) return;
+  if (moved > slop || ev.button !== 0) return;
   initAudio();
-  const p = pick(ev.clientX, ev.clientY);
+  const p = pick(ev.clientX, ev.clientY) || wasTapPad;
+  // Clear any residual rotation or pan momentum so camera remains rock-solid on tap
+  if (p) {
+    if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
+    if (controls.panOffset) controls.panOffset.set(0, 0, 0);
+  }
   if (wallMode && !p) { const c = groundCell(ev.clientX, ev.clientY); if (cellWall[c]) removeWall(c); else placeWall(c); hoverCell = -2; return; }
   if (wallMode) setWallMode(false);
   selectPad(p);
