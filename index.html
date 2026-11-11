@@ -2352,8 +2352,31 @@ const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
 })();
 
 // static environment meshes combined into a single BufferGeometry on initialization to reduce draw calls
-const sceneryGeoLow = merge(sceneryPartsLow);
-const sceneryGeoHigh = merge(sceneryPartsHigh);
+function mergeScenery(parts) {
+  if (!parts || !parts.length) return new THREE.BufferGeometry();
+  const cleaned = parts.map(src => {
+    const g = src.index ? src.toNonIndexed() : src.clone();
+    // Keep only position, normal, color to guarantee 100% attribute compatibility across all meshes
+    const keep = ['position', 'normal', 'color'];
+    for (const name in g.attributes) {
+      if (!keep.includes(name)) g.deleteAttribute(name);
+    }
+    if (!g.attributes.normal) g.computeVertexNormals();
+    if (!g.attributes.color) {
+      const n = g.attributes.position.count;
+      const arr = new Float32Array(n * 3).fill(1);
+      g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+    }
+    return g;
+  });
+  const merged = mergeGeometries(cleaned, false) || new THREE.BufferGeometry();
+  merged.computeBoundingBox();
+  merged.computeBoundingSphere();
+  for (const g of cleaned) g.dispose();
+  return merged;
+}
+const sceneryGeoLow = mergeScenery(sceneryPartsLow);
+const sceneryGeoHigh = mergeScenery(sceneryPartsHigh);
 const sceneryMesh = new THREE.Mesh(low ? sceneryGeoLow : sceneryGeoHigh, matV);
 sceneryMesh.castShadow = !low;
 sceneryMesh.receiveShadow = true;
