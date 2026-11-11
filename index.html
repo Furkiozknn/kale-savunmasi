@@ -555,12 +555,36 @@
     position: absolute;
     left: 0; top: 0;
     font-family: var(--font-num);
-    font-size: 19px;
+    font-size: 16px;
     font-weight: 700;
-    color: #fef08a;
-    text-shadow: 0 1px 0 #451a03, 0 0 4px #451a03, 0 0 10px rgba(0, 0, 0, 0.5);
-    will-change: transform;
+    letter-spacing: 0.03em;
+    font-variant-numeric: tabular-nums;
+    will-change: transform, opacity;
     white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+    text-shadow: 0 1px 0 #451a03, 0 0 4px #451a03, 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+  #ftxt div.gold {
+    font-size: 19px;
+    color: #fef08a;
+    text-shadow: 0 1px 0 #451a03, 0 0 4px #451a03, 0 2px 8px rgba(0, 0, 0, 0.6);
+  }
+  #ftxt div.arrow {
+    font-size: 14.5px;
+    color: #fee2e2;
+    text-shadow: 0 1px 0 #450a0a, 0 0 3px #991b1b, 0 2px 6px rgba(0, 0, 0, 0.7);
+  }
+  #ftxt div.ball {
+    font-size: 18px;
+    color: #ffedd5;
+    text-shadow: 0 1px 0 #431407, 0 0 4px #c2410c, 0 2px 8px rgba(0, 0, 0, 0.8);
+  }
+  #ftxt div.dot {
+    font-size: 13.5px;
+    color: #fef3c7;
+    text-shadow: 0 1px 0 #451a03, 0 0 3px #b45309, 0 2px 6px rgba(0, 0, 0, 0.6);
   }
 
   /* Modals: Imperial Decrees & War Council Scrolls */
@@ -2958,7 +2982,20 @@ function damage(e, amount, tower, kind) {
   let a = amount;
   if (kind === 'arrow') a *= 1 - e.armor; else if (kind === 'ball') a *= 1 - e.armor * 0.5;
   e.hp -= a;
-  if (kind !== 'dot') e.flash = 0.12;
+  const h = ENEMIES[e.type].h * ENEMY_SCALE[e.type];
+  if (kind !== 'dot') {
+    e.flash = 0.12;
+    const dmg = Math.max(1, Math.round(a));
+    floatText('-' + dmg, e.x, h + 0.55 + e.gy, e.z, kind);
+  } else {
+    // Tar DoT: accumulate ticks to spawn readable floating damage without flooding the pool
+    e.dotAccum = (e.dotAccum || 0) + a;
+    if (e.dotAccum >= 6 || (e.hp <= 0 && e.dotAccum >= 1)) {
+      const dmg = Math.max(1, Math.round(e.dotAccum));
+      e.dotAccum = 0;
+      floatText('-' + dmg, e.x, h + 0.55 + e.gy, e.z, 'dot');
+    }
+  }
   if (e.hp <= 0) kill(e, tower);
 }
 function kill(e, tower) {
@@ -2967,7 +3004,7 @@ function kill(e, tower) {
   if (tower) tower.kills++;
   addGold(e.gold);
   emit(e.x, 0.9, e.z, e.type === 'ram' ? 40 : 12, e.type === 'ram' ? 0x8a6a4a : 0xd9c7a0, 3.5, 0.7);
-  floatText('+' + e.gold, e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.4, e.z);
+  floatText('+' + e.gold, e.x, ENEMIES[e.type].h * ENEMY_SCALE[e.type] + 0.55 + e.gy, e.z, 'gold');
   sfx('coin');
 }
 function reachEnd(e) {
@@ -3206,7 +3243,7 @@ function updateVisuals(dt, time) {
     m.setMatrixAt(i, _m4);
     if (e.flash > 0) _c.setRGB(1.6, 0.7, 0.6); else if (e.slowT > 0) _c.setRGB(0.55, 0.62, 0.8); else _c.setRGB(1, 1, 1);
     m.setColorAt(i, _c);
-    if (e.hp < e.maxHp && bars < MAX_ENEMIES) {
+    if (e.alive && bars < MAX_ENEMIES) {
       const frac = clamp(e.hp / e.maxHp, 0, 1), w = e.type === 'ram' ? 2.2 : 1.1, y = ENEMIES[e.type].h * s + 0.35 + e.gy;
       _v.set(e.x, y, e.z);
       _m4.compose(_v, camera.quaternion, _s.set(w, 1, 1));
@@ -3506,25 +3543,80 @@ function updateBossBar(hp, max) {
   const f = Math.round(clamp(hp / max, 0, 1) * 200) / 200;
   if (f !== bossFrac) { bossFrac = f; $('bossBar').style.transform = `scaleX(${f})`; }
 }
-const ftxt = [], ftxtLayer = $('ftxt');
-function floatText(s, x, y, z) {
-  if (ftxt.length > 24) return;
+// ---------------------------------------------------------------- pooled DOM floating labels (hits, health & gold)
+const FPOOL_SIZE = 40;
+const ftxtLayer = $('ftxt');
+const fpool = [];
+for (let i = 0; i < FPOOL_SIZE; i++) {
   const el = document.createElement('div');
-  el.textContent = s;
+  el.className = 'fhit';
+  el.style.display = 'none';
   ftxtLayer.appendChild(el);
-  ftxt.push({ el, x, y, z, life: 1 });
+  fpool.push({ el, active: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1 });
+}
+const ftxt = fpool;
+function floatText(s, x, y, z, kind = 'gold') {
+  if (kind === 'gold' && typeof s === 'string' && s.startsWith('-')) kind = 'arrow';
+  let item = null, minLife = 1e9;
+  for (let i = 0; i < FPOOL_SIZE; i++) {
+    const f = fpool[i];
+    if (!f.active) { item = f; break; }
+    if (f.life < minLife) { minLife = f.life; item = f; }
+  }
+  if (!item) return;
+  const isGold = kind === 'gold';
+  item.active = true;
+  item.x = x + (Math.random() - 0.5) * 0.35;
+  item.y = y;
+  item.z = z + (Math.random() - 0.5) * 0.35;
+  item.vx = (Math.random() - 0.5) * 0.3;
+  item.vy = isGold ? 1.6 : 1.9;
+  item.vz = (Math.random() - 0.5) * 0.3;
+  item.maxLife = item.life = isGold ? 1.0 : 0.8;
+  item.el.textContent = s;
+  item.el.className = 'fhit ' + kind;
+  item.el.style.display = 'block';
+  item.el.style.opacity = '1';
+  _v.set(item.x, item.y, item.z).project(camera);
+  if (_v.z <= 1 && _v.z >= -1) {
+    const sx = (_v.x * 0.5 + 0.5) * innerWidth - 14;
+    const sy = (-_v.y * 0.5 + 0.5) * innerHeight - 10;
+    item.el.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`;
+  } else {
+    item.el.style.opacity = '0';
+  }
 }
 function updateFloatText(dt) {
-  for (const f of ftxt) {
-    f.life -= dt; f.y += dt * 1.6;
+  for (let i = 0; i < FPOOL_SIZE; i++) {
+    const f = fpool[i];
+    if (!f.active) continue;
+    f.life -= dt;
+    if (f.life <= 0) {
+      f.active = false;
+      f.el.style.display = 'none';
+      continue;
+    }
+    f.x += f.vx * dt;
+    f.y += f.vy * dt;
+    f.z += f.vz * dt;
     _v.set(f.x, f.y, f.z).project(camera);
-    f.el.style.transform = `translate(${(_v.x * 0.5 + 0.5) * innerWidth - 12}px, ${(-_v.y * 0.5 + 0.5) * innerHeight - 10}px)`;
-    f.el.style.opacity = Math.min(1, f.life * 2);
-    if (f.life <= 0) f.el.remove();
+    if (_v.z > 1 || _v.z < -1) {
+      f.el.style.opacity = '0';
+      continue;
+    }
+    const sx = (_v.x * 0.5 + 0.5) * innerWidth - 14;
+    const sy = (-_v.y * 0.5 + 0.5) * innerHeight - 10;
+    f.el.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`;
+    f.el.style.opacity = Math.min(1, (f.life / f.maxLife) * 2.2).toFixed(2);
   }
-  for (let i = ftxt.length - 1; i >= 0; i--) if (ftxt[i].life <= 0) ftxt.splice(i, 1);
 }
-function clearFloatText() { for (const f of ftxt) f.el.remove(); ftxt.length = 0; }
+function clearFloatText() {
+  for (let i = 0; i < FPOOL_SIZE; i++) {
+    const f = fpool[i];
+    f.active = false;
+    f.el.style.display = 'none';
+  }
+}
 function applyLang() {
   document.documentElement.lang = lang; if (ARENA) ARENA.lang(lang);
   $('tSub').textContent = t('sub');
