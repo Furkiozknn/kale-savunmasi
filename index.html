@@ -461,6 +461,25 @@
   }
   #toast div.good { border-left-color: var(--ok); }
   #toast div.bad { border-left-color: var(--seal); color: #7f1212; }
+  #toast div.shield-hint {
+    border-left: 5px solid #0284c7;
+    border-color: var(--edge);
+    background: var(--grain), linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 60%, #bae6fd 100%);
+    color: #0c4a6e;
+    font-size: 13.5px;
+    line-height: 1.35;
+    padding: 8px 16px 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(12, 74, 110, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  #toast div.shield-hint .ic {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
   #banner {
     position: fixed;
     left: 50%;
@@ -587,6 +606,28 @@
     font-size: 13.5px;
     color: #fef3c7;
     text-shadow: 0 1px 0 #451a03, 0 0 3px #b45309, 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+  #ftxt div.blocked {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #f0f9ff;
+    background: linear-gradient(180deg, rgba(3, 105, 161, 0.88), rgba(12, 74, 110, 0.94));
+    border: 1px solid #38bdf8;
+    border-radius: 4px;
+    padding: 2px 7px 2px 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-shadow: 0 1px 2px rgba(8, 47, 73, 0.9);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  #ftxt div.blocked .ic {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
   }
 
   /* Modals: Imperial Decrees & War Council Scrolls */
@@ -1451,6 +1492,9 @@ const STR = {
     upgrade: 'Geliştir', sell: 'Sat', maxed: 'En üst seviye', target: 'Hedef', upgraded: '{name} geliştirildi',
     mFirst: 'Öndeki', mStrong: 'En güçlü', mNear: 'En yakın',
     raider: 'Yağmacı', rider: 'Atlı', shield: 'Kalkanlı', ram: 'Koçbaşı',
+    blocked: 'Engellendi',
+    useCannonTar: 'Top veya Katran kullanın!',
+    shieldHint: 'Kalkanlı Düşman! Oklar engelleniyor — Top Tabyası veya Katran Kazanı kullanın.',
     early: 'Erken çağrı bonusu +{n} altın', cleared: 'Dalga temizlendi! +{n} altın', ramComing: 'Koçbaşı geliyor! Topları hazırla.',
     noGold: 'Yeterli altın yok', hint: 'Bir taş kaideye tıkla ve ilk kuleni kur.', built: '{name} kuruldu', sold: 'Kule satıldı +{n} altın',
     lostTitle: 'Hisar düştü', lostText: '{n}. dalgada surlar aşıldı.', winTitle: 'Zafer!', winText: '15 dalga boyunca hisarı korudun. Hisar ayakta!',
@@ -1496,6 +1540,9 @@ const STR = {
     upgrade: 'Upgrade', sell: 'Sell', maxed: 'Max level', target: 'Target', upgraded: '{name} upgraded',
     mFirst: 'First', mStrong: 'Strongest', mNear: 'Nearest',
     raider: 'Raider', rider: 'Rider', shield: 'Shieldbearer', ram: 'Battering ram',
+    blocked: 'Blocked',
+    useCannonTar: 'Use Cannons or Tar!',
+    shieldHint: 'Shieldbearer! Arrows are blocked — deploy Cannon Bastions or Tar Cauldrons.',
     early: 'Early call bonus +{n} gold', cleared: 'Wave cleared! +{n} gold', ramComing: 'Battering ram incoming! Ready the cannons.',
     noGold: 'Not enough gold', hint: 'Click a stone pad to build your first tower.', built: '{name} built', sold: 'Tower sold +{n} gold',
     lostTitle: 'The fortress fell', lostText: 'The walls were breached on wave {n}.', winTitle: 'Victory!', winText: 'You held the fortress for 15 waves. It still stands!',
@@ -3018,6 +3065,7 @@ const G = {
   enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, errors: [], best0: 0,
   daily: null, dailyBan: null, dailyRec: null, // Arena.daily() of the running daily challenge, the tower type it closes, its streak record
   reduced: false, // Arena "Reduce motion": no camera shake, no red flash when the gate is hit
+  shieldHintShown: false,
 };
 window.hisar = G;
 window.game = G;
@@ -3047,7 +3095,7 @@ function spawn(type, pathIdx) {
   const E = ENEMIES[type], hp = E.hp * hpMul(G.wave);
   G.enemies.push({
     type, path: ENEMIES[type].fly ? paths[pathIdx] : routes[pathIdx], si: pathIdx, p0: 0, gy: 0, d: 0, lane: (rand() - 0.5) * 1.4, hp, maxHp: hp, speed: E.speed * (0.92 + rand() * 0.16),
-    armor: E.armor, gold: E.gold + Math.floor(G.wave / 5), lives: E.lives, alive: true, x: 0, z: 0, yaw: 0, slowT: 0, slowF: 1, dotT: 0, dotDps: 0, flash: 0, bob: rand() * 6,
+    armor: E.armor, gold: E.gold + Math.floor(G.wave / 5), lives: E.lives, alive: true, x: 0, z: 0, yaw: 0, slowT: 0, slowF: 1, dotT: 0, dotDps: 0, flash: 0, bob: rand() * 6, blockedCd: 0,
   });
 }
 function placeEnemy(e) {
@@ -3086,6 +3134,18 @@ function damage(e, amount, tower, kind) {
     e.flash = 0.12;
     const dmg = Math.max(1, Math.round(a));
     floatText('-' + dmg, e.x, h + 0.55 + e.gy, e.z, kind);
+    // Armor counterplay visual feedback and tutorial hint
+    if (kind === 'arrow' && e.type === 'shield') {
+      if (!G.shieldHintShown) {
+        G.shieldHintShown = true;
+        toast(ico('shield') + ' ' + t('shieldHint'), 'shield-hint');
+        floatText(ico('shield') + ' ' + t('blocked') + ' · ' + t('useCannonTar'), e.x, h + 1.15 + e.gy, e.z, 'blocked');
+        e.blockedCd = 0.6;
+      } else if (!e.blockedCd || e.blockedCd <= 0) {
+        e.blockedCd = 0.35;
+        floatText(ico('shield') + ' ' + t('blocked'), e.x, h + 1.15 + e.gy, e.z, 'blocked');
+      }
+    }
   } else {
     // Tar DoT: accumulate ticks to spawn readable floating damage without flooding the pool
     e.dotAccum = (e.dotAccum || 0) + a;
@@ -3235,6 +3295,7 @@ function update(dt) {
     if (e.slowT > 0) e.slowT -= dt; else e.slowF = 1;
     if (e.dotT > 0) { e.dotT -= dt; damage(e, e.dotDps * dt, e.dotTower, 'dot'); if (!e.alive) continue; }
     if (e.flash > 0) e.flash -= dt;
+    if (e.blockedCd > 0) e.blockedCd -= dt;
     e.d += e.speed * (e.slowT > 0 ? e.slowF : 1) * dt;
     e.bob += dt * e.speed * 3;
     if (e.d >= e.path.len) { reachEnd(e); if (G.over) return; continue; }
@@ -3258,7 +3319,16 @@ function update(dt) {
     const dx = a.tx - a.x, dy = 0.9 - a.y, dz = a.tz - a.z, dist = Math.hypot(dx, dy, dz), step = 32 * dt;
     a.life -= dt;
     if (dist <= step + 0.3) {
-      if (a.e.alive) { damage(a.e, a.dmg, a.tw, 'arrow'); emit(a.tx, 0.9, a.tz, 3, 0xf1e3c4, 1.5, 0.3); sfx('hit'); }
+      if (a.e.alive) {
+        damage(a.e, a.dmg, a.tw, 'arrow');
+        emit(a.tx, 0.9, a.tz, 3, 0xf1e3c4, 1.5, 0.3);
+        if (a.e.type === 'shield') {
+          emit(a.tx, 1.1, a.tz, 6, 0x93c5fd, 3.0, 0.35);
+          sfx('deflect');
+        } else {
+          sfx('hit');
+        }
+      }
       a.life = 0;
     } else { a.x += dx / dist * step; a.y += dy / dist * step; a.z += dz / dist * step; a.dx = dx / dist; a.dy = dy / dist; a.dz = dz / dist; }
   }
@@ -3676,11 +3746,11 @@ function updateHUD() {
 }
 function toast(msg, kind = 'info') {
   const box = $('toast'), d = document.createElement('div');
-  d.textContent = msg;
+  if (typeof msg === 'string' && msg.includes('<')) d.innerHTML = msg; else d.textContent = msg;
   if (kind !== 'info') d.className = kind;
   box.appendChild(d);
   while (box.children.length > 3) box.firstChild.remove();
-  setTimeout(() => d.remove(), 2600);
+  setTimeout(() => d.remove(), kind === 'shield-hint' ? 4500 : 2600);
 }
 // big "Wave 7" banner with the wave's enemies, red for a battering-ram wave
 let bannerTimer = 0;
@@ -3716,7 +3786,7 @@ for (let i = 0; i < FPOOL_SIZE; i++) {
   el.className = 'fhit';
   el.style.display = 'none';
   ftxtLayer.appendChild(el);
-  fpool.push({ el, active: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1 });
+  fpool.push({ el, active: false, kind: '', x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1 });
 }
 const ftxt = fpool;
 function floatText(s, x, y, z, kind = 'gold') {
@@ -3729,21 +3799,23 @@ function floatText(s, x, y, z, kind = 'gold') {
   }
   if (!item) return;
   const isGold = kind === 'gold';
+  const isBlocked = kind === 'blocked';
   item.active = true;
+  item.kind = kind;
   item.x = x + (Math.random() - 0.5) * 0.35;
   item.y = y;
   item.z = z + (Math.random() - 0.5) * 0.35;
   item.vx = (Math.random() - 0.5) * 0.3;
-  item.vy = isGold ? 1.6 : 1.9;
+  item.vy = isGold ? 1.6 : isBlocked ? 1.7 : 1.9;
   item.vz = (Math.random() - 0.5) * 0.3;
-  item.maxLife = item.life = isGold ? 1.0 : 0.8;
-  item.el.textContent = s;
+  item.maxLife = item.life = isGold ? 1.0 : isBlocked ? 1.1 : 0.8;
+  if (typeof s === 'string' && s.includes('<')) item.el.innerHTML = s; else item.el.textContent = s;
   item.el.className = 'fhit ' + kind;
   item.el.style.display = 'block';
   item.el.style.opacity = '1';
   _v.set(item.x, item.y, item.z).project(camera);
   if (_v.z <= 1 && _v.z >= -1) {
-    const sx = (_v.x * 0.5 + 0.5) * innerWidth - 14;
+    const sx = (_v.x * 0.5 + 0.5) * innerWidth - (isBlocked ? 36 : 14);
     const sy = (-_v.y * 0.5 + 0.5) * innerHeight - 10;
     item.el.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`;
   } else {
@@ -3768,7 +3840,8 @@ function updateFloatText(dt) {
       f.el.style.opacity = '0';
       continue;
     }
-    const sx = (_v.x * 0.5 + 0.5) * innerWidth - 14;
+    const isBlocked = f.kind === 'blocked';
+    const sx = (_v.x * 0.5 + 0.5) * innerWidth - (isBlocked ? 36 : 14);
     const sy = (-_v.y * 0.5 + 0.5) * innerHeight - 10;
     f.el.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`;
     f.el.style.opacity = Math.min(1, (f.life / f.maxLife) * 2.2).toFixed(2);
@@ -3778,6 +3851,7 @@ function clearFloatText() {
   for (let i = 0; i < FPOOL_SIZE; i++) {
     const f = fpool[i];
     f.active = false;
+    f.kind = '';
     f.el.style.display = 'none';
   }
 }
@@ -3882,6 +3956,7 @@ function saveRun() {
   if (G.over || !G.running || G.daily) return; // a daily challenge never takes the place of the saved run
   store.set('arena.hisar.save', JSON.stringify({
     version: 1, wave: G.wave, gold: G.gold, lives: G.lives, endless: G.endless, kills: G.kills, gold_earned: G.goldEarned, built: G.built,
+    shield_hint_shown: !!G.shieldHintShown,
     towers: G.towers.map(tw => ({ pad: tw.pad.i, type: tw.type, level: tw.level, mode: tw.mode, spent: tw.spent, kills: tw.kills, yaw: tw.yaw })),
     walls: [...cellWall.keys()].filter(c => cellWall[c]),
   }));
@@ -3892,7 +3967,7 @@ function loadRun() {
 }
 function clearRun() { store.del('arena.hisar.save'); }
 function restoreRun(s) {
-  Object.assign(G, { wave: s.wave | 0, gold: s.gold | 0, lives: s.lives | 0, endless: !!s.endless, kills: s.kills | 0, goldEarned: s.gold_earned | 0, built: s.built | 0 });
+  Object.assign(G, { wave: s.wave | 0, gold: s.gold | 0, lives: s.lives | 0, endless: !!s.endless, kills: s.kills | 0, goldEarned: s.gold_earned | 0, built: s.built | 0, shieldHintShown: !!s.shield_hint_shown });
   for (const d of s.towers || []) {
     const pad = pads[d.pad];
     if (!pad || pad.tower || !TOWERS[d.type]) continue;
@@ -4048,7 +4123,7 @@ function resetGame() {
   clearFloatText();
   $('toast').innerHTML = '';
   Object.assign(G, { running: false, over: false, paused: false, gold: START_GOLD, lives: START_LIVES, wave: 0, phase: 'build', queue: [], waveTime: 0,
-    pendingBonus: 0, endless: false, enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, daily: null, dailyBan: null, dailyRec: null });
+    pendingBonus: 0, endless: false, enemies: [], towers: [], kills: 0, goldEarned: 0, built: 0, daily: null, dailyBan: null, dailyRec: null, shieldHintShown: false });
   $('bPause').innerHTML = GLYPH.pause;
   shake = 0;
   lastGold = -1; previewKey = '';
@@ -4171,12 +4246,13 @@ function noise(dur, vol, freq, type = 'lowpass', delay = 0, q = 1) {
 const lastSfx = {};
 function sfx(name) {
   if (!ac || ac.state !== 'running' || master.gain.value < 0.001 || sfxBus.gain.value < 0.001) return;
-  const now = ac.currentTime, gap = { bow: 0.06, hit: 0.05, coin: 0.07, boom: 0.08, impact: 0.08, lob: 0.1, splash: 0.1 }[name] ?? 0.03;
+  const now = ac.currentTime, gap = { bow: 0.06, hit: 0.05, coin: 0.07, boom: 0.08, impact: 0.08, lob: 0.1, splash: 0.1, deflect: 0.06 }[name] ?? 0.03;
   if (lastSfx[name] && now - lastSfx[name] < gap) return;
   lastSfx[name] = now;
   switch (name) {
     case 'bow': noise(0.08, 0.12, 2800, 'bandpass', 0, 2); tone(420, 0.07, 'triangle', 0.05, 180); break;
     case 'hit': noise(0.05, 0.08, 1200, 'bandpass', 0, 3); break;
+    case 'deflect': noise(0.05, 0.1, 2600, 'bandpass', 0, 3); tone(780, 0.06, 'triangle', 0.07, 390); break;
     case 'boom': noise(0.4, 0.5, 420); tone(110, 0.35, 'sine', 0.4, 40); break;
     case 'impact': noise(0.3, 0.3, 700); tone(80, 0.25, 'sine', 0.25, 35); break;
     case 'lob': tone(260, 0.16, 'triangle', 0.08, 140); break;
