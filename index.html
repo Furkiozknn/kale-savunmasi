@@ -2354,25 +2354,56 @@ const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
 // static environment meshes combined into a single BufferGeometry on initialization to reduce draw calls
 function mergeScenery(parts) {
   if (!parts || !parts.length) return new THREE.BufferGeometry();
-  const cleaned = parts.map(src => {
-    const g = src.index ? src.toNonIndexed() : src.clone();
-    // Keep only position, normal, color to guarantee 100% attribute compatibility across all meshes
-    const keep = ['position', 'normal', 'color'];
-    for (const name in g.attributes) {
-      if (!keep.includes(name)) g.deleteAttribute(name);
+  let totalVerts = 0;
+  for (let i = 0; i < parts.length; i++) {
+    const src = parts[i];
+    if (!src || !src.attributes || !src.attributes.position) continue;
+    totalVerts += src.index ? src.index.count : src.attributes.position.count;
+  }
+  if (!totalVerts) return new THREE.BufferGeometry();
+  const allPos = new Float32Array(totalVerts * 3);
+  const allNorm = new Float32Array(totalVerts * 3);
+  const allCol = new Float32Array(totalVerts * 3);
+  let vOffset = 0;
+  for (let p = 0; p < parts.length; p++) {
+    const src = parts[p];
+    if (!src || !src.attributes || !src.attributes.position) continue;
+    const pos = src.attributes.position;
+    if (!src.attributes.normal) src.computeVertexNormals();
+    const norm = src.attributes.normal;
+    const col = src.attributes.color;
+    const idx = src.index;
+    if (idx) {
+      const idxCount = idx.count;
+      for (let j = 0; j < idxCount; j++) {
+        const vi = idx.getX(j);
+        const o3 = vOffset * 3;
+        allPos[o3] = pos.getX(vi); allPos[o3 + 1] = pos.getY(vi); allPos[o3 + 2] = pos.getZ(vi);
+        if (norm) { allNorm[o3] = norm.getX(vi); allNorm[o3 + 1] = norm.getY(vi); allNorm[o3 + 2] = norm.getZ(vi); }
+        else { allNorm[o3 + 1] = 1; }
+        if (col) { allCol[o3] = col.getX(vi); allCol[o3 + 1] = col.getY(vi); allCol[o3 + 2] = col.getZ(vi); }
+        else { allCol[o3] = 1; allCol[o3 + 1] = 1; allCol[o3 + 2] = 1; }
+        vOffset++;
+      }
+    } else {
+      const pCount = pos.count;
+      for (let vi = 0; vi < pCount; vi++) {
+        const o3 = vOffset * 3;
+        allPos[o3] = pos.getX(vi); allPos[o3 + 1] = pos.getY(vi); allPos[o3 + 2] = pos.getZ(vi);
+        if (norm) { allNorm[o3] = norm.getX(vi); allNorm[o3 + 1] = norm.getY(vi); allNorm[o3 + 2] = norm.getZ(vi); }
+        else { allNorm[o3 + 1] = 1; }
+        if (col) { allCol[o3] = col.getX(vi); allCol[o3 + 1] = col.getY(vi); allCol[o3 + 2] = col.getZ(vi); }
+        else { allCol[o3] = 1; allCol[o3 + 1] = 1; allCol[o3 + 2] = 1; }
+        vOffset++;
+      }
     }
-    if (!g.attributes.normal) g.computeVertexNormals();
-    if (!g.attributes.color) {
-      const n = g.attributes.position.count;
-      const arr = new Float32Array(n * 3).fill(1);
-      g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
-    }
-    return g;
-  });
-  const merged = mergeGeometries(cleaned, false) || new THREE.BufferGeometry();
+  }
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.BufferAttribute(allPos, 3));
+  merged.setAttribute('normal', new THREE.BufferAttribute(allNorm, 3));
+  merged.setAttribute('color', new THREE.BufferAttribute(allCol, 3));
   merged.computeBoundingBox();
   merged.computeBoundingSphere();
-  for (const g of cleaned) g.dispose();
   return merged;
 }
 const sceneryGeoLow = mergeScenery(sceneryPartsLow);
@@ -3688,7 +3719,7 @@ panel.addEventListener('touchend', ev => {
 
 // a tap selects a pad; a drag, or any gesture that had two fingers down at some point, does not
 const pointers = new Map();
-let down = null, multi = false;
+let down = null, multi = false, lastMove = null;
 const isCoarse = () => COARSE || matchMedia('(pointer: coarse)').matches || matchMedia('(max-width: 760px)').matches;
 
 canvas.addEventListener('pointerdown', ev => {
@@ -3743,8 +3774,6 @@ canvas.addEventListener('pointerup', ev => {
   if (wallMode) setWallMode(false);
   selectPad(p);
 });
-let lastMove = null;
-canvas.addEventListener('pointermove', ev => { lastMove = { x: ev.clientX, y: ev.clientY }; });
 
 // ---------------------------------------------------------------- HUD
 const $ = id => document.getElementById(id);
