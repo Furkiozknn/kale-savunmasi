@@ -1418,7 +1418,7 @@
   </div>
   <div class="hud-resources parch" id="topResources">
     <div class="stat" id="sGold" title=""><svg class="ic" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.5" fill="#f59e0b" stroke="#78350f" stroke-width="1.2"/><circle cx="12" cy="12" r="7.5" stroke="#fef08a" stroke-width="0.8" stroke-dasharray="1.5 1.2"/><path d="M8.5 9.5c1.2-1.3 4.8-1.3 6 0m-6 4.5c1.2 1.3 4.8 1.3 6 0m-3.5-6.5v8" stroke="#78350f" stroke-width="1.4" stroke-linecap="round"/></svg> <span>0</span> <small class="unit">AKÇE</small></div>
-    <div class="stat" id="sLives" title=""><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 2.5L4 6v6.5c0 5 3.5 8.5 8 9.5 4.5-1 8-4.5 8-9.5V6l-8-3.5z" fill="#b91c1c" stroke="#450a0a" stroke-width="1.2"/><path d="M7 8.5h10v3c0 3.5-2 6-5 7-3-1-5-3.5-5-7v-3z" fill="#dc2626"/><path d="M9.5 10v2m5-2v2m-3-1v3" stroke="#fef2f2" stroke-width="1.2" stroke-linecap="round"/></svg> <span>0</span> <small class="unit">CAN</small></div>
+    <div class="stat" id="sLives" title=""><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 2.5L4 6v6.5c0 5 3.5 8.5 8 9.5 4.5-1 8-4.5 8-9.5V6l-8-3.5z" fill="#b91c1c" stroke="#450a0a" stroke-width="1.2"/><path d="M7 8.5h10v3c0 3.5-2 6-5 7-3-1-5-3.5-5-7v-3z" fill="#dc2626"/><path d="M9.5 10v2m5-2v2m-3-1v3" stroke="#fef2f2" stroke-width="1.2" stroke-linecap="round"/></svg> <span>0</span> <small class="unit" id="uLives">CAN</small></div>
     <div class="stat" id="sWave" title=""><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M4 18l5-9 3 4 5-8 3 13H4z" fill="#c2410c" stroke="#7c2d12" stroke-width="1.2"/><path d="M3 19h18" stroke="#fef08a" stroke-width="1.5" stroke-linecap="round"/><circle cx="17" cy="5" r="2" fill="#f59e0b"/></svg> <span>0</span></div>
   </div>
   <div class="hud-controls parch" id="topControls">
@@ -1489,7 +1489,7 @@ const STR = {
     cannonName: 'Top Tabyası', cannonDesc: 'Yavaş ama alan hasarı verir. Kalabalıkları dağıtır.',
     tarName: 'Katran Kazanı', tarDesc: 'Yavaşlatır, zamanla yakar, yere yapışkan katran bırakır.',
     dmg: 'Hasar', range: 'Menzil', rate: 'Atış / sn', kills: 'Avlanan', dps: 'Yanma / sn', slow: 'Yavaşlatma', splash: 'Alan',
-    upgrade: 'Geliştir', sell: 'Sat', maxed: 'En üst seviye', target: 'Hedef', upgraded: '{name} geliştirildi',
+    upgrade: 'Geliştir', sell: 'Sat', sellConfirm: 'Satmak için tekrar dokun', unitLives: 'CAN', maxed: 'En üst seviye', target: 'Hedef', upgraded: '{name} geliştirildi',
     mFirst: 'Öndeki', mStrong: 'En güçlü', mNear: 'En yakın',
     raider: 'Yağmacı', rider: 'Atlı', shield: 'Kalkanlı', ram: 'Koçbaşı',
     blocked: 'Engellendi',
@@ -1537,7 +1537,7 @@ const STR = {
     cannonName: 'Cannon Bastion', cannonDesc: 'Slow, but deals splash damage. Breaks up crowds.',
     tarName: 'Tar Cauldron', tarDesc: 'Slows, burns over time and leaves sticky tar on the road.',
     dmg: 'Damage', range: 'Range', rate: 'Shots / s', kills: 'Kills', dps: 'Burn / s', slow: 'Slow', splash: 'Splash',
-    upgrade: 'Upgrade', sell: 'Sell', maxed: 'Max level', target: 'Target', upgraded: '{name} upgraded',
+    upgrade: 'Upgrade', sell: 'Sell', sellConfirm: 'Tap again to sell', unitLives: 'LIVES', maxed: 'Max level', target: 'Target', upgraded: '{name} upgraded',
     mFirst: 'First', mStrong: 'Strongest', mNear: 'Nearest',
     raider: 'Raider', rider: 'Rider', shield: 'Shieldbearer', ram: 'Battering ram',
     blocked: 'Blocked',
@@ -3691,9 +3691,12 @@ panel.addEventListener('click', ev => {
   initAudio();
   const act = b.dataset.act;
   if (act === 'close') closePanel();
-  else if (act === 'build' && sel) { if (buildTower(sel.pad, b.dataset.type)) showTower(sel.pad.tower); }
+  else if (act === 'build' && sel) { if (buildTower(sel.pad, b.dataset.type)) { if (isCoarse()) closePanel(); else showTower(sel.pad.tower); } } // phone: the tower sheet sat over Wave/Start, its Sell took the next tap
   else if (act === 'upgrade' && sel?.tower) upgradeTower(sel.tower);
-  else if (act === 'sell' && sel?.tower) sellTower(sel.tower);
+  else if (act === 'sell' && sel?.tower) { // two taps: the first only arms the button
+    if (b.dataset.onay === '1') sellTower(sel.tower);
+    else { const eski = b.innerHTML; b.dataset.onay = '1'; b.textContent = t('sellConfirm'); setTimeout(() => { if (b.isConnected && b.dataset.onay === '1') { b.dataset.onay = ''; b.innerHTML = eski; } }, 2500); }
+  }
   else if (act === 'mode' && sel?.tower) cycleMode(sel.tower);
 });
 panel.addEventListener('mouseover', ev => {
@@ -3917,6 +3920,7 @@ function clearFloatText() {
   }
 }
 function applyLang() {
+  if ($('uLives')) $('uLives').textContent = t('unitLives');
   document.documentElement.lang = lang; if (ARENA) ARENA.lang(lang);
   $('tSub').textContent = t('sub');
   $('bLang').textContent = lang === 'tr' ? 'EN' : 'TR';
