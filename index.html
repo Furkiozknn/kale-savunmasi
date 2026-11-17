@@ -962,7 +962,7 @@
     .tbtns button.primary { min-height: 52px; font-size: 16px; width: 100%; }
   }
 </style>
-<script>/*ARENA-KIT:BEGIN v1.3.1 sha256:2e245eb26d20*/
+<script>/*ARENA-KIT:BEGIN v1.3.2 sha256:ce77e23fab7c*/
 /* ARENA-KIT v1 — shared layer for the 21 Claude Game Arena games.
  *
  * Injected inline into each game's index.html (between begin/end marker comments) by
@@ -993,7 +993,8 @@
  *                                      portal.midgame() -> Promise<shown>  (between rounds only; paced, first after 60 s,
  *                                      then at most one per 3 min), portal.rewarded() -> Promise<granted> (opt-in;
  *                                      portal.canReward tells whether to show the button). During an ad every
- *                                      AudioContext of the page is suspended and 'pause' / 'resume' are emitted.
+ *                                      AudioContext of the page is suspended and 'adstart' / 'adend' are emitted
+ *                                      (v1.3.2; not 'pause', which games use to auto-pause until the player resumes).
  *                                      gameplay(true) is sent automatically on the first real input.
  *                                      v1.3.1: on a portal the end card has no "another game" link (cross-promotion).
  *
@@ -1003,7 +1004,7 @@
 (function (root) {
   'use strict';
   if (root.Arena && root.Arena.version) return; // injected twice (e.g. iframe) -> keep the first
-  var VERSION = '1.3.1';
+  var VERSION = '1.3.2';
   var hasDOM = typeof document !== 'undefined';
 
   /* ---------- core (pure, Node-testable) ---------- */
@@ -1183,7 +1184,7 @@
   if (settings.reducedMotion === null) {
     try { settings.reducedMotion = !!(root.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { settings.reducedMotion = false; }
   }
-  var listeners = { pause: [], resume: [], settings: [] };
+  var listeners = { pause: [], resume: [], settings: [], adstart: [], adend: [] };
   function emit(name, arg) { (listeners[name] || []).forEach(function (f) { try { f(arg); } catch (e) {} }); }
   function applySettings() {
     if (!hasDOM) return;
@@ -1488,8 +1489,10 @@
         root[k] = W;
       });
     }
-    function adStart() { if (adOn) return; adOn = true; contexts.forEach(function (c) { try { c.suspend(); } catch (e) {} }); emit('pause', 'ad'); }
-    function adEnd() { if (!adOn) return; adOn = false; contexts.forEach(function (c) { try { c.resume(); } catch (e) {} }); emit('resume', 'ad'); }
+    // v1.3.2: 'adstart' / 'adend', not 'pause' / 'resume': 17 games auto-pause on 'pause' (hidden tab) and wait for the
+    // player to resume, so after a between-rounds ad they sat on a pause screen. Ads run where the game already waits.
+    function adStart() { if (adOn) return; adOn = true; contexts.forEach(function (c) { try { c.suspend(); } catch (e) {} }); emit('adstart'); }
+    function adEnd() { if (!adOn) return; adOn = false; contexts.forEach(function (c) { try { c.resume(); } catch (e) {} }); emit('adend'); }
     var playing = false;
     api.gameplay = function (on) {
       on = !!on; if (on === playing || name === 'none') { playing = on; return; }
@@ -4397,7 +4400,20 @@ function setLang(l) {
 }
 const toggleLang = () => setLang(lang === 'tr' ? 'en' : 'tr');
 $('bLang').onclick = toggleLang;
-$('bWave').onclick = () => { initAudio(); startWave(); };
+// Portals (arena-kit v1.3 Arena.portal): between waves (build phase, after wave 1) and before a replay an interstitial
+// may play while the game already waits for the player. On the game's own site midgame() resolves false at once.
+// The bot (?auto) calls startWave() directly and is not affected. One tap = one action.
+let breakBusy = false;
+function afterBreak(f) {
+  if (breakBusy) return; breakBusy = true;
+  const ad = window.Arena && Arena.portal ? Arena.portal.midgame() : Promise.resolve(false);
+  ad.catch(() => false).then(() => { breakBusy = false; f(); });
+}
+function playerCallWave() {
+  initAudio();
+  if (G.phase === 'build' && G.wave > 0 && !G.over) afterBreak(startWave); else startWave();
+}
+$('bWave').onclick = playerCallWave;
 $('bWall').onclick = () => { initAudio(); if (!G.paused) setWallMode(!wallMode); };
 const setSpeed = s => { G.speed = s; $('bSpeed').textContent = s + '×'; };
 $('bSpeed').onclick = () => setSpeed(G.speed === 3 ? 1 : G.speed + 1);
@@ -4460,7 +4476,7 @@ window.addEventListener('keydown', ev => {
   if (screen) return; // an overlay card is open: no gameplay keys
   if (k === ' ') {
     if (focused === 'BUTTON') return; // Space presses the focused button
-    ev.preventDefault(); initAudio(); startWave();
+    ev.preventDefault(); playerCallWave();
   }
   else if (k === 'f') $('bSpeed').click();
   else if (k === 'b') { initAudio(); if (!G.paused) setWallMode(!wallMode); }
@@ -4622,7 +4638,7 @@ function fillOver() {
     ${G.dailyRec ? `<p class="ctl">${t('dailyOver', { s: G.dailyRec.streak, b: G.dailyRec.best })}</p>` : ''}
     <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}${ARENA ? `<button class="big" id="bShare" data-key="share">${t('share')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>
     ${ARENA ? `<a class="foot" id="aOther" href="https://furkiozknn.github.io/${otherGame()}/" target="_blank" rel="noopener">${t('another')}</a>` : ''}`;
-  $('bAgain').onclick = () => (G.daily ? startDaily() : startGame(null));
+  $('bAgain').onclick = () => afterBreak(() => (G.daily ? startDaily() : startGame(null)));
   if (ARENA) $('bShare').onclick = () => { sfx('click'); ARENA.share(shareData(win)); };
   $('bMenu').onclick = toMainMenu;
   if (win) $('bEndless').onclick = () => { G.over = false; G.endless = true; hideScreen(); toast(t('endlessOn')); previewKey = ''; updateHUD(); saveRun(); };
