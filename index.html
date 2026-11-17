@@ -4877,7 +4877,17 @@ applyLang();
 // the top bar wraps on phones, and its height also changes with the gold digits and the language, not only on resize
 new ResizeObserver(() => document.documentElement.style.setProperty('--top-h', $('top').offsetHeight + 'px')).observe($('top'));
 // ?auto starts right away (as before the remaster, so the bot's runs stay comparable); the models swap in when they arrive
-if (AUTO) startGame(null); else showScreen('title');
+// Instant start: a first-time player (no best wave, no saved run) lands in the build phase of wave 1 at once; the
+// toast teaches the first tower and waves still start only on the player's tap. ?menu forces the title.
+const firstVisit = !loadBest() && !loadRun() && !params.has('menu');
+if (AUTO || firstVisit) startGame(null); else showScreen('title');
+if (firstVisit && !AUTO) { // the 2.6 s toast can pass while the first frames load: repeat it until the first tower stands (at most 3 times)
+  let n = 0;
+  const again = setInterval(() => {
+    if (G.towers.length || G.phase !== 'build' || G.over || ++n > 3) { clearInterval(again); return; }
+    if (!screen && !G.paused) toast(t('hint'));
+  }, 6000);
+}
 // ?sim=<seconds> (with ?auto) fast-forwards before the first frame, ?cam=x,y,z,tx,tz sets the view: used for screenshots
 const simSec = +params.get('sim') || 0;
 if (AUTO && simSec) {
