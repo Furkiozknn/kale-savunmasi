@@ -926,6 +926,16 @@
     #banner b { font-size: 34px; }
     #banner .ic { width: 22px; height: 22px; }
   }
+  /* Yazı denetimi (2026-11): yatay telefonda üst çubuk ekrandan taşıyordu (ses düğmesi kesik, dil düğmesi ekran dışında) */
+  @media (max-height: 500px) and (min-width: 761px) {
+    #top { gap: 6px; left: 8px; right: 8px; }
+    #top .logo small { display: none; }
+    .hud-brand { padding: 4px 8px 4px 6px; }
+    .hud-resources { padding: 3px 5px; gap: 5px; }
+    .stat { padding: 3px 7px; font-size: 16px; }
+    .stat .unit { display: none; }
+    .hud-controls { gap: 4px; }
+  }
   @media (pointer: coarse) {
     button { min-height: 44px; min-width: 44px; }
     #top button { min-height: 44px; min-width: 44px; }
