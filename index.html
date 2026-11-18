@@ -1934,7 +1934,7 @@ const STR = {
     intro: 'Düşman ordusu iki yoldan hisara yürüyor. Yol kenarındaki taş kaidelere kule kur, kuleleri geliştir ve 15 dalga boyunca hisarı ayakta tut.',
     controls: '<b>Tık</b> seç / kur · <b>Sürükle</b> kaydır · <b>Sağ tık + sürükle</b> döndür · <b>Tekerlek</b> yakınlaş<br><b>Boşluk</b> dalga · <b>1 2 3</b> kule · <b>B</b> barikat · <b>U</b> geliştir · <b>S</b> sat · <b>T</b> hedef · <b>F</b> hız<br><b>P</b> / <b>Esc</b> duraklat · <b>M</b> müzik · <b>X</b> ses · <b>L</b> dil',
     controlsTouch: '<b>Dokun</b> seç / kur · <b>Tek parmak</b> kaydır · <b>İki parmak</b> yakınlaş ve döndür',
-    play: 'Başla', loading: 'Yükleniyor… {n}/{m}', startIdle: 'Başlat', best: 'En iyi rekor: {n}. dalga',
+    play: 'Başla', loading: 'Yükleniyor… {n}/{m}', startIdle: 'Başlat', best: 'En iyi rekor: {n}. dalga', starsLine: 'Hisar {n} yıldızla korundu',
     continue: 'Devam et · Dalga {n}', continued: 'Dalga {n} seni bekliyor · oyun geri yüklendi',
     gold: 'Altın', lives: 'Hisar canı', wave: 'Dalga',
     next: 'Sıradaki dalga', startWave: 'Dalga {n} · Başlat ▶', callEarly: 'Dalga {n} · Erken çağır ▶', waveRunning: 'Dalga {n} sürüyor…',
@@ -1982,7 +1982,7 @@ const STR = {
     intro: 'An enemy army is marching on the fortress along two roads. Build towers on the stone pads by the road, upgrade them and hold the fortress for 15 waves.',
     controls: '<b>Click</b> select / build · <b>Drag</b> pan · <b>Right-drag</b> rotate · <b>Wheel</b> zoom<br><b>Space</b> wave · <b>1 2 3</b> tower · <b>B</b> barricade · <b>U</b> upgrade · <b>S</b> sell · <b>T</b> target · <b>F</b> speed<br><b>P</b> / <b>Esc</b> pause · <b>M</b> music · <b>X</b> sound · <b>L</b> language',
     controlsTouch: '<b>Tap</b> select / build · <b>One finger</b> pan · <b>Two fingers</b> zoom and rotate',
-    play: 'Play', loading: 'Loading… {n}/{m}', startIdle: 'Start', best: 'Best: wave {n}',
+    play: 'Play', loading: 'Loading… {n}/{m}', startIdle: 'Start', best: 'Best: wave {n}', starsLine: 'Held with {n} stars',
     continue: 'Continue · Wave {n}', continued: 'Wave {n} ahead · run restored',
     gold: 'Gold', lives: 'Fortress lives', wave: 'Wave',
     next: 'Next wave', startWave: 'Wave {n} · Start ▶', callEarly: 'Wave {n} · Call early ▶', waveRunning: 'Wave {n} in progress…',
@@ -2067,6 +2067,12 @@ const t = (k, vars) => {
 };
 function loadBest() { return +store.get('arena.hisar.best') || 0; }
 function saveBest(n) { if (n > loadBest()) store.set('arena.hisar.best', String(n)); }
+// Stars (G-032, faz-3 kale-savunmasi.md:155): a campaign win is graded by the lives left, 3 = flawless (all 20),
+// 2 = at least half, 1 = held. No reward: only the best grade is kept and shown. Losses and the daily get none.
+const starsFor = (lives) => (lives >= START_LIVES ? 3 : lives >= START_LIVES / 2 ? 2 : 1);
+function loadStars() { return Math.max(0, Math.min(3, +store.get('arena.hisar.stars') || 0)); }
+function saveStars(n) { if (n > loadStars()) store.set('arena.hisar.stars', String(n)); }
+const starRow = (n) => `<span class="stars" aria-label="${n}/3">${'★'.repeat(n)}<span style="opacity:.3">${'★'.repeat(3 - n)}</span></span>`;
 
 // ---------------------------------------------------------------- helpers & vector iconography
 const ICONS = {
@@ -4516,7 +4522,7 @@ function restoreRun(s) {
 
 // ---------------------------------------------------------------- screens
 const overlay = $('overlay'), ocard = $('ocard');
-let screen = null, settingsFrom = 'title', guideFrom = 'title', endWin = false, endRecord = false;
+let screen = null, settingsFrom = 'title', guideFrom = 'title', endWin = false, endRecord = false, endStars = 0;
 function showScreen(name) {
   const prevFocus = document.activeElement?.dataset?.key;
   screen = name;
@@ -4535,7 +4541,7 @@ function fillTitle() {
     <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
     ${ARENA ? `<div class="row"><button id="bDaily" data-key="daily" ${assetState.done ? '' : 'disabled'}>${ico('wave')} ${t('daily')} <small>(${dailyInfo()})</small></button></div>` : ''}
     <div class="row"><button id="bGuide" data-key="guide">${ico('target')} ${t('guide')}</button><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
-    <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}</div>` : ''}
+    <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}${loadStars() ? ` · ${starRow(loadStars())}` : ''}</div>` : ''}
     <a class="foot" href="${ARENA_URL}" target="_blank" rel="noopener">${t('footer')}</a>`;
   $('bPlay').onclick = () => startGame(null);
   if (run) $('bCont').onclick = () => startGame(loadRun());
@@ -4634,6 +4640,7 @@ function settingsBack() { saveSettings(); showScreen(settingsFrom === 'pause' &&
 function fillOver() {
   const win = endWin;
   ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+    ${endStars ? `<div class="newbest">${starRow(endStars)} ${t('starsLine', { n: endStars })}</div>` : ''}
     ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
     <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
     ${G.dailyRec ? `<p class="ctl">${t('dailyOver', { s: G.dailyRec.streak, b: G.dailyRec.best })}</p>` : ''}
@@ -4714,6 +4721,8 @@ function endGame(win) {
     saveBest(reached);
     clearRun();
   }
+  endStars = win && !G.daily && !G.endless ? starsFor(G.lives) : 0;
+  if (endStars) saveStars(endStars);
   if (win && !AUTO && ARENA) { ARENA.award('hisar-win', t('badgeWin')); if (G.lives >= START_LIVES) ARENA.award('hisar-flawless', t('badgeFlawless')); }
   endWin = win;
   closePanel();
