@@ -5,12 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hisar · Kale Savunması</title>
 <meta name="arena-game" content="kale-savunmasi">
-<meta name="description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves. Single HTML file, Three.js.">
-<meta property="og:title" content="Hisar · Fortress Defense">
-<meta property="og:description" content="Low-poly 3D tower defense in your browser: hold a seaside fortress for 15 waves.">
+<meta name="description" content="Tarayıcıda alçak poligon 3D kule savunması: sahil hisarını 15 dalga boyunca ayakta tut. Kurulum yok, telefonda da oynanır. · Low-poly 3D tower defense in your browser.">
+<meta property="og:title" content="Hisar · Kale Savunması">
+<meta property="og:description" content="Okçu kulesi, top ve katran kazanıyla sahil hisarını 15 dalga boyunca savun. Tarayıcıda, ücretsiz. · Hold a seaside fortress for 15 waves.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
 <meta property="og:image" content="https://furkiozknn.github.io/kale-savunmasi/docs/closeup.png">
 <meta property="og:url" content="https://furkiozknn.github.io/kale-savunmasi/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hisar · Kale Savunması">
+<meta name="twitter:description" content="Sahil hisarını 15 dalga boyunca savun. Tarayıcıda, ücretsiz. · Hold the fortress for 15 waves.">
+<meta name="twitter:image" content="https://furkiozknn.github.io/kale-savunmasi/docs/closeup.png">
+<meta name="theme-color" content="#201a14">
 <link rel="icon" type="image/png" href="assets/ui/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -961,6 +967,24 @@
     .tbtns button { min-height: 48px; font-size: 14.5px; }
     .tbtns button.primary { min-height: 52px; font-size: 16px; width: 100%; }
   }
+
+  /* v2.1: sürüm etiketi, Yenilikler / Başarımlar kartı, 44 px dokunma hedefleri */
+  .ocard button { min-height: 44px; }
+  .ocard .links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 6px; margin-top: 10px; }
+  .ocard .links button, .ocard .links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; background: none; border: 0; box-shadow: none; font: inherit; font-size: 14px; font-style: italic; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .ocard .links button:hover, .ocard .links a:hover { color: var(--seal); }
+  .ocard .ver { margin: 6px 0 0; font-size: 13px; font-style: italic; color: var(--ink-muted); }
+  .ocard.news { max-width: 600px; text-align: left; max-height: calc(100dvh - 24px); overflow-y: auto; }
+  .ocard.news h2 { text-align: center; }
+  .ocard.news h3 { margin: 16px 0 8px; font-family: var(--font-heading); font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--brass-dark); }
+  .ocard .nlist, .ocard .achgrid { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .ocard .nlist li { padding: 8px 12px; border-left: 3px solid var(--brass); background: rgba(255, 252, 242, 0.6); font-size: 15px; line-height: 1.35; }
+  .ocard .achgrid { grid-template-columns: 1fr 1fr; }
+  .ocard .achgrid li { padding: 8px 10px; border: 1px solid var(--rule); background: rgba(255, 252, 242, 0.4); font-size: 13px; line-height: 1.3; opacity: 0.6; }
+  .ocard .achgrid li.on { opacity: 1; border-color: var(--brass); background: rgba(217, 119, 6, 0.12); }
+  .ocard .achgrid li b { display: block; font-family: var(--font-heading); font-size: 13.5px; }
+  .ocard .newach { margin: 8px 0 0; font-weight: 700; color: var(--brass-dark); }
+  @media (max-width: 480px) { .ocard .achgrid { grid-template-columns: 1fr; } }
 </style>
 <script>/*ARENA-KIT:BEGIN v1.3.2 sha256:ce77e23fab7c*/
 /* ARENA-KIT v1 — shared layer for the 21 Claude Game Arena games.
@@ -2072,6 +2096,54 @@ function saveBest(n) { if (n > loadBest()) store.set('arena.hisar.best', String(
 const starsFor = (lives) => (lives >= START_LIVES ? 3 : lives >= START_LIVES / 2 ? 2 : 1);
 function loadStars() { return Math.max(0, Math.min(3, +store.get('arena.hisar.stars') || 0)); }
 function saveStars(n) { if (n > loadStars()) store.set('arena.hisar.stars', String(n)); }
+// ---------------------------------------------------------------- v2.1: version tag, news card, achievements
+const VERSION = { v: '2.1', tr: 'Kasım 2026', en: 'November 2026' };
+Object.assign(STR.tr, { news: 'Yenilikler', newsTitle: 'Neler yeni?', achTitle: 'Başarımlar', allGames: 'Tüm oyunlar', achNew: 'Yeni başarım: {name}',
+  a_tower3: 'Üç sancak', a_tower3d: 'Okçu, top ve katran kulesini aynı anda ayakta tut', a_lvl2: 'Tam donanım', a_lvl2d: 'Bir kuleyi son seviyeye çıkar',
+  a_kills100: 'Yüzler düştü', a_kills100d: 'Tek seferde 100 düşmanı alt et', a_ram: 'Koç kırıldı', a_ramd: 'Bir yıkım koçunu devir',
+  a_clean5: 'Sağlam duvar', a_clean5d: '5. dalgayı tek can kaybetmeden geç', a_wave10: 'Yarı yol', a_wave10d: '10. dalgayı geç',
+  a_win: 'Hisar dayandı', a_wind: '15 dalgayı tamamla', a_flaw: 'Kusursuz', a_flawd: 'Zaferi 20 canla bitir', a_endless: 'Sonsuz nöbet', a_endlessd: 'Sonsuz kipte 20. dalgaya ulaş' });
+Object.assign(STR.en, { news: 'What’s new', newsTitle: 'What’s new', achTitle: 'Achievements', allGames: 'All games', achNew: 'New achievement: {name}',
+  a_tower3: 'Three banners', a_tower3d: 'Hold an Archer Tower, a Cannon and a Cauldron at once', a_lvl2: 'Fully armed', a_lvl2d: 'Upgrade a tower to its top level',
+  a_kills100: 'Hundreds fell', a_kills100d: 'Defeat 100 enemies in one run', a_ram: 'Ram broken', a_ramd: 'Bring down a battering ram',
+  a_clean5: 'Solid wall', a_clean5d: 'Clear wave 5 without losing a life', a_wave10: 'Halfway there', a_wave10d: 'Clear wave 10',
+  a_win: 'The fortress held', a_wind: 'Complete all 15 waves', a_flaw: 'Flawless', a_flawd: 'Win with all 20 lives', a_endless: 'Endless watch', a_endlessd: 'Reach wave 20 in endless mode' });
+const NEWS = {
+  tr: ['Başarımlar: 9 yeni rozet. Kazandıkların bu kartta görünür, yeni birini kazandığında ekranda haber verilir.',
+    'Ana menüde sürüm etiketi, bu Yenilikler kartı ve “Tüm oyunlar” bağlantısı var; ayarlarda da sürümü görürsün.',
+    'Dokunma hedefleri en az 44 piksel oldu; menü düğmeleri telefonda daha rahat basılıyor.',
+    'Paylaşım önizlemesi (Twitter kartı, tema rengi), Türkçe sayfa açıklaması ve 404 sayfası eklendi.',
+    'Kayıtların ve rekorun aynen korunur; oynanış değişmedi.'],
+  en: ['Achievements: 9 new badges. They show on this card, and a toast tells you when you earn one.',
+    'The title screen has a version tag, this What’s new card and an “All games” link; Settings shows the version too.',
+    'Touch targets are at least 44 px; menu buttons are easier to tap on a phone.',
+    'A share preview (Twitter card, theme colour), a Turkish page description and a 404 page were added.',
+    'Your saves and best wave are kept as they were; the gameplay is unchanged.'],
+};
+const ACH = ['tower3', 'lvl2', 'kills100', 'ram', 'clean5', 'wave10', 'win', 'flaw', 'endless'];
+function loadAch() { try { const o = JSON.parse(store.get('arena.hisar.ach')); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+let runAch = []; // achievements earned in the running game (shown on the end card)
+function award(id) {
+  if (AUTO || !ACH.includes(id)) return; // the bot never touches the player's data
+  const have = loadAch();
+  if (have[id]) return;
+  have[id] = Date.now();
+  store.set('arena.hisar.ach', JSON.stringify(have));
+  runAch.push(id);
+  toast(t('achNew', { name: t('a_' + id) }), 'good');
+  sfx('upgrade');
+}
+const verText = () => `v${VERSION.v} · ${VERSION[lang] || VERSION.tr}`;
+function fillNews() {
+  const have = loadAch(), n = ACH.filter(id => have[id]).length;
+  ocard.classList.add('news');
+  ocard.innerHTML = `<h2>${t('newsTitle')}</h2><p class="ver" style="text-align:center">${verText()}</p>
+    <ul class="nlist">${(NEWS[lang] || NEWS.tr).map(x => `<li>${x}</li>`).join('')}</ul>
+    <h3>${t('achTitle')} · ${n}/${ACH.length}</h3>
+    <ul class="achgrid">${ACH.map(id => `<li class="${have[id] ? 'on' : ''}"><b>${have[id] ? '★ ' : ''}${t('a_' + id)}</b>${t('a_' + id + 'd')}</li>`).join('')}</ul>
+    <div class="col"><button class="primary" id="bNewsBack" data-key="back" data-focus>${t('back')}</button></div>`;
+  $('bNewsBack').onclick = () => showScreen('title');
+}
 const starRow = (n) => `<span class="stars" aria-label="${n}/3">${'★'.repeat(n)}<span style="opacity:.3">${'★'.repeat(3 - n)}</span></span>`;
 
 // ---------------------------------------------------------------- helpers & vector iconography
@@ -3686,6 +3758,8 @@ function damage(e, amount, tower, kind) {
 function kill(e, tower) {
   e.alive = false;
   G.kills++;
+  if (G.kills >= 100) award('kills100');
+  if (e.type === 'ram') award('ram');
   if (tower) tower.kills++;
   addGold(e.gold);
   emit(e.x, 0.9, e.z, e.type === 'ram' ? 40 : 12, e.type === 'ram' ? 0x8a6a4a : 0xd9c7a0, 3.5, 0.7);
@@ -3718,6 +3792,7 @@ function buildTower(pad, type) {
   const tw = placeTower(pad, type, 0);
   tw.spent = cost;
   G.built++;
+  if (new Set(G.towers.map(x => x.type)).size >= 3) award('tower3');
   emit(pad.x, 0.6, pad.z, 22, 0xcbbd9f, 4, 0.6);
   FX.dust(pad.x, pad.z, 10);
   sfx('build');
@@ -3753,6 +3828,7 @@ function upgradeTower(tw) {
   const cost = TOWERS[tw.type].cost[tw.level + 1];
   if (G.gold < cost) { toast(t('noGold'), 'bad'); sfx('deny'); return; }
   G.gold -= cost; tw.spent += cost; tw.level++;
+  if (tw.level >= 2) award('lvl2');
   makeTowerMesh(tw);
   emit(tw.pad.x, 2.5, tw.pad.z, 26, ACCENT, 4, 0.7);
   FX.dust(tw.pad.x, tw.pad.z, 8);
@@ -3907,6 +3983,9 @@ function update(dt) {
       saveBest(G.wave);
     }
     sfx('clear');
+    if (G.wave >= 5 && G.lives >= START_LIVES) award('clean5');
+    if (G.wave >= 10) award('wave10');
+    if (G.endless && G.wave >= 20) award('endless');
     setBattleMusic(false);
     if (G.wave >= MAX_WAVES && !G.endless) endGame(true);
     else saveRun();
@@ -4466,6 +4545,7 @@ window.addEventListener('keydown', ev => {
   if (k === 'escape') {
     if (screen === 'guide') showScreen(guideFrom === 'pause' && G.running && !G.over ? 'pause' : 'title');
     else if (screen === 'settings') settingsBack();
+    else if (screen === 'news') showScreen('title');
     else if (wallMode && !G.paused) setWallMode(false);
     else if (sel && !G.paused) closePanel();
     else if (G.running && !G.over) setPaused(!G.paused);
@@ -4474,6 +4554,7 @@ window.addEventListener('keydown', ev => {
   if (k === 'p') {
     if (screen === 'guide') showScreen(guideFrom === 'pause' && G.running && !G.over ? 'pause' : 'title');
     else if (screen === 'settings' && settingsFrom === 'pause') settingsBack();
+    else if (screen === 'news') showScreen('title');
     else if (G.running && !G.over) setPaused(!G.paused);
     return;
   }
@@ -4528,7 +4609,8 @@ function showScreen(name) {
   screen = name;
   overlay.classList.toggle('dim', name === 'pause' || (name === 'settings' && settingsFrom === 'pause') || (name === 'guide' && guideFrom === 'pause'));
   overlay.classList.remove('hidden');
-  ({ title: fillTitle, pause: fillPause, settings: fillSettings, over: fillOver, guide: fillGuide })[name]();
+  ocard.classList.remove('news');
+  ({ title: fillTitle, pause: fillPause, settings: fillSettings, over: fillOver, guide: fillGuide, news: fillNews })[name]();
   // keep the keyboard focus on the same control after a re-render (language switch), else focus the main button
   const f = (prevFocus && ocard.querySelector(`[data-key="${prevFocus}"]`)) || ocard.querySelector('[data-focus]:not(:disabled)');
   if (f) f.focus({ preventScroll: true });
@@ -4542,7 +4624,9 @@ function fillTitle() {
     ${ARENA ? `<div class="row"><button id="bDaily" data-key="daily" ${assetState.done ? '' : 'disabled'}>${ico('wave')} ${t('daily')} <small>(${dailyInfo()})</small></button></div>` : ''}
     <div class="row"><button id="bGuide" data-key="guide">${ico('target')} ${t('guide')}</button><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
     <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}${loadStars() ? ` · ${starRow(loadStars())}` : ''}</div>` : ''}
+    <div class="links"><button id="bNews" data-key="news">${verText()} · ${t('news')}</button><a id="aHub" href="https://furkiozknn.github.io/" target="_blank" rel="noopener">${t('allGames')}</a></div>
     <a class="foot" href="${ARENA_URL}" target="_blank" rel="noopener">${t('footer')}</a>`;
+  $('bNews').onclick = () => showScreen('news');
   $('bPlay').onclick = () => startGame(null);
   if (run) $('bCont').onclick = () => startGame(loadRun());
   if (ARENA) $('bDaily').onclick = startDaily;
@@ -4603,7 +4687,8 @@ function fillSettings() {
     ${opts('language', [['tr', 'Türkçe'], ['en', 'English']], lang)}
     ${opts('quality', [['low', t('qLow')], ['high', t('qHigh')]], low ? 'low' : 'high')}
     ${FULLSCREEN ? opts('fullscreen', [['off', t('off')], ['on', t('on')]], document.fullscreenElement ? 'on' : 'off') : ''}</div>
-    <div class="col">${ARENA ? `<button id="bA11y" data-key="a11y">${t('a11y')}</button>` : ''}<button class="primary" id="bBack" data-key="back" data-focus>${t('back')}</button></div>`;
+    <div class="col">${ARENA ? `<button id="bA11y" data-key="a11y">${t('a11y')}</button>` : ''}<button class="primary" id="bBack" data-key="back" data-focus>${t('back')}</button></div>
+    <p class="ver">Hisar ${verText()}</p>`;
   if (ARENA) $('bA11y').onclick = () => { sfx('click'); ARENA.openSettings(); };
   ocard.querySelectorAll('[data-vol]').forEach(s => {
     const k = s.dataset.vol;
@@ -4643,6 +4728,7 @@ function fillOver() {
     ${endStars ? `<div class="newbest">${starRow(endStars)} ${t('starsLine', { n: endStars })}</div>` : ''}
     ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
     <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
+    ${runAch.length ? `<p class="newach">★ ${runAch.map(id => t('a_' + id)).join(' · ')}</p>` : ''}
     ${G.dailyRec ? `<p class="ctl">${t('dailyOver', { s: G.dailyRec.streak, b: G.dailyRec.best })}</p>` : ''}
     <div class="row"><button class="primary big" id="bAgain" data-key="again" data-focus>${t('again')}</button>${win ? `<button class="big" id="bEndless" data-key="endless">${t('endless')}</button>` : ''}${ARENA ? `<button class="big" id="bShare" data-key="share">${t('share')}</button>` : ''}<button class="big" id="bMenu" data-key="menu">${t('mainMenu')}</button></div>
     ${ARENA ? `<a class="foot" id="aOther" href="https://furkiozknn.github.io/${otherGame()}/" target="_blank" rel="noopener">${t('another')}</a>` : ''}`;
@@ -4673,6 +4759,7 @@ function resetGame() {
   setBattleMusic(false);
 }
 function startGame(run, daily) {
+  runAch = [];
   initAudio();
   resetGame();
   G.running = true; // (a restored run places its barricades through the same checks as play)
@@ -4723,6 +4810,7 @@ function endGame(win) {
   }
   endStars = win && !G.daily && !G.endless ? starsFor(G.lives) : 0;
   if (endStars) saveStars(endStars);
+  if (win && !G.daily && !G.endless) { award('win'); if (G.lives >= START_LIVES) award('flaw'); }
   if (win && !AUTO && ARENA) { ARENA.award('hisar-win', t('badgeWin')); if (G.lives >= START_LIVES) ARENA.award('hisar-flawless', t('badgeFlawless')); }
   endWin = win;
   closePanel();
