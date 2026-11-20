@@ -17,7 +17,7 @@
     "Higgsfield (Tripo text-to-3D, GPT Image)",
     "glTF-Transform"
   ],
-  "version": null,
+  "version": "2.1.0",
   "license": "MIT",
   "topics": [
     "browser-game",
