@@ -35,6 +35,15 @@
 - **Fair AI tested by bot:** An automated simulation bot (`?auto`) plays independently at 3x speed—building, upgrading, and calling waves—surviving through wave 15 with 13 towers and 0 JS errors.
 - **Ultra-lean web performance:** A single `index.html` running Three.js r170 delivering 60 fps at 46–60 draw calls on Intel UHD 620 (195–214k triangles; 52 calls on `?low`), backed by procedural 3D fallbacks and zero runtime dependencies.
 
+## What's new in v2.1 (November 2026)
+
+Current version: **v2.1 · Kasım 2026** (shown on the title screen and in Settings). Full list in Turkish: [CHANGELOG.md](CHANGELOG.md).
+
+- **Achievements:** nine local badges (all three tower types at once, a fully upgraded tower, 100 kills, a battering ram down, wave 5 without losing a life, wave 10, victory, flawless victory, wave 20 in endless). Stored only in your browser; the `?auto` bot never writes them.
+- **What's new card** and an "All games" link on the title screen.
+- Share preview (Twitter card, theme colour), Turkish page description, 404 page, touch targets of at least 44 px.
+- Gameplay, address and saved data are unchanged.
+
 ## How to play
 
 > [!TIP]
@@ -156,6 +165,14 @@ python -m http.server 8000
 ```
 
 Then open <http://localhost:8000/>.
+
+### Smoke test
+
+`test/duman.mjs` opens the page on desktop and phone sizes, checks for console errors and horizontal overflow, starts a game, builds a tower, opens the What's new card and checks that an old save still loads. It needs `playwright-core` and a Chromium-based browser (nothing is added to the repository):
+
+```bash
+PW_MODULE=/path/to/node_modules CHROMIUM=/path/to/chrome node test/duman.mjs
+```
 
 ## Made with Claude Code
 
