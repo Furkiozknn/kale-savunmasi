@@ -22,10 +22,26 @@
 <!-- portals:end -->
 
 <p align="center">
+  <strong>Taşa kule kur: okçu, top, kazan altın! Dalga dalga gelir, ok yağdır. Türkçe kolay mı? Oyunda daha kolay.</strong>
+</p>
+
+<p align="center">
+  <strong>Turkish is easy… UNDER SIEGE? The game song asks the question; the game gives you the answer.</strong>
+</p>
+
+<p align="center">
+  Kale Savunması (videoda adı Hisar): kıyı vadisinde low-poly 3B kule savunma oyunu. Ordu iki yoldan kaleye yürür; taş zeminlere okçu, top ve katran kazanı kur, yükselt ve 15 dalga boyunca surları tut.
+</p>
+
+<p align="center">
   <strong>A low-poly 3D tower defense game in a seaside valley: an army marches on the fortress along two roads; build archers, cannons and tar cauldrons on the stone pads, upgrade them and hold the walls for 15 waves.</strong>
 </p>
 
 <!-- gameplay gif -->
+
+## Şarkı videosu / Song video
+
+**Kale Savunması (videoda: Hisar) · Oyun Şarkısı**: oyunun tanıtım şarkısı videosu, paylaşım videoları deposunda: [social-videos / 2026-11](https://github.com/Furkiozknn/social-videos/blob/master/2026-11/2026-11-20-kale-savunmasi-telefon.mp4). Videonun görsel stil notları: [docs/STIL.md](docs/STIL.md).
 
 ## Features
 
