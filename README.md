@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://furkiozknn.github.io/kale-savunmasi/">
-    <img src="docs/card.jpg" width="100%" alt="Hisar: hold a seaside fortress against an army marching along two roads. Click to play in your browser.">
+    <img src="docs/card-3d.jpg" width="100%" alt="Hisar: hold a seaside fortress against an army marching along two roads. Click to play in your browser.">
   </a>
 </p>
 
@@ -29,11 +29,20 @@
 
 ## Features
 
+<p align="center">
+  <img src="docs/features.jpg" width="100%" alt="Hisar feature banner: a red hanging war banner lists three tower types, four enemy classes, 15 waves then endless mode, bot-tested balance and a single-file 60 fps build, beside two chibi defenders on a sunlit seaside rampart.">
+</p>
+
+<details>
+<summary><b>Feature details</b></summary>
+
 - **Three towers, three tactical upgrades:** Build Archer Towers (60 gold) for rapid single targets, Cannon Bastions (110 gold) for ballistic splash damage, and Tar Cauldrons (80 gold) to slow and ignite enemies; each upgrades twice, features 3 targeting modes (First, Strongest, Nearest), and returns a 70% refund on sell.
 - **Four enemy classes & boss sieges:** Defend against raiders, galloping riders (wave 3+), and arrow-shrugging shieldbearers (wave 5+), bracing for battering ram bosses on waves 5, 10, and 15 that consume 6 of your 20 lives if they breach the gate.
 - **15 waves to victory, then endless:** Command defenses across two marching roads with 180 starting gold, collect early-call wave bonuses, toggle 1x / 2x / 3x speed, and push into escalating endless mode with automatic progress saves after every cleared wave.
 - **Fair AI tested by bot:** An automated simulation bot (`?auto`) plays independently at 3x speed—building, upgrading, and calling waves—surviving through wave 15 with 13 towers and 0 JS errors.
 - **Ultra-lean web performance:** A single `index.html` running Three.js r170 delivering 60 fps at 46–60 draw calls on Intel UHD 620 (195–214k triangles; 52 calls on `?low`), backed by procedural 3D fallbacks and zero runtime dependencies.
+
+</details>
 
 ## What's new in v2.1 (November 2026)
 
@@ -46,12 +55,21 @@ Current version: **v2.1 · Kasım 2026** (shown on the title screen and in Setti
 
 ## How to play
 
+<p align="center">
+  <img src="docs/how-to-play.jpg" width="100%" alt="How to play Hisar: build towers on stone pads, release the wave with Space, then upgrade, sell or retarget towers, with a keyboard controls panel beside two chibi defenders at the fortress gate at dusk.">
+</p>
+
+<details>
+<summary><b>Goal and steps</b></summary>
+
 > [!TIP]
 > **Goal:** Hold the fortress for 15 waves. You start with 20 lives; enemies reaching the gate deplete them, and at zero the fortress falls. Clear wave 15 to secure victory, then continue into endless mode.
 
 1. **Build your line:** You start with 180 gold. Click any stone pad along the two roads (or press `1`, `2`, `3`) to construct an Archer Tower (60 gold), Cannon Bastion (110 gold), or Tar Cauldron (80 gold).
 2. **Release the wave (`Space`):** Trigger the wave button to start the march. Calling the next wave early while enemies remain on the road awards bonus gold.
 3. **Upgrade and adapt:** Click an existing tower to upgrade (`U`), sell for a 70% refund (`S`), or cycle targeting priorities (`T`: First, Strongest, Nearest) to counter incoming enemy combinations.
+
+</details>
 
 <details>
 <summary><b>Moves and rules</b></summary>
