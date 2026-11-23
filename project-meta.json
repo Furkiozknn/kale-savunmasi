@@ -50,7 +50,7 @@
   },
   "tests": null,
   "ci": {
-    "workflows": [],
+    "workflows": ["smoke.yml"],
     "badge": null
   },
   "docs": {
