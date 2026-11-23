@@ -69,7 +69,7 @@
     margin: 0; height: 100%; overflow: hidden;
     font-family: var(--font-serif);
     color: var(--ink);
-    background: linear-gradient(180deg, #5b8db8 0%, #9cbacf 28%, #d4d7c8 55%, #dfe0d2 100%);
+    background: linear-gradient(180deg, #6fa8d6 0%, #a9cde0 26%, #f1dcbc 58%, #f3dcb4 100%);
     user-select: none; -webkit-user-select: none;
   }
   canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
@@ -694,6 +694,25 @@
     text-shadow: 0 1px 1px rgba(50, 0, 0, 0.7);
     background: radial-gradient(120% 150% at 28% 18%, #e2594a 0%, var(--seal) 45%, #7f1212 100%);
   }
+  /* stil-3d: chibi figures from the song video sit in the card's top corners, clear of the title and buttons */
+  .ocard .chibi { position: absolute; top: 12px; height: 132px; width: auto; pointer-events: none; z-index: 0;
+    filter: drop-shadow(0 8px 10px rgba(70, 40, 15, 0.35)); animation: chibiIn 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+  .ocard .chibi.l { left: 14px; }
+  .ocard .chibi.r { right: 14px; animation-delay: 0.08s; }
+  .ocard .chibi.sm { height: 100px; top: 10px; }
+  @keyframes chibiIn { from { opacity: 0; transform: translateY(14px) scale(0.85); } }
+  .ic.chibi-ic { width: 1.7em; height: 1.7em; vertical-align: -0.5em; filter: drop-shadow(0 2px 2px rgba(60, 35, 15, 0.3)); }
+  @media (max-width: 760px) { .ocard .chibi { height: 96px; top: 8px; } .ocard .chibi.l { left: 8px; } .ocard .chibi.r { right: 8px; } .ocard .chibi.sm { height: 74px; } }
+  @media (max-height: 800px) and (min-width: 761px) { .ocard .chibi { height: 104px; } }
+  @media (max-height: 500px) { .ocard .chibi { height: 64px; } }
+  #panel .ic.chibi-ic { width: 2.2em; height: 2.2em; }
+  @media (max-height: 760px) and (min-height: 501px) { .ocard { padding-top: 18px; padding-bottom: 14px; } .ocard .crest { width: 84px; height: 84px; } .ocard .ctl { font-size: 13px; line-height: 1.45; } .ocard .row { margin-top: 12px; } .ocard .foot { margin-top: 8px; } }
+  /* stil-3d: softer, rounder clay-toy panels in the video's warm light */
+  .parch, #wavebox, .hud-resources { border-radius: 16px; }
+  .ocard.parch { border-radius: 24px; box-shadow: inset 0 0 0 2px rgba(255, 246, 228, 0.9), inset 0 -6px 18px rgba(150, 95, 40, 0.18), 0 18px 40px rgba(60, 30, 10, 0.45), 0 3px 8px rgba(60, 30, 10, 0.25); }
+  button:not(.primary) { border-radius: 12px; }
+  .stat { border-radius: 10px; }
+  #overlay { background: radial-gradient(ellipse at center, rgba(60, 34, 14, 0.32), rgba(40, 22, 10, 0.78)); }
   .ocard .crest {
     display: block;
     width: 108px;
@@ -2167,7 +2186,10 @@ const ICONS = {
   trophy: '<svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M6 4h12v6c0 3.5-2.5 6-6 6s-6-2.5-6-6V4z" fill="#f59e0b" stroke="#78350f" stroke-width="1.2"/><path d="M6 6H3c0 2.5 1.5 4.5 3 4.5m12-4.5h3c0 2.5-1.5 4.5-3 4.5M12 16v4m-4 0h8" stroke="#78350f" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="8.5" r="2" fill="#fef08a"/></svg>',
   fortress: '<svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M3 20h18V9l-3 2-3-2-3 2-3-2-3 2-3-2v11z" fill="#64748b" stroke="#334155" stroke-width="1.2"/><path d="M10 20v-5c0-1.1.9-2 2-2s2 .9 2 2v5" fill="#1e293b"/><path d="M7 6h2v3H7zm8 0h2v3h-2z" fill="#b91c1c"/></svg>'
 };
+// stil-3d: units and tower crews show their chibi render from the song video (assets/3d) in every panel and preview
+const CHIBI = { raider: 'dusman-akinci', rider: 'dusman-atli', shield: 'dusman-kalkanli', ram: 'dusman-kocbasi', archer: 'okcubasi', cannon: 'topcu', tar: 'ziftci' };
 const ico = (name, cls = '') => {
+  if (CHIBI[name]) return `<img class="ic chibi-ic ${cls}" src="assets/3d/${CHIBI[name]}.webp" alt="">`;
   if (ICONS[name]) return cls ? ICONS[name].replace('class="ic"', `class="ic ${cls}"`) : ICONS[name];
   return `<img class="ic ${cls}" src="assets/ui/icons/${name}.png" alt="">`;
 };
@@ -2233,7 +2255,7 @@ renderer.shadowMap.enabled = !low;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xdfe0d2, 100, 235); // hazy Bosphorus afternoon; the CSS sky behind the canvas ends in the same colour
+scene.fog = new THREE.Fog(0xf3dcb4, 100, 235); // hazy Bosphorus afternoon; the CSS sky behind the canvas ends in the same colour
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 400);
 camera.position.set(-6, 52, 50);
 
@@ -2249,10 +2271,10 @@ controls.maxPolarAngle = 1.15;
 controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
 controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 
-const hemi = new THREE.HemisphereLight(0xe4ecf2, 0x6a5a3c, 1.25);
+const hemi = new THREE.HemisphereLight(0xfff0dc, 0x7a5c3a, 1.3); // stil-3d: warm studio fill
 scene.add(hemi);
 // low warm afternoon sun from the south-west for long readable shadows, plus a cool unshadowed bounce from the sea
-const sun = new THREE.DirectionalLight(0xffd49a, 3.0);
+const sun = new THREE.DirectionalLight(0xffc98c, 3.1);
 sun.position.set(-46, 44, 34);
 const rim = new THREE.DirectionalLight(0x9cc3e6, 0.75);
 rim.position.set(60, 26, -40);
@@ -2819,7 +2841,7 @@ const flagSpots = []; // [x, y, z, size, yaw]: cloth banners animated in updateV
 // hoardings over the gate), one merged mesh with the stone texture
 const torchSpots = []; // [x, y, z]: flames drawn by the glow particles
 (function makeFortress() {
-  const P = [], stone = 0xddd1b5, stone2 = 0xc4b597, slate = 0x7d8796, wood = 0x7a5232, dark = 0x2a1d12, iron = 0x3a3d42;
+  const P = [], stone = 0xddd1b5, stone2 = 0xc4b597, slate = 0xc0402f, wood = 0x7a5232, dark = 0x2a1d12, iron = 0x3a3d42; // stil-3d: red conical roofs as in the song video
   const X0 = 25, X1 = 37, Z0 = -8, Z1 = 8, H = 3.8, T = 1.3;
   // a straight curtain wall with a battered plinth and merlons on its outer edge (nx, nz: outward normal)
   const wall = (x0, z0, x1, z1, nx, nz) => {
@@ -3087,7 +3109,7 @@ const towerGeoCache = {};
 function towerGeo(type, L) {
   const key = type + L;
   if (towerGeoCache[key]) return towerGeoCache[key];
-  const P = [], stone = 0xd8ccb0, stone2 = 0xbfb193, wood = 0x7a5232, slate = 0x7d8796, dark = 0x2a1d12;
+  const P = [], stone = 0xd8ccb0, stone2 = 0xbfb193, wood = 0x7a5232, slate = 0xc0402f, dark = 0x2a1d12;
   const pennant = (x, y) => P.push(part(Cyl(0.035, 0.035, 1.3, 4), 0x4a3020, x, y + 0.65, 0), pW(Box(0.05, 0.42, 0.8), PAL.banner, x, y + 1.05, 0.42));
   let pivot = 0;
   if (type === 'archer') {
@@ -3169,6 +3191,56 @@ const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.62, 
 particles.frustumCulled = false;
 particles.visible = false;
 scene.add(particles);
+
+// ---------------------------------------------------------------- stil-3d (2026-11-23): chibi sprites from the song video
+// The enemies become camera-facing billboards of the stylised 3D chibi renders (assets/3d, one image per type) and the
+// towers get their crew on top (archer captain, cannoneer, tar keeper). Visual only: no game rule, timing or random
+// number is touched. If an image cannot load, the previous 3D models stay.
+const SPR = { on: {}, tex: {}, aspect: {}, mat: {} };
+const SPR_FILES = { raider: 'dusman-akinci', rider: 'dusman-atli', shield: 'dusman-kalkanli', ram: 'dusman-kocbasi', archer: 'okcubasi', cannon: 'topcu', tar: 'ziftci' };
+const SPR_H = { raider: 3.2, rider: 3.5, shield: 3.5, ram: 4.4 }; // on-screen height of the enemy billboards (world units)
+const CREW_H = { archer: 3.4, cannon: 2.9, tar: 2.8 };
+const camUp = new THREE.Vector3(), _q2 = new THREE.Quaternion(), AXIS_Z = new THREE.Vector3(0, 0, 1);
+const _m4b = new THREE.Matrix4(), _v2 = new THREE.Vector3(), _s2 = new THREE.Vector3();
+const blobs = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0x3a2410, map: softDot(), transparent: true, opacity: 0.42, depthWrite: false }), MAX_ENEMIES);
+blobs.count = 0; blobs.visible = false; blobs.frustumCulled = false; blobs.renderOrder = 1; scene.add(blobs);
+function loadSprites() {
+  if (params.has('noassets') || location.protocol === 'file:') return Promise.resolve();
+  const L = new THREE.TextureLoader();
+  return Promise.all(Object.entries(SPR_FILES).map(([k, f]) => L.loadAsync(`assets/3d/${f}.webp`).then(tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    SPR.tex[k] = tex; SPR.aspect[k] = tex.image.width / tex.image.height;
+  }).catch(err => console.warn('[hisar] sprite not loaded, keeping the model:', k, err?.message || err))));
+}
+function applySprites() {
+  for (const k of ENEMY_KEYS) {
+    if (!SPR.tex[k] || SPR.on[k]) continue;
+    const m = enemyMeshes[k];
+    m.geometry.dispose();
+    m.geometry = new THREE.PlaneGeometry(SPR.aspect[k], 1).translate(0, 0.5, 0);
+    m.material = new THREE.MeshBasicMaterial({ map: SPR.tex[k], alphaTest: 0.45, side: THREE.DoubleSide });
+    m.castShadow = false;
+    SPR.on[k] = true;
+  }
+  for (const tw of G.towers) dressTower(tw);
+}
+// the crew sprite stands on the tower top in place of the turret model (the model stays, hidden, for tap picking)
+function dressTower(tw) {
+  const tex = SPR.tex[tw.type];
+  if (!tex || !tw.base || tw.crew) return;
+  const mat = SPR.mat[tw.type] || (SPR.mat[tw.type] = new THREE.SpriteMaterial({ map: tex, alphaTest: 0.45, side: THREE.DoubleSide, depthTest: tw.type !== 'archer' }));
+  const s = new THREE.Sprite(mat), h = CREW_H[tw.type] * (1 + 0.1 * tw.level);
+  s.center.set(0.5, 0.04);
+  s.scale.set(h * SPR.aspect[tw.type], h, 1);
+  s.position.set(0, tw.pivot - 0.05, 0);
+  if (tw.type === 'archer') s.renderOrder = 6; // the captain stands in front of his own conical roof, not inside it
+  s.userData.h = h;
+  tw.base.add(s);
+  tw.crew = s;
+  tw.head.visible = false;
+}
 const pv = new Float32Array(PMAX * 3), pl = new Float32Array(PMAX), pg = new Float32Array(PMAX);
 let pHead = 0;
 function emit(x, y, z, n, color, speed = 3, life = 0.8, grav = -9, spread = 1) {
@@ -3821,6 +3893,8 @@ function makeTowerMesh(tw) {
   tw.head.castShadow = true;
   tw.pivot = pivot;
   scene.add(tw.base, tw.head);
+  tw.crew = null;
+  dressTower(tw);
   tw.popT = 0.35;
 }
 function upgradeTower(tw) {
@@ -4000,6 +4074,9 @@ const enemyCounts = { raider: 0, rider: 0, shield: 0, ram: 0 }; // reused scratc
 function updateVisuals(dt, time) {
   camera.getWorldDirection(camFwd);
   camRight.setFromMatrixColumn(camera.matrixWorld, 0);
+  camUp.setFromMatrixColumn(camera.matrixWorld, 1);
+  let nBlob = 0;
+  const SK = innerWidth < 760 ? 1.75 : 1.3; // phone: the whole map is in view, so the chibis are drawn larger to stay readable
   enemyCounts.raider = enemyCounts.rider = enemyCounts.shield = enemyCounts.ram = 0;
   const counts = enemyCounts;
   let bars = 0, bossHp = 0, bossMax = 0;
@@ -4012,14 +4089,24 @@ function updateVisuals(dt, time) {
     if (e.type === 'rider') { y = Math.abs(Math.sin(ph * 0.8)) * 0.24; pitch = Math.sin(ph * 1.6) * 0.09; roll = 0; } // gallop: rocking fore and aft
     else if (e.type === 'ram') { y = Math.abs(Math.sin(ph * 2.2)) * 0.035; pitch = 0; roll = Math.sin(ph * 1.1) * 0.03; } // wheels on a rough road
     else { y = Math.abs(Math.sin(ph)) * (e.type === 'shield' ? 0.13 : 0.19); pitch = 0.06 + Math.sin(ph * 2) * 0.035; roll = Math.sin(ph) * 0.075; } // march: step, lean, sway
-    _m4.compose(_v.set(e.x, y + e.gy, e.z), _q.setFromEuler(_eY.set(pitch, e.yaw, roll)), _s.set(s, s, s));
+    if (SPR.on[e.type]) { // chibi billboard: faces the camera, mirrored to the side it walks to, sways in the screen plane
+      const H = SPR_H[e.type] * SK, flip = Math.sin(e.yaw) * camRight.x + Math.cos(e.yaw) * camRight.z < 0 ? -1 : 1;
+      _q.copy(camera.quaternion).multiply(_q2.setFromAxisAngle(AXIS_Z, roll * 1.6 - pitch * 0.5 * flip));
+      _m4.compose(_v.set(e.x, y * 1.3 + e.gy, e.z), _q, _s.set(H * flip, H, H));
+      if (nBlob < MAX_ENEMIES) {
+        const w = H * SPR.aspect[e.type] * 0.62;
+        _m4b.compose(_v2.set(e.x, e.gy + 0.06, e.z), _q2.identity(), _s2.set(w, 1, w * 0.62));
+        blobs.setMatrixAt(nBlob++, _m4b);
+      }
+    } else _m4.compose(_v.set(e.x, y + e.gy, e.z), _q.setFromEuler(_eY.set(pitch, e.yaw, roll)), _s.set(s, s, s));
     if (e.dotT > 0 && frand() < dt * 6) { puff(glow, e.x + rnd2(0.3), 1.0 + frand() * 0.6, e.z + rnd2(0.3), 0xff7a1a, 0.9, 0.3, 0.45, 0.85, 0, 1.6, 0); puff(smoke, e.x, 1.6, e.z, 0x3a302a, 0.5, 1.6, 1.0, 0.4, 0, 1, 0, 0.4); }
     m.setMatrixAt(i, _m4);
     if (e.flash > 0) _c.setRGB(1.6, 0.7, 0.6); else if (e.slowT > 0) _c.setRGB(0.55, 0.62, 0.8); else _c.setRGB(1, 1, 1);
     m.setColorAt(i, _c);
     if (e.alive && bars < MAX_ENEMIES) {
       const frac = clamp(e.hp / e.maxHp, 0, 1), w = e.type === 'ram' ? 2.2 : 1.1, y = ENEMIES[e.type].h * s + 0.35 + e.gy;
-      _v.set(e.x, y, e.z);
+      if (SPR.on[e.type]) _v.set(e.x, e.gy, e.z).addScaledVector(camUp, SPR_H[e.type] * SK + 0.3); // just above the billboard's top
+      else _v.set(e.x, y, e.z);
       _m4.compose(_v, camera.quaternion, _s.set(w, 1, 1));
       barBg.setMatrixAt(bars, _m4);
       _v.addScaledVector(camRight, (frac - 1) * w / 2).addScaledVector(camFwd, -0.02);
@@ -4034,6 +4121,8 @@ function updateVisuals(dt, time) {
     m.count = c; m.visible = c > 0;
     if (c > 0) { m.instanceMatrix.needsUpdate = true; m.instanceColor.needsUpdate = true; }
   }
+  blobs.count = nBlob; blobs.visible = nBlob > 0;
+  if (nBlob) blobs.instanceMatrix.needsUpdate = true;
   barBg.count = barFg.count = bars;
   barBg.visible = barFg.visible = bars > 0;
   if (bars > 0) {
@@ -4048,6 +4137,10 @@ function updateVisuals(dt, time) {
     if (tw.popT > 0) { tw.popT = Math.max(0, tw.popT - dt); const k = 1 - tw.popT / 0.35, s = 0.6 + 0.4 * (1 + Math.sin(k * Math.PI) * 0.15) * k; tw.base.scale.setScalar(s); tw.head.scale.setScalar(s); }
     const r = tw.recoil * 0.18;
     tw.head.position.set(tw.pad.x - Math.sin(tw.yaw) * r, 0.3 + tw.pivot + (tw.type === 'tar' ? tw.recoil * 0.15 : 0), tw.pad.z - Math.cos(tw.yaw) * r);
+    if (tw.crew) { // the crew turns to the side it shoots at and bounces a little on each shot
+      const h = tw.crew.userData.h * SK, flip = Math.sin(tw.yaw) * camRight.x + Math.cos(tw.yaw) * camRight.z < 0 ? -1 : 1;
+      tw.crew.scale.set(h * SPR.aspect[tw.type] * flip * (1 + tw.recoil * 0.06), h * (1 - tw.recoil * 0.08), 1);
+    }
   }
   // projectiles
   let n = 0;
@@ -4619,7 +4712,7 @@ function hideScreen() { screen = null; overlay.classList.add('hidden'); document
 function openGuide(from) { guideFrom = from; showScreen('guide'); }
 function fillTitle() {
   const best = loadBest(), run = loadRun();
-  ocard.innerHTML = `<img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
+  ocard.innerHTML = `<img class="chibi l" src="assets/3d/okcubasi.webp" alt=""><img class="chibi r" src="assets/3d/acemi-asker.webp" alt=""><img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
     <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
     ${ARENA ? `<div class="row"><button id="bDaily" data-key="daily" ${assetState.done ? '' : 'disabled'}>${ico('wave')} ${t('daily')} <small>(${dailyInfo()})</small></button></div>` : ''}
     <div class="row"><button id="bGuide" data-key="guide">${ico('target')} ${t('guide')}</button><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
@@ -4635,7 +4728,7 @@ function fillTitle() {
   $('bLang2').onclick = toggleLang;
 }
 function fillPause() {
-  ocard.innerHTML = `<h2>${t('paused')}</h2><div class="col">
+  ocard.innerHTML = `<img class="chibi l sm" src="assets/3d/okcubasi.webp" alt=""><h2>${t('paused')}</h2><div class="col">
     <button class="primary" id="bResume" data-key="resume" data-focus>${GLYPH.play} ${t('resume')}</button>
     <button id="bGuide" data-key="guide">${ico('target')} ${t('guide')}</button>
     <button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button>
@@ -4724,7 +4817,7 @@ function openSettings(from) { settingsFrom = from; showScreen('settings'); }
 function settingsBack() { saveSettings(); showScreen(settingsFrom === 'pause' && G.running && !G.over ? 'pause' : 'title'); }
 function fillOver() {
   const win = endWin;
-  ocard.innerHTML = `<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
+  ocard.innerHTML = `${win ? '<img class="chibi l sm" src="assets/3d/okcubasi-sevinc.webp" alt="">' : '<img class="chibi r sm" src="assets/3d/acemi-asker.webp" alt="">'}<img class="crest" src="assets/ui/icons/${win ? 'trophy' : 'fortress'}.png" alt=""><h1 class="end">${win ? t('winTitle') : t('lostTitle')}</h1><p>${win ? t('winText') : t('lostText', { n: G.wave })}</p>
     ${endStars ? `<div class="newbest">${starRow(endStars)} ${t('starsLine', { n: endStars })}</div>` : ''}
     ${endRecord ? `<div class="newbest">${ico('trophy')} ${t('newBest')}</div>` : ''}
     <div class="estats"><div><b>${G.wave}</b><small>${t('statWave')}</small></div><div><b>${G.kills}</b><small>${t('statKills')}</small></div><div><b>${G.goldEarned}</b><small>${t('statGold')}</small></div><div><b>${G.built}</b><small>${t('statTowers')}</small></div></div>
@@ -5151,9 +5244,10 @@ if (window.ArenaCore) ArenaCore.test.kur({ read: () => ({ fps: fpsEma, wave: G.w
 frame();
 // the title screen shows while the models load (Play stays disabled); after 15 s the game goes on with whatever has
 // loaded, and a model that arrives later is still swapped in
-const assetsLoaded = loadAssets().then(() => { if (assetState.done) applyAssets(); });
+const assetsLoaded = Promise.all([loadAssets(), loadSprites()]).then(() => { if (assetState.done) { applyAssets(); applySprites(); } });
 Promise.race([assetsLoaded, new Promise(r => setTimeout(r, 15000))]).then(() => {
   applyAssets();
+  applySprites();
   if (window.ArenaCore) ArenaCore.kabuk.onceDerle(renderer, scene, camera); // shader warm-up (Intel: no parallel compile)
   assetState.done = true;
   G.assetsReady = true;
