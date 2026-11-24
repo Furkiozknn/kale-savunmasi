@@ -1621,6 +1621,58 @@
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 /*ARENA-KIT:END*/</script>
+<script>
+/* saglamlik: shown when WebGL cannot start or the three.js module never loads (CDN blocked / offline). Classic script, runs before the module. */
+(function () {
+  var C = {"play":"#bPlay","key":"arena.hisar.settings","wrap":"","card":"ocard parch","btn":"primary big","btn2":"big","bg":"background:radial-gradient(ellipse at center, rgba(60,34,14,.32), rgba(40,22,10,.78));backdrop-filter:blur(3px);"};
+  var S = {
+    tr: { gt: 'WebGL kullanılamıyor', gb: 'Bu oyun WebGL ister ama tarayıcın başlatamadı. Tarayıcı ayarlarından donanım hızlandırmayı aç ya da başka bir tarayıcı dene (Chrome, Edge, Firefox).',
+          lt: '3D motoru yüklenemedi', lb: 'three.js internetten (jsDelivr) indirilemedi. Bağlantını kontrol edip sayfayı yenile; bir reklam veya içerik engelleyici cdn.jsdelivr.net adresini engelliyor olabilir.', rt: 'Yeniden dene', sw: 'English' },
+    en: { gt: 'WebGL is not available', gb: 'This game needs WebGL, but your browser could not start it. Turn on hardware acceleration in the browser settings or try another browser (Chrome, Edge, Firefox).',
+          lt: 'The 3D engine could not load', lb: 'three.js could not be downloaded (jsDelivr). Check your connection and reload; an ad or content blocker may be blocking cdn.jsdelivr.net.', rt: 'Try again', sw: 'Türkçe' }
+  };
+  var G = window.__glGuard = { up: false, kind: null, lang: null, box: null };
+  function pick() {
+    try { var q = new URLSearchParams(location.search).get('lang'); if (q === 'tr' || q === 'en') return q; } catch (e) {}
+    try { var s = JSON.parse(localStorage.getItem(C.key)); if (s && (s.lang === 'tr' || s.lang === 'en')) return s.lang; } catch (e) {}
+    return /^tr/i.test(navigator.language || '') ? 'tr' : 'en';
+  }
+  function paint() {
+    var T = S[G.lang], b = G.box; if (!b) return;
+    b.querySelector('h2').textContent = T[G.kind === 'gl' ? 'gt' : 'lt'];
+    b.querySelector('p').textContent = T[G.kind === 'gl' ? 'gb' : 'lb'];
+    b.querySelector('.gg-r').textContent = T.rt; b.querySelector('.gg-s').textContent = T.sw;
+    document.documentElement.setAttribute('data-glguard', G.kind);
+    try { if (C.play && G.pd === undefined) { var pb = document.querySelector(C.play); if (pb) { G.pd = pb.disabled; pb.disabled = true; } } } catch (e) {}
+  }
+  function show(kind, lang) {
+    if (G.kind === 'gl' && kind !== 'gl') return;
+    G.kind = kind; G.lang = G.lang || lang || pick();
+    if (!G.box) {
+      var w = document.createElement('div'); w.id = 'glGuard'; w.className = C.wrap; w.setAttribute('role', 'alert');
+      w.style.cssText = 'display:flex;position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483000;align-items:center;justify-content:center;padding:14px;overflow:auto;' + (C.bg || '');
+      w.innerHTML = '<div class="' + C.card + '" style="' + (C.cardStyle || '') + '"><h2 style="' + (C.h2 || '') + '"></h2><p style="margin:10px 0 16px;line-height:1.45;' + (C.p || '') + '"></p>' +
+        '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button type="button" class="' + C.btn + ' gg-r"></button><button type="button" class="' + C.btn2 + ' gg-s"></button></div></div>';
+      w.querySelector('.gg-r').onclick = function () { location.reload(); };
+      w.querySelector('.gg-s').onclick = function () { G.lang = G.lang === 'tr' ? 'en' : 'tr'; paint(); };
+      (document.body || document.documentElement).appendChild(w); G.box = w;
+    }
+    paint();
+  }
+  G.fail = function (kind, lang) { show(kind, lang); };
+  G.started = function () { G.up = true; if (G.box && G.kind === 'load') { G.box.remove(); G.box = null; G.kind = null; document.documentElement.removeAttribute('data-glguard'); try { var pb = C.play && document.querySelector(C.play); if (pb && G.pd !== undefined) pb.disabled = G.pd; } catch (e) {} G.pd = undefined; } };
+  /* a Proxy that swallows every call/property so top-level code can finish without a real renderer; boot() then stops at glFail */
+  G.stub = function (canvas) {
+    var f = function () {}, p = new Proxy(f, {
+      get: function (t, k) { if (k === 'domElement') return canvas; if (k === Symbol.toPrimitive) return function () { return 0; }; if (k === 'then') return undefined; return p; },
+      set: function () { return true; }, apply: function () { return p; }, construct: function () { return p; }
+    });
+    return p;
+  };
+  window.addEventListener('error', function (e) { var t = e.target; if (!G.up && t && t.tagName === 'SCRIPT' && t.type === 'module') show('load'); }, true);
+  setTimeout(function () { if (!G.up) show('load'); }, 20000);
+})();
+</script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -1944,6 +1996,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+window.__glGuard && __glGuard.started(); // three.js loaded: the load-failure watchdog (head guard script) stands down
 
 // ---------------------------------------------------------------- config
 const params = new URLSearchParams(location.search);
@@ -2241,12 +2294,14 @@ const Sph = (r, w = 8, h = 6) => new THREE.SphereGeometry(r, w, h);
 
 // ---------------------------------------------------------------- renderer, scene, camera
 const canvas = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+let renderer, glFail = false;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
+catch (e) { glFail = true; renderer = __glGuard.stub(canvas); } // no WebGL: the title shows with Play disabled and a notice, no game loop
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1 : 1.5));
 // Arena: dynamic pixel ratio for weak GPUs under the quality tier's cap (re-attached in applyQuality, which resets the ratio)
 let arenaPerf = null;
 function arenaPerfAttach() {
-  if (!ARENA) return; if (arenaPerf) arenaPerf.stop();
+  if (!ARENA || glFail) return; if (arenaPerf) arenaPerf.stop();
   arenaPerf = ARENA.perf.attach(renderer, { max: Math.min(window.devicePixelRatio || 1, low ? 1 : 1.5) });
 }
 renderer.setSize(innerWidth, innerHeight);
@@ -2287,7 +2342,7 @@ sun.shadow.normalBias = 0.35;
 scene.add(sun);
 // arena-core v2 render preset: the canvas is transparent over the CSS sky, so no composer: neutral tone mapping,
 // a little room light, CSS vignette + grain and a gentle grade on the canvas
-const CFX = window.ArenaCore ? ArenaCore.render.setup(renderer, scene, camera, { tonlama: 'neutral', pozlama: 1.08, ortam: 0.12, saydam: true, vinyet: 0.26, grain: 0.04, renk: { doygunluk: 1.1, kontrast: 1.04 } }) : null;
+const CFX = window.ArenaCore && !glFail ? ArenaCore.render.setup(renderer, scene, camera, { tonlama: 'neutral', pozlama: 1.08, ortam: 0.12, saydam: true, vinyet: 0.26, grain: 0.04, renk: { doygunluk: 1.1, kontrast: 1.04 } }) : null;
 
 const matV = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
 
@@ -3071,7 +3126,7 @@ function loadAssets() {
     .finally(() => { assetState.loaded++; const b = $('bPlay'); if (b && !assetState.done) b.textContent = playLabel(); });
   return Promise.all(MODEL_FILES.map(one));
 }
-function playLabel() { return assetState.done ? t('play') + ' ▶' : t('loading', { n: assetState.loaded, m: assetState.total }); }
+function playLabel() { return assetState.done || glFail ? t('play') + ' ▶' : t('loading', { n: assetState.loaded, m: assetState.total }); }
 // swap the procedural meshes for the loaded models (only the ones that loaded); safe to call again when a slow model
 // arrives after the loading timeout, each model is applied once
 function applyAssets() {
@@ -4713,8 +4768,8 @@ function openGuide(from) { guideFrom = from; showScreen('guide'); }
 function fillTitle() {
   const best = loadBest(), run = loadRun();
   ocard.innerHTML = `<img class="chibi l" src="assets/3d/okcubasi.webp" alt=""><img class="chibi r" src="assets/3d/acemi-asker.webp" alt=""><img class="crest" src="assets/ui/logo.png" alt=""><h1>Hisar<small>${t('sub')}</small></h1><p>${t('intro')}</p>
-    <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
-    ${ARENA ? `<div class="row"><button id="bDaily" data-key="daily" ${assetState.done ? '' : 'disabled'}>${ico('wave')} ${t('daily')} <small>(${dailyInfo()})</small></button></div>` : ''}
+    <div class="row"><button class="primary big" id="bPlay" data-key="play" data-focus ${assetState.done && !glFail ? '' : 'disabled'}>${playLabel()}</button>${run ? `<button class="big" id="bCont" data-key="cont" ${assetState.done && !glFail ? '' : 'disabled'}>${t('continue', { n: run.wave + 1 })}</button>` : ''}</div>
+    ${ARENA ? `<div class="row"><button id="bDaily" data-key="daily" ${assetState.done && !glFail ? '' : 'disabled'}>${ico('wave')} ${t('daily')} <small>(${dailyInfo()})</small></button></div>` : ''}
     <div class="row"><button id="bGuide" data-key="guide">${ico('target')} ${t('guide')}</button><button id="bSet" data-key="set">${GLYPH.gear} ${t('settings')}</button><button id="bLang2" data-key="lang">${lang === 'tr' ? 'English' : 'Türkçe'}</button></div>
     <p class="ctl">${t(COARSE ? 'controlsTouch' : 'controls')}</p>${best ? `<div class="best">${ico('trophy')} ${t('best', { n: best })}${loadStars() ? ` · ${starRow(loadStars())}` : ''}</div>` : ''}
     <div class="links"><button id="bNews" data-key="news">${verText()} · ${t('news')}</button><a id="aHub" href="https://furkiozknn.github.io/" target="_blank" rel="noopener">${t('allGames')}</a></div>
@@ -5220,8 +5275,8 @@ new ResizeObserver(() => document.documentElement.style.setProperty('--top-h', $
 // Instant start: a first-time player (no best wave, no saved run) lands in the build phase of wave 1 at once; the
 // toast teaches the first tower and waves still start only on the player's tap. ?menu forces the title.
 const firstVisit = !loadBest() && !loadRun() && !params.has('menu');
-if (AUTO || firstVisit) startGame(null); else showScreen('title');
-if (firstVisit && !AUTO) { // the 2.6 s toast can pass while the first frames load: repeat it until the first tower stands (at most 3 times)
+if (glFail) showScreen('title'); else if (AUTO || firstVisit) startGame(null); else showScreen('title');
+if (firstVisit && !AUTO && !glFail) { // the 2.6 s toast can pass while the first frames load: repeat it until the first tower stands (at most 3 times)
   let n = 0;
   const again = setInterval(() => {
     if (G.towers.length || G.phase !== 'build' || G.over || ++n > 3) { clearInterval(again); return; }
@@ -5241,7 +5296,7 @@ G.pads = pads.length;
 G.assets = [];
 // arena-core v2 test contract: window.__game.read() / step(seconds) for bots, gates and ?capture recordings
 if (window.ArenaCore) ArenaCore.test.kur({ read: () => ({ fps: fpsEma, wave: G.wave, lives: G.lives, over: G.over, assetsReady: !!G.assetsReady, errors: G.errors.slice(), fx: CFX && CFX.info }), step: s => { for (let t = 0; t < s && !G.over; t += 0.025) { if (AUTO) autoplay(0.025); update(0.025); } } });
-frame();
+if (glFail) { G.errors.push('WebGL unavailable'); __glGuard.fail('gl', settings.lang); } else frame();
 // the title screen shows while the models load (Play stays disabled); after 15 s the game goes on with whatever has
 // loaded, and a model that arrives later is still swapped in
 const assetsLoaded = Promise.all([loadAssets(), loadSprites()]).then(() => { if (assetState.done) { applyAssets(); applySprites(); } });
